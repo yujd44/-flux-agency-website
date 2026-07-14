@@ -229,19 +229,19 @@
     },
     "cases": {
       "case1": {
-        "title": "Northgate Capital",
-        "tag": "Web Platform · Finance",
-        "description": "A private investment platform with a secure client portal and real-time portfolio reporting."
+        "title": "Imperium Building",
+        "tag": "Brand Site · Real Estate & Development",
+        "description": "An editorial brand site for an international construction and real-estate developer, with a dramatic hero and an iconic project gallery that turns a decade of building into a single brand story."
       },
       "case2": {
-        "title": "Meridian Clinics",
-        "tag": "Web Application · Healthcare",
-        "description": "A multi-location patient management system with automated scheduling and reminders."
+        "title": "1:1",
+        "tag": "Personal Portfolio · Creative Developer",
+        "description": "A personal portfolio for an independent creative developer, built around a striking visual hero and multilingual navigation aimed at an international client base."
       },
       "case3": {
-        "title": "Solene Studio",
-        "tag": "E-commerce · Retail",
-        "description": "A premium online store and brand site rebuilt for speed, clarity and conversion."
+        "title": "JOSTARS",
+        "tag": "Brand Site · Fitness & Coaching",
+        "description": "A brand site for a gym and personal-training studio, designed dark and sharp with a lime-neon voice and a stats bar that turns intensity into numbers."
       }
     }
   },
@@ -258,6 +258,9 @@
         "For eight years, we've built websites, products, automations and infrastructure for companies who refuse to settle for generic. Not because they asked for luxury — because they understood that precision compounds.",
         "Today we work with partners across 15 countries, carrying the same standard into every engagement: measured, deliberate, and built to last well beyond launch day."
       ]
+    },
+    "gallery": {
+      "eyebrow": "Moments From The Studio"
     },
     "mission": {
       "eyebrow": "Our mission",

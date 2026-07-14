@@ -16,20 +16,20 @@
 export const portfolioCases = [
   {
     id: "case1",
-    image: "/images/portfolio-01.png",
-    // Live URL set for Northgate Capital.
+    image: "/images/portfolio-imperium.png",
+    // Live URL for Imperium Building (אימפריום בנייה) — construction/real estate.
     url: "https://noisy-plane-mgu70wc.shipstatic.com/",
   },
   {
     id: "case2",
-    image: "/images/portfolio-02.png",
-    // Live URL set for Meridian Clinics.
+    image: "/images/portfolio-1to1.png",
+    // Live URL for the "1:1" personal portfolio/freelancer site.
     url: "https://flourishing-narwhal-bb5707.netlify.app/",
   },
   {
     id: "case3",
-    image: "/images/portfolio-03.png",
-    // Live URL set for Solene Studio.
+    image: "/images/portfolio-jostars.png",
+    // Live URL for JOSTARS — fitness/personal-training coaching studio.
     url: "https://darling-sprite-0a1758.netlify.app/",
   },
 ] as const;
