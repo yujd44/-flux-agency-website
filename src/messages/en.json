@@ -1,0 +1,369 @@
+{
+  "meta": {
+    "title": "Flux Agency — Premium Digital & IT Solutions",
+    "description": "Flux Agency designs and engineers premium digital products, automation and infrastructure for ambitious companies across 15 countries."
+  },
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "portfolio": "Portfolio",
+    "about": "About",
+    "contact": "Contact",
+    "menu": "Menu",
+    "close": "Close"
+  },
+  "common": {
+    "exploreMore": "Discover more",
+    "viewAll": "View all",
+    "viewCase": "View case",
+    "exploreService": "Explore service",
+    "backToServices": "Back to categories",
+    "getInTouch": "Get in touch",
+    "startProject": "Start a project",
+    "readMore": "Read more",
+    "language": "Language",
+    "scrollDown": "Scroll",
+    "allRightsReserved": "All rights reserved."
+  },
+  "home": {
+    "hero": {
+      "badge": "31.7683° N · 35.2137° E — Tel Aviv, Israel",
+      "eyebrow": "Flux Agency",
+      "title": "We engineer digital experiences of exceptional precision",
+      "subtitle": "A premium IT and digital solutions agency building websites, products, automation and infrastructure for ambitious brands across 15 countries.",
+      "cta": "Discover more"
+    },
+    "stats": {
+      "projects": { "value": "120+", "label": "Projects delivered" },
+      "experience": { "value": "8+", "label": "Years of experience" },
+      "countries": { "value": "15", "label": "Active countries" },
+      "endToEnd": { "value": "360°", "label": "End-to-end solutions" }
+    },
+    "servicesTeaser": {
+      "eyebrow": "What we do",
+      "title": "Four disciplines, one standard of craft",
+      "subtitle": "From digital products to infrastructure, every engagement is engineered with the same editorial precision.",
+      "cta": "Explore all services"
+    },
+    "portfolioTeaser": {
+      "eyebrow": "Selected work",
+      "title": "Recent engagements",
+      "subtitle": "A small selection of the products and platforms we've shipped for our partners.",
+      "cta": "View full portfolio"
+    },
+    "philosophy": {
+      "eyebrow": "Our approach",
+      "title": "Engineered like architecture, designed like editorial",
+      "body": "We treat every product as a structure — measured, load-tested and built to last. Nothing ships until it earns its place."
+    }
+  },
+  "services": {
+    "hero": {
+      "eyebrow": "Services",
+      "title": "The Services Explorer",
+      "subtitle": "Four disciplines. Twenty capabilities. One integrated studio for digital products, automation, infrastructure and communication."
+    },
+    "categories": {
+      "digitalProducts": {
+        "number": "01",
+        "title": "Digital Products",
+        "watermark": "DIGITAL PRODUCTS",
+        "description": "Interfaces and platforms engineered for growth."
+      },
+      "businessAutomation": {
+        "number": "02",
+        "title": "Business Automation",
+        "watermark": "BUSINESS AUTOMATION",
+        "description": "Systems that remove friction from your operations."
+      },
+      "infrastructure": {
+        "number": "03",
+        "title": "Infrastructure",
+        "watermark": "INFRASTRUCTURE",
+        "description": "Foundations built to scale without compromise."
+      },
+      "communication": {
+        "number": "04",
+        "title": "Communication",
+        "watermark": "COMMUNICATION",
+        "description": "Channels that keep you close to your customers."
+      }
+    },
+    "items": {
+      "websites": {
+        "title": "Websites",
+        "description": "Corporate and brand websites engineered for clarity and conversion.",
+        "detailDescription": "A corporate website is often the first serious conversation your brand has with the world. We design and build fast, precise, editorial websites that carry your positioning with confidence — structured for SEO, effortless to manage, and engineered to convert curiosity into contact.",
+        "features": ["Corporate websites", "Custom design systems", "SEO architecture", "CMS integration", "Analytics & tracking", "Performance engineering"]
+      },
+      "landingPages": {
+        "title": "Landing Pages",
+        "description": "High-conversion pages built around a single, focused goal.",
+        "detailDescription": "Every campaign deserves a page built with the same rigor as the media budget behind it. We design landing pages around a single action, tested and refined until every scroll earns its keep.",
+        "features": ["Conversion-first layout", "A/B testing setup", "Copy & messaging", "Fast load times", "Lead capture integration", "Analytics dashboards"]
+      },
+      "webApplications": {
+        "title": "Web Applications",
+        "description": "Custom platforms and internal tools built to scale with your business.",
+        "detailDescription": "From internal dashboards to customer-facing platforms, we build web applications with production-grade architecture from day one — designed to stay maintainable as your product and team grow.",
+        "features": ["Custom architecture", "API design & integration", "Role-based access", "Scalable back-end", "Automated testing", "Ongoing maintenance"]
+      },
+      "clientPortals": {
+        "title": "Client Portals",
+        "description": "Secure, branded spaces where your clients track work and data in real time.",
+        "detailDescription": "A client portal turns a scattered email thread into a single source of truth. We design secure, on-brand portals where your clients can track progress, access documents and communicate — reducing overhead on both sides.",
+        "features": ["Secure authentication", "Real-time updates", "Document management", "Custom permissions", "Branded experience", "Notifications & alerts"]
+      },
+      "onlineStores": {
+        "title": "Online Stores",
+        "description": "E-commerce experiences designed to sell with clarity and speed.",
+        "detailDescription": "We build online stores that feel as premium as the products they sell — fast checkout, considered merchandising and an admin experience your team will actually enjoy using.",
+        "features": ["Custom storefronts", "Payment integrations", "Inventory management", "Mobile-first checkout", "SEO & merchandising", "Performance optimization"]
+      },
+      "telegramBots": {
+        "title": "Telegram Bots",
+        "description": "Automated Telegram experiences for sales, support and community.",
+        "detailDescription": "Telegram has become a primary channel for commerce and community in many markets. We design and build bots that automate sales, onboarding and support without losing the human tone of your brand.",
+        "features": ["Custom bot logic", "Payment & order flows", "CRM synchronization", "Multi-language support", "Admin dashboards", "Analytics & reporting"]
+      },
+      "crmIntegration": {
+        "title": "CRM Integration",
+        "description": "Unify your customer data into one reliable source of truth.",
+        "detailDescription": "We connect and configure CRM systems so every team — sales, support, marketing — works from the same accurate picture of the customer, without duplicate data or manual re-entry.",
+        "features": ["Data unification", "Custom pipelines", "Third-party integrations", "Automated data sync", "Team onboarding", "Reporting & dashboards"]
+      },
+      "workflowAutomation": {
+        "title": "Workflow Automation",
+        "description": "Remove repetitive manual work from your team's daily operations.",
+        "detailDescription": "We map your operational workflows and rebuild the repetitive parts as automated systems — freeing your team to focus on the work that actually requires judgement.",
+        "features": ["Process mapping", "Custom automations", "Tool integrations", "Approval workflows", "Error monitoring", "Documentation & training"]
+      },
+      "aiChatbots": {
+        "title": "AI Chatbots",
+        "description": "Conversational assistants that handle real customer questions.",
+        "detailDescription": "We design and train AI-driven chatbots that go beyond scripted flows — understanding intent, pulling from your knowledge base, and escalating gracefully to a human when needed.",
+        "features": ["Custom knowledge base", "Natural language flows", "Multi-channel deployment", "Human handoff logic", "Continuous training", "Performance analytics"]
+      },
+      "processConsulting": {
+        "title": "Process Consulting",
+        "description": "An outside perspective on how your operations could run.",
+        "detailDescription": "Sometimes the highest-leverage work is diagnostic. We audit your current operations, identify the bottlenecks worth solving, and deliver a clear, prioritized roadmap for automation and improvement.",
+        "features": ["Operational audit", "Bottleneck analysis", "Automation roadmap", "Tool recommendations", "Stakeholder workshops", "Implementation support"]
+      },
+      "dataDashboards": {
+        "title": "Data Dashboards",
+        "description": "Clear, real-time visibility into the metrics that matter.",
+        "detailDescription": "We design dashboards that turn scattered data into a single, legible view — built for the decisions your team actually needs to make, not vanity metrics.",
+        "features": ["Custom KPI design", "Live data pipelines", "Multi-source integration", "Role-based views", "Automated reporting", "Alerting & thresholds"]
+      },
+      "cloudHosting": {
+        "title": "Cloud Hosting",
+        "description": "Reliable, scalable infrastructure managed end to end.",
+        "detailDescription": "We design and manage cloud environments that stay calm under load — right-sized, cost-aware and built with the redundancy your business depends on.",
+        "features": ["Infrastructure design", "Cost optimization", "Auto-scaling setup", "Backup & recovery", "Multi-region deployment", "24/7 monitoring"]
+      },
+      "devopsCicd": {
+        "title": "DevOps & CI/CD",
+        "description": "Ship faster with confidence through automated pipelines.",
+        "detailDescription": "We build continuous integration and delivery pipelines that turn deployments from an event into a routine — automated testing, staged rollouts and instant rollback when needed.",
+        "features": ["Pipeline architecture", "Automated testing", "Containerization", "Staged deployments", "Rollback strategies", "Infrastructure as code"]
+      },
+      "securityMonitoring": {
+        "title": "Security & Monitoring",
+        "description": "Proactive protection and visibility across your systems.",
+        "detailDescription": "We implement security practices and monitoring systems that catch issues before your customers do — from access control to real-time alerting on anomalies.",
+        "features": ["Vulnerability audits", "Access control", "Real-time alerting", "Log management", "Compliance support", "Incident response plans"]
+      },
+      "scalableArchitecture": {
+        "title": "Scalable Architecture",
+        "description": "Technical foundations designed for your next stage of growth.",
+        "detailDescription": "We design system architecture that anticipates growth — modular, well-documented and free of the shortcuts that turn into expensive rewrites later.",
+        "features": ["System design", "Microservices strategy", "Database architecture", "Load testing", "Technical documentation", "Migration planning"]
+      },
+      "messagingBots": {
+        "title": "WhatsApp & Telegram Bots",
+        "description": "Automated conversations across the channels your customers already use.",
+        "detailDescription": "We build messaging automations for WhatsApp and Telegram that handle orders, support and updates automatically, while keeping an authentic, on-brand voice.",
+        "features": ["Multi-platform bots", "Order & booking flows", "CRM synchronization", "Broadcast campaigns", "Multi-language support", "Analytics & reporting"]
+      },
+      "emailMarketing": {
+        "title": "Email & Marketing Automation",
+        "description": "Lifecycle campaigns that run themselves and perform.",
+        "detailDescription": "We design and automate email and marketing journeys — from onboarding to retention — built on clean segmentation and measured relentlessly against real revenue outcomes.",
+        "features": ["Lifecycle campaigns", "Audience segmentation", "Template systems", "A/B testing", "Deliverability optimization", "Performance reporting"]
+      },
+      "customerSupport": {
+        "title": "Customer Support Systems",
+        "description": "Help desk infrastructure that scales with your customer base.",
+        "detailDescription": "We implement support systems — ticketing, knowledge bases, live chat — configured around your actual support volume and team structure, so response times stay fast as you grow.",
+        "features": ["Help desk setup", "Knowledge base design", "Live chat integration", "SLA workflows", "Team training", "Reporting dashboards"]
+      },
+      "internalTools": {
+        "title": "Internal Tools",
+        "description": "Purpose-built software for the way your team actually works.",
+        "detailDescription": "Off-the-shelf software rarely fits perfectly. We build lightweight internal tools tailored to your exact workflows — from admin panels to reporting utilities — so your team spends less time working around software.",
+        "features": ["Custom admin panels", "Workflow-specific tools", "Third-party integrations", "Access control", "Rapid prototyping", "Ongoing support"]
+      }
+    },
+    "detail": {
+      "featuresTitle": "What's included",
+      "cta": "Explore service"
+    },
+    "mobile": {
+      "tapToExpand": "Tap to view services"
+    }
+  },
+  "portfolio": {
+    "hero": {
+      "eyebrow": "Portfolio",
+      "title": "Selected engagements",
+      "subtitle": "A curated look at products, platforms and systems we've engineered for partners across 15 countries."
+    },
+    "cta": {
+      "title": "Have a project in mind?",
+      "subtitle": "Let's talk about what you're building.",
+      "button": "Start a project"
+    },
+    "cases": {
+      "case1": {
+        "title": "Northgate Capital",
+        "tag": "Web Platform · Finance",
+        "description": "A private investment platform with a secure client portal and real-time portfolio reporting."
+      },
+      "case2": {
+        "title": "Meridian Clinics",
+        "tag": "Web Application · Healthcare",
+        "description": "A multi-location patient management system with automated scheduling and reminders."
+      },
+      "case3": {
+        "title": "Solene Studio",
+        "tag": "E-commerce · Retail",
+        "description": "A premium online store and brand site rebuilt for speed, clarity and conversion."
+      },
+      "case4": {
+        "title": "Arkline Logistics",
+        "tag": "Automation · Operations",
+        "description": "Workflow automation connecting dispatch, fleet and billing systems into one pipeline."
+      },
+      "case5": {
+        "title": "Verano Hospitality Group",
+        "tag": "Corporate Website · Hospitality",
+        "description": "A flagship corporate website spanning eight properties across three countries."
+      },
+      "case6": {
+        "title": "Ceres Analytics",
+        "tag": "Infrastructure · SaaS",
+        "description": "A cloud infrastructure overhaul enabling auto-scaling across five regions."
+      },
+      "case7": {
+        "title": "Halden & Cole",
+        "tag": "Client Portal · Legal",
+        "description": "A secure client portal for case tracking, document exchange and billing."
+      },
+      "case8": {
+        "title": "Fintra Markets",
+        "tag": "Web Platform · Fintech",
+        "description": "A trading dashboard with live data pipelines and role-based reporting views."
+      },
+      "case9": {
+        "title": "Orin Robotics",
+        "tag": "Landing Page · Industrial",
+        "description": "A product launch page engineered for a technical, investor-facing audience."
+      }
+    }
+  },
+  "about": {
+    "hero": {
+      "eyebrow": "About",
+      "title": "Precision, by design",
+      "subtitle": "Flux Agency is a studio of engineers, designers and strategists building the digital backbone of ambitious companies."
+    },
+    "intro": {
+      "eyebrow": "Who we are",
+      "paragraphs": [
+        "Flux Agency was founded on a simple conviction: that digital work deserves the same discipline as engineering, and the same care as editorial design.",
+        "For eight years, we've built websites, products, automations and infrastructure for companies who refuse to settle for generic. Not because they asked for luxury — because they understood that precision compounds.",
+        "Today we work with partners across 15 countries, carrying the same standard into every engagement: measured, deliberate, and built to last well beyond launch day."
+      ]
+    },
+    "mission": {
+      "eyebrow": "Our mission",
+      "title": "Build fewer things, build them exactly right",
+      "body": "We don't chase every trend or take every brief. We choose a small number of engagements each quarter and give each one the depth it deserves — from strategy through to the smallest interaction detail."
+    },
+    "approach": {
+      "eyebrow": "How we work",
+      "title": "Engineered like architecture, considered like editorial",
+      "items": [
+        { "title": "Diagnose before we design", "body": "Every engagement starts with understanding the real problem, not the assumed one." },
+        { "title": "Systems, not one-offs", "body": "We build design systems and technical foundations that outlive the first release." },
+        { "title": "Measured, not decorated", "body": "Every element earns its place through function first, aesthetics second." },
+        { "title": "Shipped, then refined", "body": "We stay close after launch — performance, iteration and support are part of the work." }
+      ]
+    },
+    "stats": {
+      "eyebrow": "By the numbers",
+      "title": "Eight years, measured in outcomes",
+      "items": [
+        { "value": "120+", "label": "Projects delivered" },
+        { "value": "8+", "label": "Years of experience" },
+        { "value": "15", "label": "Active countries" },
+        { "value": "360°", "label": "End-to-end solutions" }
+      ]
+    },
+    "difference": {
+      "eyebrow": "What sets us apart",
+      "title": "Why partners stay with us",
+      "items": [
+        { "title": "One team, full lifecycle", "body": "Strategy, design, engineering and infrastructure under a single roof — no hand-off gaps." },
+        { "title": "Editorial standards", "body": "Every interface is treated as a piece of craft, not a template with your logo on it." },
+        { "title": "Engineering discipline", "body": "Production-grade architecture from day one, tested, documented and built to scale." },
+        { "title": "Long-term partnership", "body": "We measure success by what happens after launch, not just the day it ships." }
+      ]
+    },
+    "cta": {
+      "title": "Let's build something exact",
+      "subtitle": "Tell us what you're working on.",
+      "button": "Get in touch"
+    }
+  },
+  "contact": {
+    "hero": {
+      "eyebrow": "Contact",
+      "title": "Let's start a conversation",
+      "subtitle": "Tell us about your project and we'll reply within one business day."
+    },
+    "form": {
+      "name": "Full name",
+      "namePlaceholder": "Your name",
+      "email": "Email",
+      "emailPlaceholder": "you@company.com",
+      "message": "Message",
+      "messagePlaceholder": "Tell us about your project…",
+      "submit": "Send message",
+      "submitting": "Sending…",
+      "success": "Thank you — your message has been sent. We'll be in touch shortly.",
+      "error": "Something went wrong. Please try again or email us directly."
+    },
+    "info": {
+      "eyebrow": "Direct contact",
+      "title": "Prefer to reach out directly?",
+      "email": "hello@fluxagency.com",
+      "phone": "+972 3 555 0192",
+      "addressLabel": "Studio",
+      "address": "12 Rothschild Blvd, Tel Aviv, Israel",
+      "hoursLabel": "Hours",
+      "hours": "Sun–Thu, 09:00–18:00 (IST)"
+    }
+  },
+  "footer": {
+    "tagline": "A premium IT & digital solutions studio, engineering precision across 15 countries.",
+    "navTitle": "Navigation",
+    "contactTitle": "Contact",
+    "languageTitle": "Language",
+    "email": "hello@fluxagency.com",
+    "phone": "+972 3 555 0192",
+    "address": "12 Rothschild Blvd, Tel Aviv, Israel",
+    "copyright": "Flux Agency. All rights reserved."
+  }
+}
