@@ -242,36 +242,6 @@
         "title": "Solene Studio",
         "tag": "E-commerce · Retail",
         "description": "A premium online store and brand site rebuilt for speed, clarity and conversion."
-      },
-      "case4": {
-        "title": "Arkline Logistics",
-        "tag": "Automation · Operations",
-        "description": "Workflow automation connecting dispatch, fleet and billing systems into one pipeline."
-      },
-      "case5": {
-        "title": "Verano Hospitality Group",
-        "tag": "Corporate Website · Hospitality",
-        "description": "A flagship corporate website spanning eight properties across three countries."
-      },
-      "case6": {
-        "title": "Ceres Analytics",
-        "tag": "Infrastructure · SaaS",
-        "description": "A cloud infrastructure overhaul enabling auto-scaling across five regions."
-      },
-      "case7": {
-        "title": "Halden & Cole",
-        "tag": "Client Portal · Legal",
-        "description": "A secure client portal for case tracking, document exchange and billing."
-      },
-      "case8": {
-        "title": "Fintra Markets",
-        "tag": "Web Platform · Fintech",
-        "description": "A trading dashboard with live data pipelines and role-based reporting views."
-      },
-      "case9": {
-        "title": "Orin Robotics",
-        "tag": "Landing Page · Industrial",
-        "description": "A product launch page engineered for a technical, investor-facing audience."
       }
     }
   },

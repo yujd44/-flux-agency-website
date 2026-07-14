@@ -2,6 +2,17 @@
 // project URL into the `url` field to make its card clickable ("View live
 // site") on the Portfolio page. Leave `url` as an empty string "" to keep
 // the card as a non-clickable preview (no broken links will be rendered).
+//
+// To add another case study back in the future:
+//   1. Add an image to public/images/ (e.g. portfolio-04.png).
+//   2. Add a new object below with a unique id (e.g. "case4"), the image
+//      path, and the url (leave "" until the live link is ready).
+//   3. Add matching translations in each of src/messages/{he,ru,en,ar}.json
+//      under the portfolio.cases.<id> key (title, tag, description) —
+//      mirror the shape of the case1-case3 entries already there.
+//   4. PortfolioGrid.tsx renders every entry automatically; only the first
+//      entry is styled as the larger "featured" card, so no layout changes
+//      are needed unless you also want to change which card is featured.
 export const portfolioCases = [
   {
     id: "case1",
@@ -19,42 +30,6 @@ export const portfolioCases = [
     id: "case3",
     image: "/images/portfolio-03.png",
     // TODO: paste the live URL for Solene Studio here
-    url: "",
-  },
-  {
-    id: "case4",
-    image: "/images/portfolio-04.png",
-    // TODO: paste the live URL for Arkline Logistics here
-    url: "",
-  },
-  {
-    id: "case5",
-    image: "/images/portfolio-05.png",
-    // TODO: paste the live URL for Verano Hospitality Group here
-    url: "",
-  },
-  {
-    id: "case6",
-    image: "/images/portfolio-06.png",
-    // TODO: paste the live URL for Ceres Analytics here
-    url: "",
-  },
-  {
-    id: "case7",
-    image: "/images/portfolio-07.png",
-    // TODO: paste the live URL for Halden & Cole here
-    url: "",
-  },
-  {
-    id: "case8",
-    image: "/images/portfolio-08.png",
-    // TODO: paste the live URL for Fintra Markets here
-    url: "",
-  },
-  {
-    id: "case9",
-    image: "/images/portfolio-09.png",
-    // TODO: paste the live URL for Orin Robotics here
     url: "",
   },
 ] as const;

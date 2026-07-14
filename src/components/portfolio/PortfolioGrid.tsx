@@ -3,21 +3,9 @@
 import CaseCard from "./CaseCard";
 import { portfolioCases } from "@/lib/portfolio-data";
 
-const spanPattern: { col: number; row: number }[] = [
-  { col: 2, row: 1 },
-  { col: 1, row: 1 },
-  { col: 1, row: 1 },
-  { col: 1, row: 1 },
-  { col: 1, row: 1 },
-  { col: 2, row: 1 },
-  { col: 1, row: 1 },
-  { col: 1, row: 1 },
-  { col: 1, row: 1 },
-];
-
 export default function PortfolioGrid() {
   return (
-    <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:gap-6">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:gap-6">
       {portfolioCases.map((item, index) => (
         <CaseCard
           key={item.id}
@@ -25,7 +13,7 @@ export default function PortfolioGrid() {
           image={item.image}
           url={item.url}
           index={index}
-          span={spanPattern[index % spanPattern.length]}
+          featured={index === 0}
         />
       ))}
     </div>
