@@ -2,6 +2,7 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import Container from "@/components/ui/Container";
 import SectionHeading from "@/components/ui/SectionHeading";
 import ItemsGrid from "@/components/about/ItemsGrid";
+import AboutGallery from "@/components/about/AboutGallery";
 import { Button } from "@/components/ui/Button";
 
 export async function generateMetadata({
@@ -31,6 +32,7 @@ export default async function AboutPage({
   const tStats = await getTranslations("about.stats");
   const tDiff = await getTranslations("about.difference");
   const tCta = await getTranslations("about.cta");
+  const tGallery = await getTranslations("about.gallery");
 
   const paragraphs = tIntro.raw("paragraphs") as string[];
   const approachItems = tApproach.raw("items") as { title: string; body: string }[];
@@ -57,6 +59,16 @@ export default async function AboutPage({
               </p>
             ))}
           </div>
+        </Container>
+      </section>
+
+      <section className="border-t border-border py-20 lg:py-24">
+        <Container>
+          <div className="text-content mb-10 flex items-center gap-3 text-[13px] font-medium uppercase tracking-[0.2em] text-accent">
+            <span className="h-px w-6 bg-accent/60" />
+            {tGallery("eyebrow")}
+          </div>
+          <AboutGallery />
         </Container>
       </section>
 
