@@ -159,7 +159,14 @@ export default function LogoIntro() {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: EXIT_DUR, ease: EASE }}
-          className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden bg-bg"
+          // pointer-events-none: this overlay is purely decorative (the real
+          // page underneath is already live and interactive). Without this,
+          // the element keeps intercepting clicks for the full EXIT_DUR fade
+          // -- even once it's visually transparent -- which is exactly what
+          // made the very first click after a fresh page load (e.g. on the
+          // language switcher) silently swallowed until a second click
+          // landed after the node was finally removed from the DOM.
+          className="pointer-events-none fixed inset-0 z-[200] flex items-center justify-center overflow-hidden bg-bg"
         >
           <div
             className="chrome-ltr relative flex items-center"
