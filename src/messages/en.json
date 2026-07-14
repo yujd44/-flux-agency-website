@@ -40,7 +40,7 @@
       "projects": { "value": "120+", "label": "Projects delivered" },
       "experience": { "value": "8+", "label": "Years of experience" },
       "countries": { "value": "15", "label": "Active countries" },
-      "endToEnd": { "value": "360°", "label": "End-to-end solutions" }
+      "endToEnd": { "value": "24/7", "label": "Technical support" }
     },
     "servicesTeaser": {
       "eyebrow": "What we do",
@@ -281,7 +281,7 @@
         { "value": "120+", "label": "Projects delivered" },
         { "value": "8+", "label": "Years of experience" },
         { "value": "15", "label": "Active countries" },
-        { "value": "360°", "label": "End-to-end solutions" }
+        { "value": "24/7", "label": "Technical support" }
       ]
     },
     "difference": {

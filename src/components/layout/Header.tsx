@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import clsx from "clsx";
-import Image from "next/image";
 import { Menu } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import LanguageSwitcher from "./LanguageSwitcher";
 import MobileMenu from "./MobileMenu";
+import LogoMark from "@/components/icons/LogoMark";
 import StarOfDavid from "@/components/icons/StarOfDavid";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 
@@ -29,18 +29,9 @@ export default function Header() {
     <>
       <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-bg/70 backdrop-blur-md">
         <div className="chrome-ltr mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 py-5 sm:px-8 lg:px-12">
-          <Link href="/" className="flex items-center gap-2.5 shrink-0">
-            <span className="relative h-8 w-8 shrink-0">
-              <Image
-                src="/logo-mark.png"
-                alt="Flux Agency"
-                fill
-                priority
-                sizes="32px"
-                className="object-contain"
-              />
-            </span>
-            <span className="text-[15px] font-medium tracking-tight text-text">Flux Agency</span>
+          <Link href="/" className="flex items-center gap-3 shrink-0">
+            <LogoMark size={42} className="shrink-0" />
+            <span className="text-[17px] font-medium tracking-tight text-text">Flux Agency</span>
           </Link>
 
           <nav className="hidden items-center gap-9 lg:flex">
@@ -79,7 +70,7 @@ export default function Header() {
         </div>
       </header>
       <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
-      <div className="h-[73px]" aria-hidden="true" />
+      <div className="h-[83px]" aria-hidden="true" />
     </>
   );
 }

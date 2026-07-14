@@ -40,7 +40,7 @@
       "projects": { "value": "120+", "label": "פרויקטים שהובלנו" },
       "experience": { "value": "8+", "label": "שנות ניסיון" },
       "countries": { "value": "15", "label": "מדינות פעילות" },
-      "endToEnd": { "value": "360°", "label": "פתרונות מקצה לקצה" }
+      "endToEnd": { "value": "24/7", "label": "תמיכה טכנית" }
     },
     "servicesTeaser": {
       "eyebrow": "מה שאנחנו עושים",
@@ -281,7 +281,7 @@
         { "value": "120+", "label": "פרויקטים שהובלנו" },
         { "value": "8+", "label": "שנות ניסיון" },
         { "value": "15", "label": "מדינות פעילות" },
-        { "value": "360°", "label": "פתרונות מקצה לקצה" }
+        { "value": "24/7", "label": "תמיכה טכנית" }
       ]
     },
     "difference": {

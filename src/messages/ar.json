@@ -40,7 +40,7 @@
       "projects": { "value": "+120", "label": "مشروعًا أنجزناه" },
       "experience": { "value": "+8", "label": "سنوات خبرة" },
       "countries": { "value": "15", "label": "دولة نشطة" },
-      "endToEnd": { "value": "°360", "label": "حلول شاملة من البداية للنهاية" }
+      "endToEnd": { "value": "24/7", "label": "دعم تقني متواصل" }
     },
     "servicesTeaser": {
       "eyebrow": "ما نقوم به",
@@ -281,7 +281,7 @@
         { "value": "+120", "label": "مشروعًا أنجزناه" },
         { "value": "+8", "label": "سنوات خبرة" },
         { "value": "15", "label": "دولة نشطة" },
-        { "value": "°360", "label": "حلول شاملة من البداية للنهاية" }
+        { "value": "24/7", "label": "دعم تقني متواصل" }
       ]
     },
     "difference": {

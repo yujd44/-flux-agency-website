@@ -1,12 +1,12 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import Image from "next/image";
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import LanguageSwitcher from "./LanguageSwitcher";
+import LogoMark from "@/components/icons/LogoMark";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 
 const navKeys = ["home", "services", "portfolio", "about", "contact"] as const;
@@ -41,16 +41,8 @@ export default function MobileMenu({
           <div className="chrome-ltr flex h-full flex-col">
             <div className="flex items-center justify-between px-6 py-5 sm:px-8">
               <span className="flex items-center gap-2.5">
-                <span className="relative h-7 w-7 shrink-0">
-                  <Image
-                    src="/logo-mark.png"
-                    alt="Flux Agency"
-                    fill
-                    sizes="28px"
-                    className="object-contain"
-                  />
-                </span>
-                <span className="text-[14px] font-medium tracking-tight text-text">Flux Agency</span>
+                <LogoMark size={36} className="shrink-0" />
+                <span className="text-[16px] font-medium tracking-tight text-text">Flux Agency</span>
               </span>
               <button
                 type="button"

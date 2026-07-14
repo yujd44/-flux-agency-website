@@ -2,42 +2,38 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { LOGO_BLUE_PATH, LOGO_WHITE_PATH } from "@/lib/logo-paths";
 
 const SESSION_KEY = "flux-intro-shown";
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-// Traced from the brand mark artwork: two angular "F" strokes that overlap
-// to form the icon. Kept as inline SVG paths (instead of the flattened PNG)
-// so the blue and white strokes can fly in and animate independently, and
-// so glow/blur filters stay crisp at any size.
-const WHITE_PATH =
-  "M32.62,60.50 L37.84,50.00 L37.74,48.73 L34.33,42.29 L34.42,39.94 L45.21,23.88 L77.78,24.02 L66.21,32.18 L48.24,32.57 L42.53,40.43 L42.53,41.89 L43.80,44.43 L43.60,45.90 Z";
-const BLUE_PATH =
-  "M29.59,67.82 L45.75,46.09 L47.07,44.87 L59.18,36.67 L73.49,36.52 L61.91,45.17 L55.76,45.36 L54.79,45.85 L43.75,61.47 Z";
-
 // Layout: a fixed-size lockup box keeps the icon perfectly centered on
 // screen while it is alone (frames 1-4), then the icon slides to the box's
 // left edge and the wordmark fades in beside it (frames 5-6) -- all via
-// plain transforms, no layout measurement needed.
-const ICON = 72;
-const GAP = 16;
-const TEXT_W = 200;
-const LOCKUP_W = ICON + GAP + TEXT_W;
-const ICON_CENTER_X = (LOCKUP_W - ICON) / 2;
+// plain transforms, no layout measurement needed. Sized per viewport
+// (mobile vs. desktop) at mount time so the mark reads clearly bigger than
+// before on every screen size, not just on large viewports.
+type IntroSizes = { icon: number; gap: number; textW: number; textPx: number };
+const SIZES: { mobile: IntroSizes; desktop: IntroSizes } = {
+  mobile: { icon: 108, gap: 16, textW: 220, textPx: 34 },
+  desktop: { icon: 128, gap: 20, textW: 250, textPx: 40 },
+};
 
-// Choreography timings (seconds). Total runtime target: ~1.9s of animation
-// plus a short dissolve, staying well inside the client's 1.8-2.5s budget.
-const FLY_DUR = 0.42; // frames 1+2, ascent + descent run in parallel
-const RING_START = 0.34; // frame 3, convergence overlaps the tail of the fly-in
-const RING_DUR = 0.36;
-const GLOW_START = 0.37; // frame 4, ambient pulse settles in right as pieces land
-const GLOW_DUR = 0.55;
-const SLIDE_START = 0.95; // frame 5
-const SLIDE_DUR = 0.32;
-const TEXT_START = 1.15; // frame 6, overlaps the tail of the slide
-const TEXT_DUR = 0.5;
-const DISMISS_MS = 1950;
-const EXIT_DUR = 0.5;
+// Choreography timings (seconds). Every beat from the original ~1.9s +
+// 0.5s-fade sequence is kept, just stretched (~1.35x) with extra breathing
+// room on the pulse-hold beat so the completed mark has time to register
+// before it slides and dissolves -- total runtime lands around ~3.3s.
+const FLY_DUR = 0.56; // frames 1+2, ascent + descent run in parallel
+const RING_START = 0.46; // frame 3, convergence overlaps the tail of the fly-in
+const RING_DUR = 0.48;
+const GLOW_START = 0.5; // frame 4, ambient pulse settles in right as pieces land
+const GLOW_DUR = 0.85; // held noticeably longer so the pulse is easy to enjoy
+const SLIDE_START = 1.4; // frame 5
+const SLIDE_DUR = 0.42;
+const TEXT_START = 1.55; // frame 6, overlaps the tail of the slide
+const TEXT_DUR = 0.65;
+const DISMISS_MS = 2700;
+const EXIT_DUR = 0.6;
 
 const PARTICLE_COUNT = 14;
 const particles = Array.from({ length: PARTICLE_COUNT }, (_, i) => {
@@ -64,6 +60,7 @@ const particles = Array.from({ length: PARTICLE_COUNT }, (_, i) => {
  */
 export default function LogoIntro() {
   const [show, setShow] = useState(false);
+  const [sizes, setSizes] = useState(SIZES.desktop);
 
   useEffect(() => {
     try {
@@ -76,15 +73,22 @@ export default function LogoIntro() {
       // for this mount rather than throwing.
     }
 
-    // Reacting to an external system (sessionStorage, only readable client-side)
-    // to decide whether to play a one-time intro is an intentional mount effect,
-    // not state that could be derived during render.
+    // Reacting to external systems (sessionStorage and the viewport width,
+    // both only readable client-side) to decide whether/how to play a
+    // one-time intro is an intentional mount effect, not state that could be
+    // derived during render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSizes(window.innerWidth < 640 ? SIZES.mobile : SIZES.desktop);
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setShow(true);
     const dismiss = window.setTimeout(() => setShow(false), DISMISS_MS);
 
     return () => window.clearTimeout(dismiss);
   }, []);
+
+  const { icon: ICON, gap: GAP, textW: TEXT_W, textPx: TEXT_PX } = sizes;
+  const LOCKUP_W = ICON + GAP + TEXT_W;
+  const ICON_CENTER_X = (LOCKUP_W - ICON) / 2;
 
   return (
     <AnimatePresence>
@@ -163,7 +167,7 @@ export default function LogoIntro() {
 
               {/* descent light trail (white) */}
               <motion.div
-                className="absolute left-1/2 bottom-full h-14 w-1 -translate-x-1/2 rounded-full bg-gradient-to-b from-text/55 to-transparent"
+                className="absolute left-1/2 bottom-full h-20 w-1 -translate-x-1/2 rounded-full bg-gradient-to-b from-text/55 to-transparent"
                 style={{ filter: "blur(4px)" }}
                 initial={{ opacity: 0.55, scaleY: 1.5 }}
                 animate={{ opacity: 0, scaleY: 0.3 }}
@@ -176,16 +180,16 @@ export default function LogoIntro() {
                 height={ICON}
                 className="absolute inset-0"
                 style={{ filter: "drop-shadow(0 0 10px rgba(245,247,250,0.35))" }}
-                initial={{ y: -46, opacity: 0, filter: "blur(6px)" }}
+                initial={{ y: -ICON * 0.64, opacity: 0, filter: "blur(6px)" }}
                 animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
                 transition={{ duration: FLY_DUR, ease: EASE }}
               >
-                <path d={WHITE_PATH} fill="#F5F7FA" />
+                <path d={LOGO_WHITE_PATH} fill="#F5F7FA" />
               </motion.svg>
 
               {/* ascent light trail (blue) */}
               <motion.div
-                className="absolute left-1/2 top-full h-14 w-1 -translate-x-1/2 rounded-full bg-gradient-to-t from-accent/65 to-transparent"
+                className="absolute left-1/2 top-full h-20 w-1 -translate-x-1/2 rounded-full bg-gradient-to-t from-accent/65 to-transparent"
                 style={{ filter: "blur(4px)" }}
                 initial={{ opacity: 0.6, scaleY: 1.5 }}
                 animate={{ opacity: 0, scaleY: 0.3 }}
@@ -198,7 +202,7 @@ export default function LogoIntro() {
                 height={ICON}
                 className="absolute inset-0"
                 style={{ filter: "drop-shadow(0 0 12px rgba(37,99,235,0.55))" }}
-                initial={{ y: 46, opacity: 0, filter: "blur(6px)" }}
+                initial={{ y: ICON * 0.64, opacity: 0, filter: "blur(6px)" }}
                 animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
                 transition={{ duration: FLY_DUR, ease: EASE }}
               >
@@ -208,7 +212,7 @@ export default function LogoIntro() {
                     <stop offset="1" stopColor="#38bdf8" />
                   </linearGradient>
                 </defs>
-                <path d={BLUE_PATH} fill="url(#flux-intro-blue)" />
+                <path d={LOGO_BLUE_PATH} fill="url(#flux-intro-blue)" />
               </motion.svg>
             </motion.div>
 
@@ -220,7 +224,10 @@ export default function LogoIntro() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: TEXT_START, duration: TEXT_DUR, ease: EASE }}
             >
-              <span className="text-[30px] font-medium tracking-tight text-text sm:text-[34px]">
+              <span
+                className="font-medium tracking-tight text-text"
+                style={{ fontSize: TEXT_PX }}
+              >
                 Flux Agency
               </span>
             </motion.div>

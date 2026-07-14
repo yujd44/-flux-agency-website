@@ -1,7 +1,7 @@
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import Container from "@/components/ui/Container";
+import LogoMark from "@/components/icons/LogoMark";
 import StarOfDavid from "@/components/icons/StarOfDavid";
 import LanguageSwitcher from "./LanguageSwitcher";
 
@@ -23,17 +23,9 @@ export default function Footer() {
       <Container className="py-16 sm:py-20">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="text-content max-w-sm">
-            <div className="chrome-ltr mb-5 flex items-center gap-2.5">
-              <span className="relative h-8 w-8 shrink-0">
-                <Image
-                  src="/logo-mark.png"
-                  alt="Flux Agency"
-                  fill
-                  sizes="32px"
-                  className="object-contain"
-                />
-              </span>
-              <span className="text-[15px] font-medium tracking-tight text-text">Flux Agency</span>
+            <div className="chrome-ltr mb-5 flex items-center gap-3">
+              <LogoMark size={42} className="shrink-0" />
+              <span className="text-[17px] font-medium tracking-tight text-text">Flux Agency</span>
             </div>
             <p className="text-sm leading-relaxed text-muted">{tf("tagline")}</p>
             <StarOfDavid className="mt-8 h-5 w-5 text-accent/70" />

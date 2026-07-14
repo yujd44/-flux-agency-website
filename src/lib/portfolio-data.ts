@@ -17,20 +17,20 @@ export const portfolioCases = [
   {
     id: "case1",
     image: "/images/portfolio-01.png",
-    // TODO: paste the live URL for Northgate Capital here
-    url: "",
+    // Live URL set for Northgate Capital.
+    url: "https://noisy-plane-mgu70wc.shipstatic.com/",
   },
   {
     id: "case2",
     image: "/images/portfolio-02.png",
-    // TODO: paste the live URL for Meridian Clinics here
-    url: "",
+    // Live URL set for Meridian Clinics.
+    url: "https://flourishing-narwhal-bb5707.netlify.app/",
   },
   {
     id: "case3",
     image: "/images/portfolio-03.png",
-    // TODO: paste the live URL for Solene Studio here
-    url: "",
+    // Live URL set for Solene Studio.
+    url: "https://darling-sprite-0a1758.netlify.app/",
   },
 ] as const;
 
