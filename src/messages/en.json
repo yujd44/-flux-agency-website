@@ -16,6 +16,7 @@
     "exploreMore": "Discover more",
     "viewAll": "View all",
     "viewCase": "View case",
+    "viewLiveSite": "View live site",
     "exploreService": "Explore service",
     "backToServices": "Back to categories",
     "getInTouch": "Get in touch",
@@ -23,7 +24,9 @@
     "readMore": "Read more",
     "language": "Language",
     "scrollDown": "Scroll",
-    "allRightsReserved": "All rights reserved."
+    "allRightsReserved": "All rights reserved.",
+    "switchToLight": "Switch to light theme",
+    "switchToDark": "Switch to dark theme"
   },
   "home": {
     "hero": {

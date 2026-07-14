@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import Container from "@/components/ui/Container";
@@ -23,13 +24,19 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="text-content max-w-sm">
             <div className="chrome-ltr mb-5 flex items-center gap-2.5">
-              <span className="flex h-7 w-7 items-center justify-center rounded-[6px] border border-accent/50">
-                <span className="h-2 w-2 rounded-full bg-accent" />
+              <span className="relative h-8 w-8 shrink-0">
+                <Image
+                  src="/logo-mark.png"
+                  alt="Flux Agency"
+                  fill
+                  sizes="32px"
+                  className="object-contain"
+                />
               </span>
               <span className="text-[15px] font-medium tracking-tight text-text">Flux Agency</span>
             </div>
             <p className="text-sm leading-relaxed text-muted">{tf("tagline")}</p>
-            <StarOfDavid className="mt-8 h-5 w-5 text-accent/40" />
+            <StarOfDavid className="mt-8 h-5 w-5 text-accent/70" />
           </div>
 
           <div className="text-content">

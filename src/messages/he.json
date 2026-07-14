@@ -16,6 +16,7 @@
     "exploreMore": "גלו עוד",
     "viewAll": "צפייה בהכל",
     "viewCase": "צפייה בפרויקט",
+    "viewLiveSite": "צפייה באתר החי",
     "exploreService": "גלו את השירות",
     "backToServices": "חזרה לקטגוריות",
     "getInTouch": "צרו קשר",
@@ -23,7 +24,9 @@
     "readMore": "קראו עוד",
     "language": "שפה",
     "scrollDown": "גלילה",
-    "allRightsReserved": "כל הזכויות שמורות."
+    "allRightsReserved": "כל הזכויות שמורות.",
+    "switchToLight": "מעבר למצב בהיר",
+    "switchToDark": "מעבר למצב כהה"
   },
   "home": {
     "hero": {

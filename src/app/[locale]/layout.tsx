@@ -4,8 +4,11 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing, rtlLocales, type Locale } from "@/i18n/routing";
 import { fontLatin, fontHebrew, fontArabic } from "@/lib/fonts";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import ThemeScript from "@/components/providers/ThemeScript";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import LogoIntro from "@/components/layout/LogoIntro";
 import "../globals.css";
 
 export function generateStaticParams() {
@@ -45,13 +48,20 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       dir={dir}
+      suppressHydrationWarning
       className={`${fontLatin.variable} ${fontHebrew.variable} ${fontArabic.variable} h-full antialiased`}
     >
+      <head>
+        <ThemeScript />
+      </head>
       <body className="min-h-full flex flex-col bg-bg text-text">
         <NextIntlClientProvider messages={messages}>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          <ThemeProvider>
+            <LogoIntro />
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </ThemeProvider>
         </NextIntlClientProvider>
       </body>
     </html>

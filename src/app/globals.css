@@ -9,6 +9,23 @@
   --color-muted: #8a94a6;
   --color-accent: #2563eb;
   --color-accent-soft: rgba(37, 99, 235, 0.14);
+  --grid-line: rgba(255, 255, 255, 0.045);
+}
+
+/* Light theme: same structure and blue accent, sensible light counterparts
+   for every dark-navy token so all existing bg-bg/text-text/border-border/
+   etc. utility classes repaint consistently across the whole site. Dark
+   stays the default (no attribute / data-theme="dark"). */
+html[data-theme="light"] {
+  --color-bg: #ffffff;
+  --color-surface: #f4f6f9;
+  --color-border: rgba(15, 23, 42, 0.09);
+  --color-border-strong: rgba(15, 23, 42, 0.18);
+  --color-text: #0b0f19;
+  --color-muted: #5b6472;
+  --color-accent: #2563eb;
+  --color-accent-soft: rgba(37, 99, 235, 0.1);
+  --grid-line: rgba(15, 23, 42, 0.06);
 }
 
 @theme inline {
@@ -35,6 +52,7 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-latin), system-ui, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 html[lang="he"] body {
@@ -81,8 +99,8 @@ html[lang="ar"] body {
 
 .blueprint-grid {
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 48px 48px;
 }
 

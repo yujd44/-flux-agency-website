@@ -5,7 +5,8 @@ export default function StarOfDavid({ className = "" }: { className?: string }) 
       className={className}
       fill="none"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth="5"
+      strokeLinejoin="round"
       aria-hidden="true"
     >
       <polygon points="50,6 91,74 9,74" />

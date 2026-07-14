@@ -31,7 +31,7 @@ export default function ServiceGrid({
     >
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-4 left-0 right-0 select-none overflow-hidden whitespace-nowrap text-[14vw] font-bold leading-none tracking-tight text-white/[0.035] [mask-image:linear-gradient(to_right,black,black_85%,transparent)] lg:-top-10 lg:text-[6vw]"
+        className="pointer-events-none absolute -top-4 left-0 right-0 select-none overflow-hidden whitespace-nowrap text-[14vw] font-bold leading-none tracking-tight text-text/[0.035] [mask-image:linear-gradient(to_right,black,black_85%,transparent)] lg:-top-10 lg:text-[6vw]"
       >
         {tc(`${categoryId}.watermark`)}
       </div>

@@ -16,6 +16,7 @@
     "exploreMore": "Узнать больше",
     "viewAll": "Смотреть все",
     "viewCase": "Смотреть проект",
+    "viewLiveSite": "Открыть сайт",
     "exploreService": "Узнать об услуге",
     "backToServices": "Назад к категориям",
     "getInTouch": "Связаться с нами",
@@ -23,7 +24,9 @@
     "readMore": "Читать далее",
     "language": "Язык",
     "scrollDown": "Прокрутить",
-    "allRightsReserved": "Все права защищены."
+    "allRightsReserved": "Все права защищены.",
+    "switchToLight": "Включить светлую тему",
+    "switchToDark": "Включить тёмную тему"
   },
   "home": {
     "hero": {

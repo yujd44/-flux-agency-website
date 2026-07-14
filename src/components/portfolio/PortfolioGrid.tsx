@@ -23,6 +23,7 @@ export default function PortfolioGrid() {
           key={item.id}
           id={item.id}
           image={item.image}
+          url={item.url}
           index={index}
           span={spanPattern[index % spanPattern.length]}
         />

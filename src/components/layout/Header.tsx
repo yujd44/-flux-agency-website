@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import clsx from "clsx";
+import Image from "next/image";
 import { Menu } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import LanguageSwitcher from "./LanguageSwitcher";
 import MobileMenu from "./MobileMenu";
 import StarOfDavid from "@/components/icons/StarOfDavid";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 const navKeys = ["home", "services", "portfolio", "about", "contact"] as const;
 const navHrefs: Record<(typeof navKeys)[number], string> = {
@@ -28,8 +30,15 @@ export default function Header() {
       <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-bg/70 backdrop-blur-md">
         <div className="chrome-ltr mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 py-5 sm:px-8 lg:px-12">
           <Link href="/" className="flex items-center gap-2.5 shrink-0">
-            <span className="flex h-7 w-7 items-center justify-center rounded-[6px] border border-accent/50">
-              <span className="h-2 w-2 rounded-full bg-accent" />
+            <span className="relative h-8 w-8 shrink-0">
+              <Image
+                src="/logo-mark.png"
+                alt="Flux Agency"
+                fill
+                priority
+                sizes="32px"
+                className="object-contain"
+              />
             </span>
             <span className="text-[15px] font-medium tracking-tight text-text">Flux Agency</span>
           </Link>
@@ -53,9 +62,10 @@ export default function Header() {
             })}
           </nav>
 
-          <div className="hidden items-center gap-6 lg:flex">
+          <div className="hidden items-center gap-5 lg:flex">
             <LanguageSwitcher />
-            <StarOfDavid className="h-4 w-4 text-accent/60" />
+            <ThemeToggle />
+            <StarOfDavid className="h-5 w-5 shrink-0 text-accent" />
           </div>
 
           <button

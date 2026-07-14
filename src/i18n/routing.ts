@@ -25,4 +25,10 @@ export const routing = defineRouting({
   locales,
   defaultLocale,
   localePrefix: "always",
+  // The client requires Hebrew to always be served as the true default for
+  // visitors with no explicit locale choice yet. Without this, next-intl's
+  // middleware inspects the `accept-language` header (and any locale
+  // cookie) and happily serves e.g. 'en' to English-speaking browsers,
+  // which silently overrides `defaultLocale` below.
+  localeDetection: false,
 });

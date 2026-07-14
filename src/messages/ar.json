@@ -16,6 +16,7 @@
     "exploreMore": "اكتشف أكثر",
     "viewAll": "عرض الكل",
     "viewCase": "عرض المشروع",
+    "viewLiveSite": "زيارة الموقع المباشر",
     "exploreService": "استكشف الخدمة",
     "backToServices": "العودة إلى الفئات",
     "getInTouch": "تواصل معنا",
@@ -23,7 +24,9 @@
     "readMore": "اقرأ المزيد",
     "language": "اللغة",
     "scrollDown": "تمرير",
-    "allRightsReserved": "جميع الحقوق محفوظة."
+    "allRightsReserved": "جميع الحقوق محفوظة.",
+    "switchToLight": "التبديل إلى الوضع الفاتح",
+    "switchToDark": "التبديل إلى الوضع الداكن"
   },
   "home": {
     "hero": {
