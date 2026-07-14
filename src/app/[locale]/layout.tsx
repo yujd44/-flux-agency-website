@@ -6,6 +6,7 @@ import { routing, rtlLocales, type Locale } from "@/i18n/routing";
 import { fontLatin, fontHebrew, fontArabic } from "@/lib/fonts";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import ThemeScript from "@/components/providers/ThemeScript";
+import SoundProvider from "@/components/providers/SoundProvider";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import LogoIntro from "@/components/layout/LogoIntro";
@@ -57,6 +58,7 @@ export default async function LocaleLayout({
       <body className="min-h-full flex flex-col bg-bg text-text">
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider>
+            <SoundProvider />
             <LogoIntro />
             <Header />
             <main className="flex-1">{children}</main>

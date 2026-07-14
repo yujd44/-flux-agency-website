@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { LOGO_BLUE_PATH, LOGO_WHITE_PATH } from "@/lib/logo-paths";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 
 const SESSION_KEY = "flux-intro-shown";
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -104,6 +105,7 @@ const PARTICLE_COUNT = 14;
 export default function LogoIntro() {
   const [show, setShow] = useState(false);
   const [sizes, setSizes] = useState<IntroSizes>(DEFAULT_SIZES);
+  const { playChime } = useSoundEffects();
 
   useEffect(() => {
     try {
@@ -124,9 +126,18 @@ export default function LogoIntro() {
     setSizes(computeIntroSizes(window.innerWidth, window.innerHeight));
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setShow(true);
-    const dismiss = window.setTimeout(() => setShow(false), DISMISS_MS);
+    const dismiss = window.setTimeout(() => {
+      // Right as the overlay starts dissolving to reveal the page
+      // underneath -- gracefully no-ops if the AudioContext hasn't been
+      // unlocked by a user gesture yet (autoplay-restricted browsers).
+      playChime();
+      setShow(false);
+    }, DISMISS_MS);
 
     return () => window.clearTimeout(dismiss);
+    // playChime has a stable identity (it's a re-export of a module-level
+    // function), so omitting it here doesn't risk a stale closure.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const { icon: ICON, gap: GAP, textW: TEXT_W, textPx: TEXT_PX } = sizes;
