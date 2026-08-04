@@ -403,23 +403,16 @@
     "hero": {
       "eyebrow": "Studio",
       "title": "We engineer systems.",
-      "subtitle": "An architecture studio for technology — measured, load-tested, built to last."
+      "subtitle": "A technology studio — measured and built to last."
     },
     "intro": {
       "eyebrow": "Who we are",
       "paragraphs": [
-        "METHODEA is a studio of engineers, designers, and strategists. We treat every product as a structure — clear load paths, honest materials, no decorative noise.",
-        "We design, build, and scale digital systems that drive real business impact. Less spectacle. More craft.",
-        "The work is calm on the surface and rigorous underneath — the same discipline we expect from architecture."
+        "METHODEA is a studio of engineers and designers. We design and build digital systems with real business impact — clear, without decorative noise."
       ]
     },
     "gallery": {
-      "eyebrow": "Moments From The Studio"
-    },
-    "mission": {
-      "eyebrow": "Mission",
-      "title": "Clarity under complexity",
-      "body": "Turn tangled requirements into systems people can trust — readable, maintainable, and ready to grow."
+      "eyebrow": "Studio"
     },
     "approach": {
       "eyebrow": "Approach",
@@ -427,68 +420,24 @@
       "items": [
         {
           "title": "Frame the problem",
-          "body": "Define constraints, goals, and the real load the system must carry."
+          "body": "Constraints, goals, and the real load the system must carry."
         },
         {
           "title": "Design the structure",
-          "body": "Architecture first — information, interfaces, and infrastructure as one."
+          "body": "Architecture first — as one whole."
         },
         {
           "title": "Build with precision",
-          "body": "Ship in measured increments. Nothing decorative survives review."
+          "body": "Measured increments. No decorative noise."
         },
         {
           "title": "Scale with care",
-          "body": "Operate, measure, and refine so the system stays sound as it grows."
-        }
-      ]
-    },
-    "stats": {
-      "eyebrow": "By the numbers",
-      "title": "Eight years, measured in outcomes",
-      "items": [
-        {
-          "value": "120+",
-          "label": "Projects delivered"
-        },
-        {
-          "value": "8+",
-          "label": "Years of experience"
-        },
-        {
-          "value": "15",
-          "label": "Active countries"
-        },
-        {
-          "value": "24/7",
-          "label": "Technical support"
-        }
-      ]
-    },
-    "difference": {
-      "eyebrow": "What sets us apart",
-      "title": "Why partners stay with us",
-      "items": [
-        {
-          "title": "One team, full lifecycle",
-          "body": "Strategy, design, engineering and infrastructure under a single roof — no hand-off gaps."
-        },
-        {
-          "title": "Editorial standards",
-          "body": "Every interface is treated as a piece of craft, not a template with your logo on it."
-        },
-        {
-          "title": "Engineering discipline",
-          "body": "Production-grade architecture from day one, tested, documented and built to scale."
-        },
-        {
-          "title": "Long-term partnership",
-          "body": "We measure success by what happens after launch, not just the day it ships."
+          "body": "Operate and refine as the system grows."
         }
       ]
     },
     "cta": {
-      "title": "Ready to engineer something lasting?",
+      "title": "Ready to start?",
       "subtitle": "Tell us what you need built.",
       "button": "Let's talk"
     }

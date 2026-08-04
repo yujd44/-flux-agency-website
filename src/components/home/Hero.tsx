@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
 import BidiBlock from "@/components/ui/BidiBlock";
+import { Link } from "@/i18n/navigation";
 
 /**
  * Pillar labels — mock: vertical rail + short ticks; DEVELOPMENT marked.
@@ -155,8 +156,9 @@ export default function Hero() {
 
         {PILLARS.map((p) => (
           <div key={p.label}>
-            <span
-              className="label-mono absolute text-[9px] tracking-[0.22em] text-muted/65"
+            <Link
+              href="/services"
+              className="label-mono pointer-events-auto absolute text-[9px] tracking-[0.22em] text-muted/65 transition-colors hover:text-text"
               style={{
                 top: `${p.y}%`,
                 right: `${100 - GUIDE_X + 0.8}%`,
@@ -164,7 +166,7 @@ export default function Hero() {
               }}
             >
               {p.label}
-            </span>
+            </Link>
             {p.accent && (
               <span
                 className="absolute h-[3px] w-[3px] bg-accent"
@@ -231,9 +233,12 @@ export default function Hero() {
               <span className="absolute inset-[3px] rounded-full border border-border-strong/55" />
               <span className="absolute inset-[6px] rounded-full bg-accent/85" />
             </span>
-            <span className="label-mono truncate text-[10px] tracking-[0.22em] text-muted/70">
+            <Link
+              href="/services"
+              className="label-mono truncate text-[10px] tracking-[0.22em] text-muted/70 transition-colors hover:text-text"
+            >
               {t("pillars")}
-            </span>
+            </Link>
           </div>
           <div className="hidden shrink-0 items-center gap-3 sm:flex">
             <span className="label-mono text-[10px] tracking-[0.22em] text-muted/70">

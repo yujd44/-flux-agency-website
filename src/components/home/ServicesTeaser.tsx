@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import Container from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import SectionHeading from "@/components/ui/SectionHeading";
+import { Link } from "@/i18n/navigation";
 
 const categories = [
   "digitalProducts",
@@ -39,19 +40,23 @@ export default function ServicesTeaser() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.5, delay: index * 0.05 }}
-              className="flex flex-col gap-5 bg-bg p-8 transition-colors duration-300 hover:bg-surface/70"
             >
-              <span className="label-mono text-muted">{tc(`${key}.number`)}</span>
-              <h3 className="text-content text-xl font-medium tracking-tight text-text">
-                {tc(`${key}.title`)}
-              </h3>
-              <p className="text-content text-base leading-[1.7] text-muted">
-                {tc(`${key}.description`)}
-              </p>
-              <div className="chrome-ltr mt-auto flex items-center gap-2 pt-2">
-                <span className="eng-marker" aria-hidden="true" />
-                <span className="eng-line-h max-w-[40px] flex-1" aria-hidden="true" />
-              </div>
+              <Link
+                href="/services"
+                className="flex h-full flex-col gap-5 bg-bg p-8 transition-colors duration-300 hover:bg-surface/70"
+              >
+                <span className="label-mono text-muted">{tc(`${key}.number`)}</span>
+                <h3 className="text-content text-xl font-medium tracking-tight text-text">
+                  {tc(`${key}.title`)}
+                </h3>
+                <p className="text-content text-base leading-[1.7] text-muted">
+                  {tc(`${key}.description`)}
+                </p>
+                <div className="chrome-ltr mt-auto flex items-center gap-2 pt-2">
+                  <span className="eng-marker" aria-hidden="true" />
+                  <span className="eng-line-h max-w-[40px] flex-1" aria-hidden="true" />
+                </div>
+              </Link>
             </motion.div>
           ))}
         </div>

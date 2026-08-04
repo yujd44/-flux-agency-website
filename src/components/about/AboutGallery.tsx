@@ -3,11 +3,10 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 
+/** Keep the collage light — two photos max. */
 const photos = [
   { src: "/images/about-01.png", span: "col-span-12 sm:col-span-7", aspect: "aspect-[4/3]" },
-  { src: "/images/about-03.png", span: "col-span-6 sm:col-span-5", aspect: "aspect-[4/3]" },
-  { src: "/images/about-02.png", span: "col-span-6 sm:col-span-4", aspect: "aspect-[3/4]" },
-  { src: "/images/about-04.png", span: "col-span-6 sm:col-span-8", aspect: "aspect-[16/8]" },
+  { src: "/images/about-03.png", span: "col-span-12 sm:col-span-5", aspect: "aspect-[4/3]" },
 ] as const;
 
 /**
