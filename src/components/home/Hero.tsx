@@ -3,11 +3,13 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import BidiBlock from "@/components/ui/BidiBlock";
 
 const PILLARS = ["STRATEGY", "ARCHITECTURE", "DEVELOPMENT", "AUTOMATION", "SUPPORT"] as const;
 const MAX_TILT = 0.5;
+const TRUSTED = ["Solvix", "Nexora", "Akira Systems", "Lumen", "Dayone"] as const;
 
 export default function Hero() {
   const t = useTranslations("home.hero");
@@ -44,31 +46,32 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden">
-      <div className="blueprint-grid pointer-events-none absolute inset-0 opacity-40 [mask-image:linear-gradient(to_bottom,black_40%,transparent_90%)]" />
+    <section className="relative flex min-h-[calc(100svh-70px)] flex-col overflow-hidden">
+      <div className="blueprint-grid pointer-events-none absolute inset-0 opacity-[0.45]" />
 
       <div className="pointer-events-none absolute inset-x-0 top-0 eng-line-h" />
       <div className="pointer-events-none absolute inset-y-0 left-[var(--page-pad)] hidden eng-line-v lg:block" />
 
-      <div className="chrome-ltr relative mx-auto grid w-full max-w-[1600px] grid-cols-1 lg:grid-cols-[minmax(0,42%)_minmax(0,58%)] lg:items-stretch">
-        <div className="relative z-10 px-6 pt-12 pb-10 sm:px-8 lg:flex lg:flex-col lg:justify-center lg:px-16 lg:py-20 xl:px-20">
+      <div className="chrome-ltr relative mx-auto grid w-full max-w-[var(--page-max)] flex-1 grid-cols-1 lg:grid-cols-[minmax(0,42%)_minmax(0,58%)]">
+        {/* Copy column — editorial air above, trust bar anchored low */}
+        <div className="relative z-10 flex flex-col px-[var(--page-pad)] pt-[14vh] pb-10 lg:pt-[16vh] lg:pb-12">
           <BidiBlock>
-            <div className="animate-fade-up chrome-ltr mb-8 inline-flex items-center gap-3">
+            <div className="animate-fade-up chrome-ltr mb-7 inline-flex items-center gap-3">
               <span className="eng-marker" aria-hidden="true" />
               <span className="label-mono text-muted">{t("eyebrow")}</span>
             </div>
 
-            <h1 className="animate-fade-up text-[2.75rem] font-medium leading-[0.98] tracking-tight text-text sm:text-6xl lg:text-[5.25rem] xl:text-[5.75rem]">
+            <h1 className="animate-fade-up max-w-[11ch] text-[2.35rem] font-medium leading-[1.02] tracking-tight text-text sm:max-w-none sm:text-[3.25rem] lg:text-[3.75rem] xl:text-[4.15rem]">
               <span className="text-content">{t("titleBefore")}</span>
-              <span className="text-accent">{t("titleAccent")}</span>
+              <span className="hero-accent">{t("titleAccent")}</span>
               <span className="text-content">{t("titleAfter")}</span>
             </h1>
 
-            <p className="animate-fade-up mt-7 max-w-md text-lg leading-[1.7] text-muted sm:text-xl">
+            <p className="animate-fade-up mt-6 max-w-[28rem] text-base leading-[1.65] text-muted sm:text-lg">
               {t("subtitle")}
             </p>
 
-            <div className="animate-fade-up mt-10 flex flex-wrap items-center gap-6">
+            <div className="animate-fade-up mt-9 flex flex-wrap items-center gap-x-8 gap-y-4">
               <Button href="/services" variant="primary">
                 {t("cta")}
               </Button>
@@ -78,37 +81,36 @@ export default function Hero() {
             </div>
           </BidiBlock>
 
-          <div className="animate-fade-up mt-16 border-t border-border pt-8">
+          <div className="animate-fade-up mt-auto pt-16 lg:pt-20">
             <div className="label-mono mb-5 text-muted">{t("trustedBy")}</div>
-            <div className="chrome-ltr flex flex-wrap items-center gap-x-8 gap-y-3 text-[13px] font-medium tracking-[0.12em] text-text/55 uppercase">
-              <span>Solvix</span>
-              <span>Nexora</span>
-              <span>Akira Systems</span>
-              <span>Lumen</span>
-              <span>Dayone</span>
+            <div className="chrome-ltr flex flex-wrap items-center gap-x-7 gap-y-3 text-[12px] font-medium tracking-[0.14em] text-text/50 uppercase">
+              {TRUSTED.map((name) => (
+                <span key={name}>{name}</span>
+              ))}
             </div>
           </div>
         </div>
 
+        {/* Ribbon column — bleeds off right/bottom; pillars sit in the valley */}
         <div
           ref={artRef}
-          className="relative min-h-[360px] w-full sm:min-h-[460px] lg:min-h-[720px]"
+          className="relative min-h-[320px] w-full sm:min-h-[420px] lg:min-h-0"
           style={{ perspective: "1200px" }}
         >
-          <div className="pointer-events-none absolute top-16 bottom-24 left-0 z-20 hidden lg:flex">
-            <div className="relative flex flex-col justify-between py-2 pl-6">
-              <div className="absolute left-0 top-0 bottom-0 eng-line-v" />
+          <div className="pointer-events-none absolute top-[18%] bottom-[28%] left-0 z-20 hidden lg:flex">
+            <div className="relative flex flex-col justify-between py-1 pr-5">
+              <div className="absolute top-1 bottom-1 right-0 w-px bg-[rgba(80,70,60,0.22)]" />
               {PILLARS.map((label) => (
-                <div key={label} className="relative flex items-center gap-3">
-                  <span className="eng-marker absolute -left-[2px]" />
-                  <span className="label-mono pl-4 text-muted/80">{label}</span>
+                <div key={label} className="relative flex items-center justify-end gap-3 pr-3">
+                  <span className="label-mono text-muted/75">{label}</span>
+                  <span className="eng-marker absolute right-[-2px]" />
                 </div>
               ))}
             </div>
           </div>
 
           <div
-            className="absolute inset-0 bg-surface/40 transition-transform duration-300 ease-out will-change-transform"
+            className="absolute -inset-y-[6%] -right-[8%] left-[-6%] transition-transform duration-300 ease-out will-change-transform lg:left-[-2%]"
             style={{
               transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
             }}
@@ -119,25 +121,18 @@ export default function Hero() {
               fill
               priority
               sizes="(max-width: 1024px) 100vw, 60vw"
-              className="object-cover object-center"
+              className="object-cover object-[42%_center] lg:object-center"
             />
           </div>
 
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-bg via-bg/40 to-transparent lg:w-1/4" />
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-bg to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg to-transparent" />
-
-          <div className="chrome-ltr pointer-events-none absolute bottom-8 right-6 hidden items-center gap-3 sm:flex lg:right-10">
-            <span className="label-mono text-muted">{t("scrollHint")}</span>
-            <span className="eng-line-v h-8" aria-hidden="true" />
-          </div>
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-bg via-bg/50 to-transparent lg:w-[18%]" />
         </div>
       </div>
 
-      <div className="chrome-ltr mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4 border-t border-border px-6 py-5 sm:px-8 lg:px-16 xl:px-20">
-        <div className="flex items-center gap-3">
+      <div className="chrome-ltr relative z-10 mx-auto flex w-full max-w-[var(--page-max)] items-center justify-between gap-4 border-t border-border px-[var(--page-pad)] py-4">
+        <div className="flex min-w-0 items-center gap-3">
           <span
-            className="relative inline-flex h-4 w-4 items-center justify-center"
+            className="relative inline-flex h-4 w-4 shrink-0 items-center justify-center"
             aria-hidden="true"
           >
             <span className="absolute inset-0 rounded-full border border-border-strong" />
@@ -145,9 +140,12 @@ export default function Hero() {
             <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-border-strong" />
             <span className="absolute top-1/2 left-0 h-px w-full -translate-y-1/2 bg-border-strong" />
           </span>
-          <span className="label-mono text-muted">{t("pillars")}</span>
+          <span className="label-mono truncate text-muted">{t("pillars")}</span>
         </div>
-        <span className="label-mono hidden text-muted sm:inline">{t("scrollHint")}</span>
+        <span className="label-mono hidden shrink-0 items-center gap-2.5 text-muted sm:inline-flex">
+          {t("scrollHint")}
+          <ArrowDown className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
+        </span>
       </div>
     </section>
   );

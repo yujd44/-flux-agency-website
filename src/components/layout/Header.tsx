@@ -26,7 +26,7 @@ export default function Header() {
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-50 border-b border-border/80 bg-bg/85 backdrop-blur-[2px]">
-        <div className="chrome-ltr mx-auto flex w-full max-w-[1600px] items-center justify-between px-6 py-5 sm:px-8 lg:px-16 xl:px-20">
+        <div className="chrome-ltr mx-auto flex w-full max-w-[var(--page-max)] items-center justify-between px-[var(--page-pad)] py-4">
           <MethodaLogo size={26} />
 
           <nav className="hidden items-center gap-10 xl:gap-12 lg:flex">
@@ -72,7 +72,7 @@ export default function Header() {
         </div>
       </header>
       <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
-      <div className="h-[78px]" aria-hidden="true" />
+      <div className="h-[70px]" aria-hidden="true" />
     </>
   );
 }

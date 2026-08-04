@@ -138,6 +138,14 @@ html[lang="ar"] body {
   background: var(--color-accent);
 }
 
+/* Headline accent — warm sand, slight italic serif (mock "intelligent") */
+.hero-accent {
+  color: var(--color-accent);
+  font-family: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+  font-style: italic;
+  font-weight: 400;
+}
+
 /* Primary button base (architectural, no glow/gradient) */
 .btn-primary {
   display: inline-flex;
@@ -146,7 +154,7 @@ html[lang="ar"] body {
   gap: 0.625rem;
   height: 52px;
   padding: 0 1.5rem;
-  border-radius: 6px;
+  border-radius: 0;
   background: var(--color-button);
   color: var(--color-on-button);
   border: 1px solid var(--color-button);
@@ -170,7 +178,7 @@ html[lang="ar"] body {
   gap: 0.625rem;
   height: 52px;
   padding: 0 1.25rem;
-  border-radius: 6px;
+  border-radius: 0;
   background: transparent;
   color: var(--color-text);
   border: 1px solid var(--color-border-strong);

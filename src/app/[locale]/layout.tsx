@@ -4,8 +4,6 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing, rtlLocales, type Locale } from "@/i18n/routing";
 import { fontLatin, fontMono, fontHebrew, fontArabic } from "@/lib/fonts";
-import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import ThemeScript from "@/components/providers/ThemeScript";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import "../globals.css";
@@ -47,19 +45,13 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       dir={dir}
-      suppressHydrationWarning
       className={`${fontLatin.variable} ${fontMono.variable} ${fontHebrew.variable} ${fontArabic.variable} h-full antialiased`}
     >
-      <head>
-        <ThemeScript />
-      </head>
       <body className="min-h-full flex flex-col bg-bg text-text">
         <NextIntlClientProvider messages={messages}>
-          <ThemeProvider>
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </ThemeProvider>
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
         </NextIntlClientProvider>
       </body>
     </html>
