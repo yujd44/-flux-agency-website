@@ -6,7 +6,6 @@ import { RectAreaLightUniformsLib } from "three/addons/lights/RectAreaLightUnifo
 
 type SpiralParams = {
   turns: number;
-  radius: number;
   height: number;
   width: number;
   thickness: number;
@@ -15,14 +14,16 @@ type SpiralParams = {
   profile: number;
 };
 
-/** Preserve committed slender helix silhouette (7370455 era). */
+/**
+ * Sculptural spiral — variable radius/pitch, flatter circular base.
+ * Not a constant-radius helix.
+ */
 const SPIRAL: SpiralParams = {
-  turns: 2.55,
-  radius: 1.18,
-  height: 4.55,
-  width: 0.38,
-  thickness: 0.055,
-  segments: 720,
+  turns: 2.72,
+  height: 4.35,
+  width: 0.36,
+  thickness: 0.052,
+  segments: 780,
   profile: 36,
 };
 
@@ -32,19 +33,90 @@ const _radial = new THREE.Vector3();
 const _binormal = new THREE.Vector3();
 const _normal = new THREE.Vector3();
 const _pos = new THREE.Vector3();
+const _prev = new THREE.Vector3();
+const _next = new THREE.Vector3();
 
-/** Helix frame: center + orthonormal basis (tangent, binormal, normal). */
+function smoothstep(edge0: number, edge1: number, x: number) {
+  const t = THREE.MathUtils.clamp((x - edge0) / (edge1 - edge0), 0, 1);
+  return t * t * (3 - 2 * t);
+}
+
+function lerp(a: number, b: number, t: number) {
+  return a + (b - a) * t;
+}
+
+/** Organic radius envelope — narrow top, wider mid, open resting base. */
+function radiusAt(t: number) {
+  const u = THREE.MathUtils.clamp(t, 0, 1);
+  // Base coil on the floor — full, almost circular
+  const floorR = 1.42;
+  // Widest sculptural belly (lower-middle)
+  const belly = 1.58 * Math.exp(-Math.pow((u - 0.38) / 0.26, 2));
+  // Secondary swell mid-upper
+  const swell = 0.42 * Math.exp(-Math.pow((u - 0.62) / 0.22, 2));
+  // Top taper
+  const tip = 0.78 + 0.22 * (1 - Math.pow(u, 1.35));
+  // Gentle organic wobble (not mechanical)
+  const organic = 0.06 * Math.sin(u * Math.PI * 3.1 + 0.4);
+
+  const rising = floorR * (1 - 0.12 * smoothstep(0.08, 0.28, u)) + belly * 0.55 + swell;
+  const r = rising * tip + organic;
+  // Blend into a true circular resting radius for the first ~12% of the path
+  const floorBlend = 1 - smoothstep(0.0, 0.14, u);
+  return lerp(r, floorR, floorBlend * 0.85);
+}
+
+/**
+ * Vertical profile — near-zero pitch on the floor coil, then lifts
+ * into an elegant sculptural rise (tighter near the tip).
+ */
+function heightAt(t: number, height: number) {
+  const u = THREE.MathUtils.clamp(t, 0, 1);
+  // Cumulative "effort" of the climb — very slow at base
+  const floorHold = smoothstep(0.0, 0.16, u);
+  const body = Math.pow(smoothstep(0.1, 1.0, u), 0.92);
+  const tipCompress = 1 - 0.08 * Math.pow(smoothstep(0.78, 1.0, u), 1.6);
+  const shaped = lerp(u * 0.04, body, floorHold) * tipCompress;
+  // Remap so t=0 → -h/2 (floor), t=1 → +h/2
+  return (shaped - 0.5) * height;
+}
+
+function angleAt(t: number, turns: number) {
+  const u = THREE.MathUtils.clamp(t, 0, 1);
+  // Slightly denser winding near the resting base, looser mid-rise
+  const densify =
+    1 +
+    0.12 * (1 - smoothstep(0.0, 0.2, u)) -
+    0.06 * Math.exp(-Math.pow((u - 0.45) / 0.3, 2));
+  return u * turns * Math.PI * 2 * densify;
+}
+
+function centerAt(t: number, p: SpiralParams, out: THREE.Vector3) {
+  const angle = angleAt(t, p.turns);
+  const r = radiusAt(t);
+  const y = heightAt(t, p.height);
+  return out.set(Math.cos(angle) * r, y, Math.sin(angle) * r);
+}
+
+/** Path frame via finite differences — stable for non-uniform winding. */
 function frameAt(t: number, p: SpiralParams) {
-  const angle = t * p.turns * Math.PI * 2;
-  const y = (t - 0.5) * p.height;
-  const cos = Math.cos(angle);
-  const sin = Math.sin(angle);
+  const eps = 1 / Math.max(256, p.segments);
+  const t0 = Math.max(0, t - eps);
+  const t1 = Math.min(1, t + eps);
 
-  _center.set(cos * p.radius, y, sin * p.radius);
-  _tangent
-    .set(-sin * p.radius, p.height / (p.turns * Math.PI * 2), cos * p.radius)
-    .normalize();
-  _radial.set(cos, 0, sin);
+  centerAt(t, p, _center);
+  centerAt(t0, p, _prev);
+  centerAt(t1, p, _next);
+
+  _tangent.copy(_next).sub(_prev);
+  if (_tangent.lengthSq() < 1e-10) {
+    _tangent.set(0, 1, 0);
+  } else {
+    _tangent.normalize();
+  }
+
+  const angle = angleAt(t, p.turns);
+  _radial.set(Math.cos(angle), 0, Math.sin(angle));
   _binormal.crossVectors(_tangent, _radial);
   if (_binormal.lengthSq() < 1e-8) {
     _binormal.set(0, 1, 0);
@@ -63,20 +135,23 @@ function frameAt(t: number, p: SpiralParams) {
 }
 
 /**
- * Optical base tint along the ribbon — deep violet → magenta → raspberry.
- * Warm amber / copper arrives from light + iridescence, not flat paint.
+ * Anodized metallic base tint — deep indigo → magenta/hot pink → peach/gold.
+ * Specular warmth also comes from softbox lights + iridescence.
  */
 const GRADIENT_STOPS: { t: number; hex: string }[] = [
-  { t: 0, hex: "#3a1a48" }, // midnight violet
-  { t: 0.18, hex: "#5c2a78" }, // royal purple
-  { t: 0.38, hex: "#8a2f8e" }, // magenta-violet
-  { t: 0.55, hex: "#b32d72" }, // raspberry
-  { t: 0.72, hex: "#9a2458" }, // warm crimson
-  { t: 0.88, hex: "#6b2a7a" }, // amethyst return
-  { t: 1, hex: "#2a2848" }, // midnight blue tip
+  { t: 0, hex: "#241438" }, // deep indigo resting coil
+  { t: 0.14, hex: "#4a1f78" }, // royal purple
+  { t: 0.28, hex: "#8a2888" }, // magenta-violet
+  { t: 0.42, hex: "#d0367a" }, // hot pink
+  { t: 0.55, hex: "#e85a58" }, // coral / peach bloom
+  { t: 0.66, hex: "#f0a060" }, // soft gold highlight
+  { t: 0.78, hex: "#c24888" }, // magenta return
+  { t: 0.9, hex: "#5a2a80" }, // amethyst
+  { t: 1, hex: "#2a2458" }, // midnight tip
 ];
 
 const _gradB = new THREE.Color();
+const _warmLift = new THREE.Color("#ffb078");
 
 function brandGradient(t: number, out: THREE.Color) {
   const u = THREE.MathUtils.clamp(t, 0, 1);
@@ -112,7 +187,7 @@ function stadiumProfile(hw: number, ht: number, samples: number): [number, numbe
 }
 
 /**
- * Solid helical ribbon — dense stadium sweep, capped ends, smooth normals.
+ * Solid sculptural ribbon — dense stadium sweep, capped ends, smooth normals.
  */
 function buildRibbonGeometry(p: SpiralParams) {
   const positions: number[] = [];
@@ -121,8 +196,8 @@ function buildRibbonGeometry(p: SpiralParams) {
   const indices: number[] = [];
   const tint = new THREE.Color();
   const face = new THREE.Color();
-  const deepBase = new THREE.Color("#1a1028");
-  const edgeLift = new THREE.Color("#c07090");
+  const deepBase = new THREE.Color("#140c22");
+  const edgeLift = new THREE.Color("#e080a0");
 
   const hw = p.width * 0.5;
   const ht = p.thickness * 0.5;
@@ -134,6 +209,10 @@ function buildRibbonGeometry(p: SpiralParams) {
     brandGradient(t, tint);
     const { center, binormal, normal } = frameAt(t, p);
 
+    // Warm anodized bloom strongest on the lit mid-body coils
+    const warmZone = Math.exp(-Math.pow((t - 0.58) / 0.22, 2));
+    tint.lerp(_warmLift, warmZone * 0.22);
+
     for (let c = 0; c < ring; c++) {
       const [u, v] = profile[c];
       _pos
@@ -142,12 +221,15 @@ function buildRibbonGeometry(p: SpiralParams) {
         .addScaledVector(normal, v);
       positions.push(_pos.x, _pos.y, _pos.z);
 
-      // Subtle body tint — rim barely lifted so speculars stay optical
       const across = (u / hw + 1) * 0.5;
       const edge = Math.pow(Math.abs(u) / hw, 2.2);
-      face.copy(deepBase).lerp(tint, 0.88 + across * 0.06);
-      face.lerp(edgeLift, edge * 0.07);
-      const lift = 0.96 + Math.max(0, v / ht) * 0.06;
+      face.copy(deepBase).lerp(tint, 0.9 + across * 0.05);
+      face.lerp(edgeLift, edge * 0.08);
+      // Outer face catches more peach/gold
+      if (u > 0) {
+        face.lerp(_warmLift, warmZone * 0.1 * (u / hw));
+      }
+      const lift = 0.95 + Math.max(0, v / ht) * 0.07;
       colors.push(face.r * lift, face.g * lift, face.b * lift);
       uvs.push(t * p.turns, c / ring);
     }
@@ -167,7 +249,7 @@ function buildRibbonGeometry(p: SpiralParams) {
   {
     const { center } = frameAt(0, p);
     brandGradient(0, tint);
-    face.copy(deepBase).lerp(tint, 0.9);
+    face.copy(deepBase).lerp(tint, 0.92);
     positions.push(center.x, center.y, center.z);
     colors.push(face.r, face.g, face.b);
     uvs.push(0, 0.5);
@@ -180,7 +262,7 @@ function buildRibbonGeometry(p: SpiralParams) {
   {
     const { center } = frameAt(1, p);
     brandGradient(1, tint);
-    face.copy(deepBase).lerp(tint, 0.9);
+    face.copy(deepBase).lerp(tint, 0.92);
     positions.push(center.x, center.y, center.z);
     colors.push(face.r, face.g, face.b);
     uvs.push(p.turns, 0.5);
@@ -237,20 +319,22 @@ function makeStudioEnv(renderer: THREE.WebGLRenderer) {
     disposables.push({ geo, mat });
   };
 
-  // Key softbox — warm cream, elongated
-  addSoftbox(7.5, 3.2, 0xfff2e8, 2.4, 5.2, 5.8, 4.0, 0, 0.2, 0);
+  // Key softbox — warm cream, elongated (drives gold/peach speculars)
+  addSoftbox(7.5, 3.2, 0xfff2e8, 2.55, 5.2, 5.8, 4.0, 0, 0.2, 0);
   // Fill softbox — cool lavender
-  addSoftbox(5.5, 4.0, 0xe8dff8, 1.35, -4.8, 2.4, 3.6, 0.4, 0, 0);
+  addSoftbox(5.5, 4.0, 0xe8dff8, 1.3, -4.8, 2.4, 3.6, 0.4, 0, 0);
   // Magenta rim panel
-  addSoftbox(4.2, 5.5, 0xff6aaa, 1.55, 1.2, 1.0, -5.5, 0.5, 0.3, 0);
-  // Amber accent strip
-  addSoftbox(3.0, 1.4, 0xffc090, 1.8, 3.8, -0.6, 2.2, 0.2, 0.4, 0);
+  addSoftbox(4.2, 5.5, 0xff6aaa, 1.7, 1.2, 1.0, -5.5, 0.5, 0.3, 0);
+  // Amber / peach accent strip — key for anodized warmth
+  addSoftbox(3.4, 1.6, 0xffb070, 2.15, 3.8, -0.4, 2.2, 0.2, 0.4, 0);
   // Cool cyan reflection only — very soft
-  addSoftbox(2.4, 2.0, 0xa8d4e8, 0.55, -2.2, 3.5, -3.8, 0.3, 0.5, 0);
+  addSoftbox(2.4, 2.0, 0xa8d4e8, 0.45, -2.2, 3.5, -3.8, 0.3, 0.5, 0);
   // Top skylight
-  addSoftbox(6.0, 6.0, 0xf8f4ff, 0.85, 0.5, 7.2, 0.5, 0.5, 0, 0.5);
+  addSoftbox(6.0, 6.0, 0xf8f4ff, 0.8, 0.5, 7.2, 0.5, 0.5, 0, 0.5);
+  // Floor bounce panel — soft violet from below
+  addSoftbox(5.0, 5.0, 0x6b3fa0, 0.55, 0.5, -4.5, 0.5, 0.5, 0, 0.5);
 
-  const amb = new THREE.AmbientLight(0xb8a8c8, 0.22);
+  const amb = new THREE.AmbientLight(0xb8a8c8, 0.2);
   envScene.add(amb);
 
   const envMap = pmrem.fromScene(envScene, 0.04).texture;
@@ -313,15 +397,15 @@ export default function HeroSpiral() {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(36, 1, 0.2, 60);
-    camera.position.set(3.85, 0.45, 5.55);
-    camera.lookAt(1.55, -0.08, 0);
+    camera.position.set(3.9, 0.52, 5.65);
+    camera.lookAt(1.55, -0.15, 0);
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     renderer.setPixelRatio(dpr);
     renderer.setClearColor(0x000000, 0);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.02;
+    renderer.toneMappingExposure = 1.04;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mount.appendChild(renderer.domElement);
@@ -335,9 +419,9 @@ export default function HeroSpiral() {
     scene.environment = envMap;
 
     const group = new THREE.Group();
-    group.position.set(1.62, -0.22, 0);
-    const baseTiltX = -0.34;
-    const baseTiltZ = 0.2;
+    group.position.set(1.62, -0.18, 0);
+    const baseTiltX = -0.3;
+    const baseTiltZ = 0.16;
     group.rotation.x = baseTiltX;
     group.rotation.z = baseTiltZ;
     scene.add(group);
@@ -346,23 +430,23 @@ export default function HeroSpiral() {
     const ribbonMat = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color("#f4eef8"),
       // Satin anodized titanium + multilayer clearcoat
-      roughness: 0.32,
-      metalness: 0.78,
-      clearcoat: 0.72,
-      clearcoatRoughness: 0.22,
+      roughness: 0.3,
+      metalness: 0.8,
+      clearcoat: 0.74,
+      clearcoatRoughness: 0.2,
       ior: 1.5,
-      sheen: 0.28,
-      sheenRoughness: 0.55,
-      sheenColor: new THREE.Color("#a060b8"),
-      iridescence: 0.62,
-      iridescenceIOR: 1.28,
-      iridescenceThicknessRange: [180, 520],
+      sheen: 0.3,
+      sheenRoughness: 0.52,
+      sheenColor: new THREE.Color("#b060b8"),
+      iridescence: 0.68,
+      iridescenceIOR: 1.3,
+      iridescenceThicknessRange: [160, 540],
       flatShading: false,
       vertexColors: true,
       emissive: new THREE.Color("#ffffff"),
-      emissiveIntensity: 0.045,
+      emissiveIntensity: 0.05,
       envMap,
-      envMapIntensity: 1.15,
+      envMapIntensity: 1.2,
       side: THREE.FrontSide,
     });
     tintEmissiveByVertexColor(ribbonMat);
@@ -371,92 +455,129 @@ export default function HeroSpiral() {
     ribbon.receiveShadow = true;
     group.add(ribbon);
 
-    const floorY = -SPIRAL.height * 0.48;
-    const floorGeo = new THREE.CircleGeometry(3.6, 72);
+    // Blurred floor reflection — mirrored ribbon, soft & dark
+    const reflectionMat = ribbonMat.clone();
+    reflectionMat.transparent = true;
+    reflectionMat.opacity = 0.22;
+    reflectionMat.depthWrite = false;
+    reflectionMat.roughness = 0.55;
+    reflectionMat.metalness = 0.55;
+    reflectionMat.clearcoat = 0.2;
+    reflectionMat.envMapIntensity = 0.35;
+    reflectionMat.emissiveIntensity = 0.02;
+    reflectionMat.iridescence = 0.25;
+    tintEmissiveByVertexColor(reflectionMat);
+    const reflection = new THREE.Mesh(ribbonGeo, reflectionMat);
+    reflection.scale.y = -1;
+    reflection.position.y = -SPIRAL.height;
+    reflection.castShadow = false;
+    reflection.receiveShadow = false;
+    reflection.renderOrder = -1;
+    group.add(reflection);
+
+    // Floor Y in group-local space (ribbon rests near y = -height/2)
+    const floorLocalY = -SPIRAL.height * 0.5;
+    // World floor under the sculpture (account for group.position.y)
+    const floorY = group.position.y + floorLocalY;
+
+    const floorGeo = new THREE.CircleGeometry(4.2, 80);
     const floorMat = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color("#080a10"),
-      metalness: 0.55,
-      roughness: 0.38,
-      clearcoat: 0.18,
-      clearcoatRoughness: 0.55,
+      color: new THREE.Color("#06080e"),
+      metalness: 0.72,
+      roughness: 0.28,
+      clearcoat: 0.35,
+      clearcoatRoughness: 0.45,
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.62,
       envMap,
-      envMapIntensity: 0.35,
+      envMapIntensity: 0.55,
       depthWrite: false,
     });
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
-    floor.position.set(1.62, floorY, 0.2);
+    floor.position.set(1.62, floorY, 0.15);
     floor.receiveShadow = true;
     scene.add(floor);
 
-    const shadowCatcherGeo = new THREE.CircleGeometry(2.8, 56);
+    const shadowCatcherGeo = new THREE.CircleGeometry(3.2, 64);
     const shadowCatcherMat = new THREE.ShadowMaterial({
-      opacity: 0.32,
+      opacity: 0.38,
     });
     const shadowCatcher = new THREE.Mesh(shadowCatcherGeo, shadowCatcherMat);
     shadowCatcher.rotation.x = -Math.PI / 2;
-    shadowCatcher.position.set(1.62, floorY + 0.002, 0.2);
+    shadowCatcher.position.set(1.62, floorY + 0.002, 0.15);
     shadowCatcher.receiveShadow = true;
     scene.add(shadowCatcher);
 
-    const glowGeo = new THREE.CircleGeometry(2.5, 48);
+    // Soft purple contact glow under the resting coil
+    const glowGeo = new THREE.CircleGeometry(2.8, 56);
     const glowMat = new THREE.MeshBasicMaterial({
       color: new THREE.Color("#6b3fa0"),
       transparent: true,
-      opacity: 0.14,
+      opacity: 0.18,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
     const glow = new THREE.Mesh(glowGeo, glowMat);
     glow.rotation.x = -Math.PI / 2;
-    glow.position.set(1.65, floorY + 0.008, 0.15);
+    glow.position.set(1.65, floorY + 0.006, 0.12);
     scene.add(glow);
 
-    const warmGlowGeo = new THREE.CircleGeometry(1.55, 40);
+    const warmGlowGeo = new THREE.CircleGeometry(1.7, 44);
     const warmGlowMat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color("#c04078"),
+      color: new THREE.Color("#c04888"),
       transparent: true,
-      opacity: 0.1,
+      opacity: 0.12,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
     const warmGlow = new THREE.Mesh(warmGlowGeo, warmGlowMat);
     warmGlow.rotation.x = -Math.PI / 2;
-    warmGlow.position.set(1.75, floorY + 0.012, -0.1);
+    warmGlow.position.set(1.78, floorY + 0.01, -0.05);
     scene.add(warmGlow);
 
+    // Soft elliptical contact blot — denser under the base ring
+    const contactGeo = new THREE.CircleGeometry(1.55, 40);
+    const contactMat = new THREE.MeshBasicMaterial({
+      color: new THREE.Color("#1a1028"),
+      transparent: true,
+      opacity: 0.35,
+      depthWrite: false,
+    });
+    const contact = new THREE.Mesh(contactGeo, contactMat);
+    contact.rotation.x = -Math.PI / 2;
+    contact.position.set(1.7, floorY + 0.004, 0.05);
+    contact.scale.set(1.15, 1, 0.85);
+    scene.add(contact);
+
     // —— Cinematic studio lighting ——
-    const hemi = new THREE.HemisphereLight(0xf0ebe6, 0x1c1430, 0.42);
+    const hemi = new THREE.HemisphereLight(0xf0ebe6, 0x1c1430, 0.4);
     scene.add(hemi);
 
-    const ambient = new THREE.AmbientLight(0xa8a0c0, 0.18);
+    const ambient = new THREE.AmbientLight(0xa8a0c0, 0.16);
     scene.add(ambient);
 
-    // Soft key — large warm softbox feel via RectAreaLight
-    const keyArea = new THREE.RectAreaLight(0xfff0e6, 4.2, 5.5, 2.4);
+    const keyArea = new THREE.RectAreaLight(0xfff0e6, 4.4, 5.5, 2.4);
     keyArea.position.set(4.0, 5.2, 3.6);
     keyArea.lookAt(1.6, 0.1, 0);
     scene.add(keyArea);
 
-    const fillArea = new THREE.RectAreaLight(0xe4d8f4, 1.8, 4.0, 3.2);
+    const fillArea = new THREE.RectAreaLight(0xe4d8f4, 1.7, 4.0, 3.2);
     fillArea.position.set(-3.6, 2.0, 3.2);
     fillArea.lookAt(1.6, 0, 0.2);
     scene.add(fillArea);
 
-    const rimArea = new THREE.RectAreaLight(0xff6aaa, 2.6, 2.8, 4.5);
+    const rimArea = new THREE.RectAreaLight(0xff6aaa, 2.8, 2.8, 4.5);
     rimArea.position.set(1.4, 1.0, -4.2);
     rimArea.lookAt(1.6, 0.1, 0);
     scene.add(rimArea);
 
-    const amberArea = new THREE.RectAreaLight(0xffb080, 2.1, 2.2, 1.1);
-    amberArea.position.set(3.4, -0.2, 2.0);
+    const amberArea = new THREE.RectAreaLight(0xffb070, 2.5, 2.4, 1.2);
+    amberArea.position.set(3.4, -0.1, 2.0);
     amberArea.lookAt(1.6, 0.2, 0);
     scene.add(amberArea);
 
-    // Gentle directional for soft contact shadows only
-    const key = new THREE.DirectionalLight(0xfff4ea, 0.55);
+    const key = new THREE.DirectionalLight(0xfff4ea, 0.52);
     key.position.set(4.2, 5.5, 3.8);
     key.castShadow = true;
     key.shadow.mapSize.set(1024, 1024);
@@ -468,27 +589,27 @@ export default function HeroSpiral() {
     key.shadow.camera.bottom = -5;
     key.shadow.bias = -0.00035;
     key.shadow.normalBias = 0.025;
-    key.shadow.radius = 6;
+    key.shadow.radius = 7;
     scene.add(key);
 
-    const rimLight = new THREE.DirectionalLight(0xd070b0, 0.35);
+    const rimLight = new THREE.DirectionalLight(0xd070b0, 0.32);
     rimLight.position.set(1.5, 1.2, -4);
     scene.add(rimLight);
 
-    const bounce = new THREE.PointLight(0x8b5cf6, 0.38, 9, 2);
-    bounce.position.set(1.7, floorY + 0.45, 1.15);
+    const bounce = new THREE.PointLight(0x8b5cf6, 0.45, 9, 2);
+    bounce.position.set(1.7, floorY + 0.4, 1.1);
     scene.add(bounce);
 
-    const warmBounce = new THREE.PointLight(0xe07060, 0.32, 8, 2);
+    const warmBounce = new THREE.PointLight(0xe87850, 0.38, 8, 2);
     warmBounce.position.set(2.0, 0.55, -1.15);
     scene.add(warmBounce);
 
     // Living reflections — extremely slow drift, not mechanical orbit
-    const wander = new THREE.PointLight(0xffe4d4, 0.42, 10, 2);
+    const wander = new THREE.PointLight(0xffe4d4, 0.4, 10, 2);
     wander.position.set(3.2, 2.4, 2.8);
     scene.add(wander);
 
-    const wanderCool = new THREE.PointLight(0xc8b0f0, 0.32, 9, 2);
+    const wanderCool = new THREE.PointLight(0xc8b0f0, 0.28, 9, 2);
     wanderCool.position.set(0.4, 1.2, 3.5);
     scene.add(wanderCool);
 
@@ -541,27 +662,30 @@ export default function HeroSpiral() {
       last = now;
       clock.t += dt;
 
-      // Museum calm — almost imperceptible inertia
-      group.rotation.y = clock.t * 0.055;
-      group.rotation.x = baseTiltX + Math.sin(clock.t * 0.22) * 0.012;
-      group.rotation.z = baseTiltZ + Math.sin(clock.t * 0.17) * 0.006;
-      group.position.y = -0.22 + Math.sin(clock.t * 0.28) * 0.018;
+      // Museum / product — slow Y turn + barely-there sculptural breath
+      const ease = clock.t * 0.038;
+      group.rotation.y = ease;
+      group.rotation.x = baseTiltX + Math.sin(clock.t * 0.16) * 0.01;
+      group.rotation.z = baseTiltZ + Math.sin(clock.t * 0.13 + 0.8) * 0.005;
+      group.position.y = -0.18 + Math.sin(clock.t * 0.2) * 0.012;
 
-      const a = clock.t * 0.18;
+      const a = clock.t * 0.14;
       wander.position.set(
-        1.62 + Math.cos(a) * 2.6,
-        1.9 + Math.sin(a * 0.65) * 0.85,
-        Math.sin(a * 0.9) * 2.4,
+        1.62 + Math.cos(a) * 2.5,
+        1.9 + Math.sin(a * 0.6) * 0.75,
+        Math.sin(a * 0.85) * 2.3,
       );
-      const b = clock.t * 0.13 + 1.9;
+      const b = clock.t * 0.1 + 1.9;
       wanderCool.position.set(
-        1.62 + Math.cos(b) * 2.1,
-        0.7 + Math.sin(b * 0.9) * 0.7,
-        Math.sin(b) * 2.2,
+        1.62 + Math.cos(b) * 2.0,
+        0.7 + Math.sin(b * 0.85) * 0.65,
+        Math.sin(b) * 2.1,
       );
 
-      glowMat.opacity = 0.12 + Math.sin(clock.t * 0.35) * 0.025;
-      warmGlowMat.opacity = 0.08 + Math.sin(clock.t * 0.28 + 1.2) * 0.02;
+      glowMat.opacity = 0.15 + Math.sin(clock.t * 0.28) * 0.03;
+      warmGlowMat.opacity = 0.1 + Math.sin(clock.t * 0.22 + 1.2) * 0.025;
+      contactMat.opacity = 0.32 + Math.sin(clock.t * 0.18) * 0.04;
+      reflectionMat.opacity = 0.18 + Math.sin(clock.t * 0.2) * 0.03;
 
       renderer.render(scene, camera);
       raf = requestAnimationFrame(tick);
@@ -576,6 +700,7 @@ export default function HeroSpiral() {
       document.removeEventListener("visibilitychange", onVisibility);
       ribbonGeo.dispose();
       ribbonMat.dispose();
+      reflectionMat.dispose();
       floorGeo.dispose();
       floorMat.dispose();
       shadowCatcherGeo.dispose();
@@ -584,6 +709,8 @@ export default function HeroSpiral() {
       glowMat.dispose();
       warmGlowGeo.dispose();
       warmGlowMat.dispose();
+      contactGeo.dispose();
+      contactMat.dispose();
       envMap.dispose();
       renderer.dispose();
       if (renderer.domElement.parentNode === mount) {
