@@ -309,22 +309,6 @@ html[lang="ar"] .hero-accent {
     linear-gradient(0deg, var(--color-bg) 0%, transparent 20%);
 }
 
-/* Whole-sculpture soft float — museum-calm breath */
-@keyframes hero-sculpture-float {
-  0%,
-  100% {
-    transform: translate3d(0, 4px, 0);
-  }
-  50% {
-    transform: translate3d(0, -8px, 0);
-  }
-}
-
-.hero-sculpture-float {
-  animation: hero-sculpture-float 14s ease-in-out infinite;
-  will-change: transform;
-}
-
 /* Soft violet atmosphere behind the sculpture */
 @keyframes hero-spiral-glow {
   0%,
@@ -432,7 +416,6 @@ html[lang="ar"] .hero-accent {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-sculpture-float,
   .hero-spiral-glow,
   .hero-floor-glow,
   .hero-dust {

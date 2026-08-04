@@ -356,19 +356,26 @@ export default function HeroSpiral() {
     const envMap = makeStudioEnv(renderer);
     scene.environment = envMap;
 
-    // Outer pivot: fixed placement + static lean. Inner: Y-spin only.
-    // Separating tilt from spin avoids Euler coupling that reads as a lift.
-    const group = new THREE.Group();
+    // Turntable hierarchy (critical for a classic helix):
+    //   pivot  — fixed world placement, never animated
+    //   spin   — ONLY rotation.y each frame (world-vertical axis)
+    //   tilt   — static lean once; nested INSIDE spin
+    // Spinning a near-perfect helix about its own axis is visually identical
+    // to sliding the ribbon up its path (screw symmetry). World-Y turntable
+    // with nested tilt is real rigid-body rotation: silhouette turns, fixed
+    // studio lights sweep highlights across the metal.
+    const pivot = new THREE.Group();
     const baseY = -0.05;
-    group.position.set(1.58, baseY, 0);
-    const baseTiltX = -0.28;
-    const baseTiltZ = 0.14;
-    group.rotation.x = baseTiltX;
-    group.rotation.z = baseTiltZ;
-    scene.add(group);
+    pivot.position.set(1.58, baseY, 0);
+    scene.add(pivot);
 
     const spin = new THREE.Group();
-    group.add(spin);
+    pivot.add(spin);
+
+    const tilt = new THREE.Group();
+    tilt.rotation.x = -0.28;
+    tilt.rotation.z = 0.14;
+    spin.add(tilt);
 
     const ribbonGeo = buildRibbonGeometry(SPIRAL);
     const ribbonMat = new THREE.MeshPhysicalMaterial({
@@ -397,9 +404,9 @@ export default function HeroSpiral() {
     const ribbon = new THREE.Mesh(ribbonGeo, ribbonMat);
     ribbon.castShadow = true;
     ribbon.receiveShadow = true;
-    spin.add(ribbon);
+    tilt.add(ribbon);
 
-    // Soft mirrored ribbon under the floor plane
+    // Soft mirrored ribbon under the floor plane — spins with the sculpture
     const reflectionMat = ribbonMat.clone();
     reflectionMat.transparent = true;
     reflectionMat.opacity = 0.22;
@@ -417,11 +424,11 @@ export default function HeroSpiral() {
     reflection.castShadow = false;
     reflection.receiveShadow = false;
     reflection.renderOrder = -1;
-    spin.add(reflection);
+    tilt.add(reflection);
 
     // Floor Y — ribbon rests at y = -height/2 (minus half thickness)
     const floorLocalY = -SPIRAL.height * 0.5 - SPIRAL.thickness * 0.35;
-    const floorY = group.position.y + floorLocalY;
+    const floorY = pivot.position.y + floorLocalY;
 
     // Floor stays world-fixed (circles); only the ribbon spins under studio lights
     const floorPivot = new THREE.Group();
@@ -556,6 +563,8 @@ export default function HeroSpiral() {
     let raf = 0;
     let last = performance.now();
     const clock = { t: 0 };
+    // ~0.22 rad/s ≈ 28s/turn — clearly visible, elegant product spin
+    const SPIN_SPEED = 0.22;
 
     const resize = () => {
       const w = mount.clientWidth;
@@ -601,12 +610,9 @@ export default function HeroSpiral() {
       last = now;
       clock.t += dt;
 
-      // Elegant Y-spin (~28s/turn) — matches earlier working spirals (0.22)
-      // Static lean on outer group; no position.y drift / breathing
-      spin.rotation.y = clock.t * 0.22;
-      group.position.y = baseY;
-      group.rotation.x = baseTiltX;
-      group.rotation.z = baseTiltZ;
+      // Sole motion: world-Y turntable on the mesh group. No position.y,
+      // no tilt rewrite, no light/camera motion — lights stay scene-parented.
+      spin.rotation.y += SPIN_SPEED * dt;
 
       glowMat.opacity = 0.23 + Math.sin(clock.t * 0.22) * 0.03;
       warmGlowMat.opacity = 0.16 + Math.sin(clock.t * 0.18 + 1.1) * 0.025;

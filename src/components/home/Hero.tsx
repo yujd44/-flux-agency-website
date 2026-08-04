@@ -69,7 +69,7 @@ export default function Hero() {
             transition: fx.spotActive ? "none" : "transform 0.7s ease-out",
           }}
         >
-          <div className="hero-sculpture-float absolute inset-0">
+          <div className="absolute inset-0">
             {/* Soft ambient halo around the spiral — clearly visible */}
             <div className="hero-spiral-glow pointer-events-none absolute inset-0" />
 
