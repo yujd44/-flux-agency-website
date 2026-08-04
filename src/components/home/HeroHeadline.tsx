@@ -9,8 +9,8 @@ type Props = {
 };
 
 /**
- * Magnetic letter pull toward cursor — subtle, desktop only.
- * Accent word stays whole so the gradient text paint remains intact.
+ * Whole-word magnetic pull — keeps Russian/Uzbek syllables intact
+ * (letter-splitting broke mid-word wraps like "с / ложность").
  */
 export default function HeroHeadline({ before, accent, after }: Props) {
   const ref = useRef<HTMLHeadingElement>(null);
@@ -21,34 +21,34 @@ export default function HeroHeadline({ before, accent, after }: Props) {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     if (window.matchMedia("(pointer: coarse)").matches) return;
 
-    const letters = el.querySelectorAll<HTMLElement>("[data-letter]");
+    const words = el.querySelectorAll<HTMLElement>("[data-word]");
     let raf = 0;
 
     const onMove = (e: MouseEvent) => {
       if (raf) return;
       raf = requestAnimationFrame(() => {
         raf = 0;
-        letters.forEach((letter) => {
-          const rect = letter.getBoundingClientRect();
+        words.forEach((word) => {
+          const rect = word.getBoundingClientRect();
           const cx = rect.left + rect.width / 2;
           const cy = rect.top + rect.height / 2;
           const dx = e.clientX - cx;
           const dy = e.clientY - cy;
           const dist = Math.hypot(dx, dy);
-          const radius = 140;
+          const radius = 160;
           if (dist > radius) {
-            letter.style.transform = "";
+            word.style.transform = "";
             return;
           }
-          const t = (1 - dist / radius) * 0.55;
-          letter.style.transform = `translate3d(${dx * 0.06 * t}px, ${dy * 0.05 * t}px, 0)`;
+          const t = (1 - dist / radius) * 0.5;
+          word.style.transform = `translate3d(${dx * 0.05 * t}px, ${dy * 0.04 * t}px, 0)`;
         });
       });
     };
 
     const onLeave = () => {
-      letters.forEach((letter) => {
-        letter.style.transform = "";
+      words.forEach((word) => {
+        word.style.transform = "";
       });
     };
 
@@ -63,29 +63,37 @@ export default function HeroHeadline({ before, accent, after }: Props) {
     };
   }, []);
 
-  const wrap = (text: string) =>
-    text.split("").map((ch, i) => (
-      <span
-        key={`${ch}-${i}`}
-        data-letter
-        style={{
-          display: ch === " " ? "inline" : "inline-block",
-          transition: "transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
-          willChange: "transform",
-        }}
-      >
-        {ch === " " ? "\u00A0" : ch}
-      </span>
-    ));
+  const wrapWords = (text: string, keyPrefix: string) => {
+    const parts = text.split(/(\s+)/);
+    return parts.map((part, i) => {
+      if (/^\s+$/.test(part)) {
+        return <span key={`${keyPrefix}-sp-${i}`}>{"\u00A0"}</span>;
+      }
+      if (!part) return null;
+      return (
+        <span
+          key={`${keyPrefix}-w-${i}`}
+          data-word
+          className="inline-block"
+          style={{
+            transition: "transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
+            willChange: "transform",
+          }}
+        >
+          {part}
+        </span>
+      );
+    });
+  };
 
   return (
     <h1
       ref={ref}
-      className="hero-headline animate-fade-up max-w-[12ch] text-[2.15rem] font-medium leading-[1.16] tracking-[-0.015em] text-text sm:max-w-[15ch] sm:text-[2.9rem] lg:max-w-[14ch] lg:text-[3.4rem] xl:text-[3.75rem]"
+      className="hero-headline animate-fade-up max-w-[16ch] text-[2.15rem] font-medium leading-[1.16] tracking-[-0.015em] text-text sm:max-w-[18ch] sm:text-[2.9rem] lg:max-w-[17ch] lg:text-[3.4rem] xl:text-[3.75rem]"
     >
-      <span className="text-content">{wrap(before)}</span>
+      <span className="text-content">{wrapWords(before, "b")}</span>
       <span
-        data-letter
+        data-word
         className="hero-accent inline-block"
         style={{
           transition: "transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
@@ -94,7 +102,7 @@ export default function HeroHeadline({ before, accent, after }: Props) {
       >
         {accent}
       </span>
-      <span className="text-content">{wrap(after)}</span>
+      <span className="text-content">{wrapWords(after, "a")}</span>
     </h1>
   );
 }

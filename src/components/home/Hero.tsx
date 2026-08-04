@@ -14,16 +14,18 @@ import { useMagnetic } from "@/hooks/useMagnetic";
 import { useCrosshair } from "@/hooks/useCrosshair";
 
 const DUST = [
-  { left: "58%", top: "28%", size: 1.5, delay: "0s", dur: "9s" },
-  { left: "72%", top: "36%", size: 1.2, delay: "1.4s", dur: "11s" },
-  { left: "81%", top: "48%", size: 1.8, delay: "0.6s", dur: "10s" },
-  { left: "64%", top: "58%", size: 1.1, delay: "2.2s", dur: "12s" },
-  { left: "88%", top: "32%", size: 1.4, delay: "3s", dur: "8.5s" },
-  { left: "76%", top: "68%", size: 1.3, delay: "1.1s", dur: "13s" },
-  { left: "54%", top: "42%", size: 1, delay: "2.8s", dur: "9.5s" },
-  { left: "92%", top: "55%", size: 1.6, delay: "0.3s", dur: "10.5s" },
-  { left: "68%", top: "22%", size: 1.2, delay: "4s", dur: "11.5s" },
-  { left: "85%", top: "72%", size: 1.1, delay: "1.8s", dur: "12.5s" },
+  { left: "58%", top: "28%", size: 2.4, delay: "0s", dur: "9s" },
+  { left: "72%", top: "36%", size: 2, delay: "1.4s", dur: "11s" },
+  { left: "81%", top: "48%", size: 2.8, delay: "0.6s", dur: "10s" },
+  { left: "64%", top: "58%", size: 1.8, delay: "2.2s", dur: "12s" },
+  { left: "88%", top: "32%", size: 2.2, delay: "3s", dur: "8.5s" },
+  { left: "76%", top: "68%", size: 2.1, delay: "1.1s", dur: "13s" },
+  { left: "54%", top: "42%", size: 1.6, delay: "2.8s", dur: "9.5s" },
+  { left: "92%", top: "55%", size: 2.5, delay: "0.3s", dur: "10.5s" },
+  { left: "68%", top: "22%", size: 2, delay: "4s", dur: "11.5s" },
+  { left: "85%", top: "72%", size: 1.9, delay: "1.8s", dur: "12.5s" },
+  { left: "60%", top: "50%", size: 1.7, delay: "2.4s", dur: "10.8s" },
+  { left: "78%", top: "40%", size: 2.3, delay: "0.9s", dur: "9.8s" },
 ] as const;
 
 function MagneticCta({ label }: { label: string }) {
@@ -58,13 +60,13 @@ export default function Hero() {
       {/* Ambient dark grid */}
       <div className="blueprint-grid pointer-events-none absolute inset-0 opacity-[0.35]" />
 
-      {/* Soft cyan floor glow under ribbon */}
+      {/* Soft floor glow under ribbon */}
       <div
-        className="pointer-events-none absolute inset-x-[35%] bottom-0 z-[1] h-[28%] opacity-70"
+        className="pointer-events-none absolute inset-x-[28%] bottom-0 z-[1] h-[32%] opacity-90"
         aria-hidden="true"
         style={{
           background:
-            "radial-gradient(ellipse 70% 55% at 70% 100%, rgba(56,189,248,0.18) 0%, transparent 70%)",
+            "radial-gradient(ellipse 75% 60% at 70% 100%, rgba(255,106,61,0.16) 0%, rgba(139,92,246,0.14) 40%, transparent 72%)",
         }}
       />
 
@@ -82,38 +84,41 @@ export default function Hero() {
             transition: fx.spotActive ? "none" : "transform 0.7s ease-out",
           }}
         >
-          <div className="hero-ribbon-mask absolute inset-0">
-            <Image
-              src="/images/hero-concrete-ribbon-dark.png"
-              alt=""
-              fill
-              priority
-              sizes="100vw"
-              className="object-contain object-right object-bottom"
+          {/* Continuous orbit / float — independent of pointer parallax */}
+          <div className="hero-ribbon-orbit absolute inset-0">
+            <div className="hero-ribbon-mask absolute inset-0">
+              <Image
+                src="/images/hero-concrete-ribbon-dark.png"
+                alt=""
+                fill
+                priority
+                sizes="100vw"
+                className="object-contain object-right object-bottom"
+              />
+            </div>
+
+            {/* Breathing glow along orange→purple edge */}
+            <div className="hero-ribbon-breathe pointer-events-none absolute inset-0" />
+
+            {/* Cursor spotlight — soft local illumination */}
+            <div
+              className="pointer-events-none absolute inset-0 transition-opacity duration-500"
+              style={{
+                opacity: fx.spotActive ? 1 : 0.55,
+                background: `radial-gradient(circle 42vmin at ${fx.spotX}% ${fx.spotY}%, rgba(255,180,140,0.32) 0%, rgba(168,85,247,0.16) 32%, transparent 68%)`,
+                mixBlendMode: "soft-light",
+              }}
+            />
+
+            {/* Glass refraction / specular highlight */}
+            <div
+              className="hero-ribbon-specular pointer-events-none absolute inset-0"
+              style={{
+                opacity: fx.spotActive ? 1 : 0.4,
+                background: `radial-gradient(ellipse 24vmin 16vmin at ${fx.specularX}% ${fx.specularY}%, rgba(255,255,255,0.32) 0%, rgba(255,200,180,0.14) 35%, transparent 70%)`,
+              }}
             />
           </div>
-
-          {/* Breathing glow along orange→purple edge */}
-          <div className="hero-ribbon-breathe pointer-events-none absolute inset-0" />
-
-          {/* Cursor spotlight — soft local illumination */}
-          <div
-            className="pointer-events-none absolute inset-0 transition-opacity duration-500"
-            style={{
-              opacity: fx.spotActive ? 1 : 0.35,
-              background: `radial-gradient(circle 28vmin at ${fx.spotX}% ${fx.spotY}%, rgba(255,180,140,0.16) 0%, rgba(168,85,247,0.08) 28%, transparent 62%)`,
-              mixBlendMode: "soft-light",
-            }}
-          />
-
-          {/* Glass refraction / specular highlight */}
-          <div
-            className="hero-ribbon-specular pointer-events-none absolute inset-0"
-            style={{
-              opacity: fx.spotActive ? 0.85 : 0.25,
-              background: `radial-gradient(ellipse 18vmin 12vmin at ${fx.specularX}% ${fx.specularY}%, rgba(255,255,255,0.22) 0%, rgba(255,200,180,0.08) 35%, transparent 70%)`,
-            }}
-          />
         </div>
 
         {/* Edge fade overlays — match --color-bg so the photo frame disappears */}

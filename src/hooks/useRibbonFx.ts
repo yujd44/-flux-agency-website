@@ -13,9 +13,9 @@ export type RibbonFx = {
   specularY: number;
 };
 
-const MAX_TILT = 0.85;
-const MAX_GYRO = 1.2;
-const MAX_SCROLL_SHIFT = 28;
+const MAX_TILT = 3.2;
+const MAX_GYRO = 2.4;
+const MAX_SCROLL_SHIFT = 36;
 
 const idle: RibbonFx = {
   tiltX: 0,
