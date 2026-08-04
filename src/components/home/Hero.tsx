@@ -16,12 +16,12 @@ const HeroSpiral = dynamic(() => import("@/components/home/HeroSpiral"), {
 });
 
 const DUST = [
-  { left: "62%", top: "30%", size: 2.8, delay: "0s", dur: "8s" },
-  { left: "74%", top: "38%", size: 2.4, delay: "1.2s", dur: "9.5s" },
-  { left: "84%", top: "50%", size: 3.2, delay: "0.5s", dur: "8.5s" },
-  { left: "68%", top: "60%", size: 2.2, delay: "2s", dur: "10s" },
-  { left: "90%", top: "34%", size: 2.6, delay: "2.6s", dur: "7.5s" },
-  { left: "78%", top: "70%", size: 2.5, delay: "1s", dur: "11s" },
+  { left: "62%", top: "30%", size: 1.6, delay: "0s", dur: "14s" },
+  { left: "74%", top: "38%", size: 1.4, delay: "2.2s", dur: "16s" },
+  { left: "84%", top: "50%", size: 1.8, delay: "1s", dur: "15s" },
+  { left: "68%", top: "60%", size: 1.3, delay: "3.5s", dur: "17s" },
+  { left: "90%", top: "34%", size: 1.5, delay: "4s", dur: "13s" },
+  { left: "78%", top: "70%", size: 1.4, delay: "1.8s", dur: "18s" },
 ] as const;
 
 function MagneticCta({ label }: { label: string }) {
@@ -77,12 +77,12 @@ export default function Hero() {
               <HeroSpiral />
             </div>
 
-            {/* Cursor spotlight — obvious local illumination */}
+            {/* Cursor spotlight — restrained studio accent */}
             <div
               className="pointer-events-none absolute inset-0 transition-opacity duration-400"
               style={{
-                opacity: fx.spotActive ? 0.85 : 0.35,
-                background: `radial-gradient(circle 42vmin at ${fx.spotX}% ${fx.spotY}%, rgba(255,190,150,0.28) 0%, rgba(168,85,247,0.14) 36%, transparent 68%)`,
+                opacity: fx.spotActive ? 0.55 : 0.18,
+                background: `radial-gradient(circle 42vmin at ${fx.spotX}% ${fx.spotY}%, rgba(200,160,255,0.14) 0%, rgba(140,70,160,0.08) 36%, transparent 68%)`,
                 mixBlendMode: "soft-light",
               }}
             />
