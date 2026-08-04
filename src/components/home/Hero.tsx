@@ -1,25 +1,56 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
 import BidiBlock from "@/components/ui/BidiBlock";
 
 const PILLARS = ["STRATEGY", "ARCHITECTURE", "DEVELOPMENT", "AUTOMATION", "SUPPORT"] as const;
+const MAX_TILT = 0.5;
 
 export default function Hero() {
   const t = useTranslations("home.hero");
+  const artRef = useRef<HTMLDivElement>(null);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const el = artRef.current;
+    if (!el) return;
+
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) return;
+
+    function onMove(e: MouseEvent) {
+      const rect = el!.getBoundingClientRect();
+      const px = (e.clientX - rect.left) / rect.width - 0.5;
+      const py = (e.clientY - rect.top) / rect.height - 0.5;
+      setTilt({
+        x: -(py * MAX_TILT * 2),
+        y: px * MAX_TILT * 2,
+      });
+    }
+
+    function onLeave() {
+      setTilt({ x: 0, y: 0 });
+    }
+
+    el.addEventListener("mousemove", onMove);
+    el.addEventListener("mouseleave", onLeave);
+    return () => {
+      el.removeEventListener("mousemove", onMove);
+      el.removeEventListener("mouseleave", onLeave);
+    };
+  }, []);
 
   return (
     <section className="relative overflow-hidden">
       <div className="blueprint-grid pointer-events-none absolute inset-0 opacity-40 [mask-image:linear-gradient(to_bottom,black_40%,transparent_90%)]" />
 
-      {/* Engineering frame lines */}
       <div className="pointer-events-none absolute inset-x-0 top-0 eng-line-h" />
       <div className="pointer-events-none absolute inset-y-0 left-[var(--page-pad)] hidden eng-line-v lg:block" />
 
       <div className="chrome-ltr relative mx-auto grid w-full max-w-[1600px] grid-cols-1 lg:grid-cols-[minmax(0,42%)_minmax(0,58%)] lg:items-stretch">
-        {/* Text column ~40% */}
         <div className="relative z-10 px-6 pt-12 pb-10 sm:px-8 lg:flex lg:flex-col lg:justify-center lg:px-16 lg:py-20 xl:px-20">
           <BidiBlock>
             <div className="animate-fade-up chrome-ltr mb-8 inline-flex items-center gap-3">
@@ -47,7 +78,6 @@ export default function Hero() {
             </div>
           </BidiBlock>
 
-          {/* Trusted-by strip — light Phase 1 placeholder */}
           <div className="animate-fade-up mt-16 border-t border-border pt-8">
             <div className="label-mono mb-5 text-muted">{t("trustedBy")}</div>
             <div className="chrome-ltr flex flex-wrap items-center gap-x-8 gap-y-3 text-[13px] font-medium tracking-[0.12em] text-text/55 uppercase">
@@ -60,9 +90,11 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Art column ~60% */}
-        <div className="relative min-h-[360px] w-full sm:min-h-[460px] lg:min-h-[720px]">
-          {/* Vertical service pillars along the seam */}
+        <div
+          ref={artRef}
+          className="relative min-h-[360px] w-full sm:min-h-[460px] lg:min-h-[720px]"
+          style={{ perspective: "1200px" }}
+        >
           <div className="pointer-events-none absolute top-16 bottom-24 left-0 z-20 hidden lg:flex">
             <div className="relative flex flex-col justify-between py-2 pl-6">
               <div className="absolute left-0 top-0 bottom-0 eng-line-v" />
@@ -75,7 +107,12 @@ export default function Hero() {
             </div>
           </div>
 
-          <div className="absolute inset-0 bg-surface/40">
+          <div
+            className="absolute inset-0 bg-surface/40 transition-transform duration-300 ease-out will-change-transform"
+            style={{
+              transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+            }}
+          >
             <Image
               src="/images/hero-concrete-ribbon.png"
               alt=""
@@ -86,10 +123,9 @@ export default function Hero() {
             />
           </div>
 
-          {/* Soft edge blend into paper background — no hard card frame */}
-          <div className="absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-bg via-bg/40 to-transparent lg:w-1/4" />
-          <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-bg to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-bg via-bg/40 to-transparent lg:w-1/4" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-bg to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg to-transparent" />
 
           <div className="chrome-ltr pointer-events-none absolute bottom-8 right-6 hidden items-center gap-3 sm:flex lg:right-10">
             <span className="label-mono text-muted">{t("scrollHint")}</span>

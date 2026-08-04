@@ -64,27 +64,27 @@
     },
     "servicesTeaser": {
       "eyebrow": "What we do",
-      "title": "Four disciplines, one standard of craft",
-      "subtitle": "From digital products to infrastructure, every engagement is engineered with the same editorial precision.",
-      "cta": "Explore all services"
+      "title": "Four disciplines, one craft",
+      "subtitle": "From products to infrastructure — every engagement is engineered with the same care.",
+      "cta": "Explore services"
     },
     "portfolioTeaser": {
       "eyebrow": "Selected work",
-      "title": "Recent engagements",
-      "subtitle": "A small selection of the products and platforms we've shipped for our partners.",
-      "cta": "View full portfolio"
+      "title": "Recent structures",
+      "subtitle": "A few systems we have designed, built, and put into the world.",
+      "cta": "View work"
     },
     "philosophy": {
       "eyebrow": "Our approach",
-      "title": "Engineered like architecture, designed like editorial",
-      "body": "We treat every product as a structure — measured, load-tested and built to last. Nothing ships until it earns its place."
+      "title": "Engineered like architecture",
+      "body": "Every product is a structure — measured, load-tested, built to last. Nothing ships until it earns its place."
     }
   },
   "services": {
     "hero": {
-      "eyebrow": "Services",
-      "title": "The Services Explorer",
-      "subtitle": "Four disciplines. Twenty capabilities. One integrated studio for digital products, automation, infrastructure and communication."
+      "eyebrow": "Capabilities",
+      "title": "Services, engineered",
+      "subtitle": "Four disciplines. One standard of craft. Select a category to explore."
     },
     "categories": {
       "digitalProducts": {
@@ -371,14 +371,14 @@
   },
   "portfolio": {
     "hero": {
-      "eyebrow": "Portfolio",
-      "title": "Selected engagements",
-      "subtitle": "A curated look at products, platforms and systems we've engineered for partners across 15 countries."
+      "eyebrow": "Selected work",
+      "title": "Built systems, live in the world",
+      "subtitle": "Three recent engagements — measured, shipped, and still running."
     },
     "cta": {
-      "title": "Have a project in mind?",
-      "subtitle": "Let's talk about what you're building.",
-      "button": "Start a project"
+      "title": "Have a structure in mind?",
+      "subtitle": "Tell us what you need engineered.",
+      "button": "Start a conversation"
     },
     "cases": {
       "case1": {
@@ -400,45 +400,45 @@
   },
   "about": {
     "hero": {
-      "eyebrow": "About",
-      "title": "Precision, by design",
-      "subtitle": "METHODEA is a studio of engineers, designers and strategists building the digital backbone of ambitious companies."
+      "eyebrow": "Studio",
+      "title": "We engineer systems.",
+      "subtitle": "An architecture studio for technology — measured, load-tested, built to last."
     },
     "intro": {
       "eyebrow": "Who we are",
       "paragraphs": [
-        "METHODEA was founded on a simple conviction: that digital work deserves the same discipline as engineering, and the same care as editorial design.",
-        "For eight years, we've built websites, products, automations and infrastructure for companies who refuse to settle for generic. Not because they asked for luxury — because they understood that precision compounds.",
-        "Today we work with partners across 15 countries, carrying the same standard into every engagement: measured, deliberate, and built to last well beyond launch day."
+        "METHODEA is a studio of engineers, designers, and strategists. We treat every product as a structure — clear load paths, honest materials, no decorative noise.",
+        "We design, build, and scale digital systems that drive real business impact. Less spectacle. More craft.",
+        "The work is calm on the surface and rigorous underneath — the same discipline we expect from architecture."
       ]
     },
     "gallery": {
       "eyebrow": "Moments From The Studio"
     },
     "mission": {
-      "eyebrow": "Our mission",
-      "title": "Build fewer things, build them exactly right",
-      "body": "We don't chase every trend or take every brief. We choose a small number of engagements each quarter and give each one the depth it deserves — from strategy through to the smallest interaction detail."
+      "eyebrow": "Mission",
+      "title": "Clarity under complexity",
+      "body": "Turn tangled requirements into systems people can trust — readable, maintainable, and ready to grow."
     },
     "approach": {
-      "eyebrow": "How we work",
-      "title": "Engineered like architecture, considered like editorial",
+      "eyebrow": "Approach",
+      "title": "How we work",
       "items": [
         {
-          "title": "Diagnose before we design",
-          "body": "Every engagement starts with understanding the real problem, not the assumed one."
+          "title": "Frame the problem",
+          "body": "Define constraints, goals, and the real load the system must carry."
         },
         {
-          "title": "Systems, not one-offs",
-          "body": "We build design systems and technical foundations that outlive the first release."
+          "title": "Design the structure",
+          "body": "Architecture first — information, interfaces, and infrastructure as one."
         },
         {
-          "title": "Measured, not decorated",
-          "body": "Every element earns its place through function first, aesthetics second."
+          "title": "Build with precision",
+          "body": "Ship in measured increments. Nothing decorative survives review."
         },
         {
-          "title": "Shipped, then refined",
-          "body": "We stay close after launch — performance, iteration and support are part of the work."
+          "title": "Scale with care",
+          "body": "Operate, measure, and refine so the system stays sound as it grows."
         }
       ]
     },
@@ -487,16 +487,16 @@
       ]
     },
     "cta": {
-      "title": "Let's build something exact",
-      "subtitle": "Tell us what you're working on.",
-      "button": "Get in touch"
+      "title": "Ready to engineer something lasting?",
+      "subtitle": "Tell us what you need built.",
+      "button": "Let's talk"
     }
   },
   "contact": {
     "hero": {
       "eyebrow": "Contact",
       "title": "Let's start a conversation",
-      "subtitle": "Tell us about your project and we'll reply within one business day."
+      "subtitle": "Tell us what you need engineered. We reply within one business day."
     },
     "form": {
       "name": "Full name",
@@ -511,7 +511,7 @@
       "error": "Something went wrong. Please try again or email us directly."
     },
     "info": {
-      "eyebrow": "Direct contact",
+      "eyebrow": "Direct",
       "title": "Prefer to reach out directly?",
       "email": "hello@methodea.com",
       "phone": "+972 3 555 0192",

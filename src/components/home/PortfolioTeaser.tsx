@@ -25,18 +25,18 @@ export default function PortfolioTeaser() {
           </div>
         </div>
 
-        <div className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
           {featured.map((item, index) => (
             <motion.div
               key={item.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.55, delay: index * 0.08 }}
+              transition={{ duration: 0.5, delay: index * 0.06 }}
             >
               <Link
                 href="/portfolio"
-                className="group block overflow-hidden rounded-2xl border border-border transition-colors duration-300 hover:border-accent/40"
+                className="group block overflow-hidden border border-border transition-colors duration-300 hover:border-accent-secondary/45"
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <Image
@@ -44,14 +44,15 @@ export default function PortfolioTeaser() {
                     alt=""
                     fill
                     sizes="(max-width: 768px) 90vw, 30vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="object-cover transition-opacity duration-500 group-hover:opacity-90"
                   />
                 </div>
                 <div className="p-6">
-                  <div className="text-content mb-2 text-[11px] uppercase tracking-[0.14em] text-accent">
-                    {tp(`${item.id}.tag`)}
+                  <div className="chrome-ltr mb-3 flex items-center gap-3">
+                    <span className="eng-marker" aria-hidden="true" />
+                    <span className="label-mono text-muted">{tp(`${item.id}.tag`)}</span>
                   </div>
-                  <h3 className="text-content text-lg font-medium text-text">
+                  <h3 className="text-content text-lg font-medium tracking-tight text-text">
                     {tp(`${item.id}.title`)}
                   </h3>
                 </div>

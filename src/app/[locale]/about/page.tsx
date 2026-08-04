@@ -49,12 +49,16 @@ export default async function AboutPage({
 
       <section className="border-t border-border py-20 lg:py-24">
         <Container>
-          <div className="text-content mb-4 text-[13px] font-medium uppercase tracking-[0.2em] text-accent">
-            {tIntro("eyebrow")}
+          <div className="chrome-ltr mb-6 flex items-center gap-3">
+            <span className="eng-marker" aria-hidden="true" />
+            <span className="label-mono text-muted">{tIntro("eyebrow")}</span>
           </div>
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-16">
             {paragraphs.map((p) => (
-              <p key={p} className="text-content text-[15px] leading-relaxed text-muted first:text-xl first:font-medium first:leading-relaxed first:text-text lg:first:col-span-2">
+              <p
+                key={p}
+                className="text-content text-lg leading-[1.7] text-muted first:text-xl first:font-medium first:text-text lg:first:col-span-2"
+              >
                 {p}
               </p>
             ))}
@@ -64,9 +68,9 @@ export default async function AboutPage({
 
       <section className="border-t border-border py-20 lg:py-24">
         <Container>
-          <div className="text-content mb-10 flex items-center gap-3 text-[13px] font-medium uppercase tracking-[0.2em] text-accent">
-            <span className="h-px w-6 bg-accent/60" />
-            {tGallery("eyebrow")}
+          <div className="chrome-ltr mb-10 flex items-center gap-3">
+            <span className="eng-marker" aria-hidden="true" />
+            <span className="label-mono text-muted">{tGallery("eyebrow")}</span>
           </div>
           <AboutGallery />
         </Container>
@@ -74,7 +78,11 @@ export default async function AboutPage({
 
       <section className="border-t border-border py-20 lg:py-24">
         <Container>
-          <SectionHeading eyebrow={tMission("eyebrow")} title={tMission("title")} subtitle={tMission("body")} />
+          <SectionHeading
+            eyebrow={tMission("eyebrow")}
+            title={tMission("title")}
+            subtitle={tMission("body")}
+          />
         </Container>
       </section>
 
@@ -88,15 +96,18 @@ export default async function AboutPage({
       <section className="border-t border-border py-20 lg:py-24">
         <Container>
           <SectionHeading eyebrow={tStats("eyebrow")} title={tStats("title")} />
-          <div className="chrome-ltr mt-14 grid grid-cols-2 divide-x divide-border lg:grid-cols-4">
+          <div className="chrome-ltr mt-14 grid grid-cols-2 border-t border-border lg:grid-cols-4">
             {statKeys.map((key) => {
               const item = statItems[Number(key)];
               return (
-                <div key={key} className="chrome-ltr flex flex-col items-start gap-2 px-5 py-6 first:pl-0 sm:px-8">
-                  <span className="text-3xl font-semibold tracking-tight text-text sm:text-4xl">
+                <div
+                  key={key}
+                  className="chrome-ltr flex flex-col items-start gap-2 border-b border-border px-5 py-8 first:pl-0 sm:px-8 lg:border-b-0 lg:border-r lg:last:border-r-0"
+                >
+                  <span className="text-3xl font-medium tracking-tight text-text sm:text-4xl">
                     {item.value}
                   </span>
-                  <span className="text-content text-[13px] leading-snug text-muted">
+                  <span className="text-content text-sm leading-snug text-muted">
                     {item.label}
                   </span>
                 </div>

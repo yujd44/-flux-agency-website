@@ -33,7 +33,7 @@ export default function AboutGallery() {
             alt=""
             fill
             sizes="(max-width: 640px) 90vw, 45vw"
-            className="object-cover grayscale-[45%] contrast-[1.02] transition-[filter,transform] duration-700 ease-out hover:scale-[1.03] hover:grayscale-0"
+            className="object-cover grayscale-[40%] contrast-[1.02] transition-[filter,opacity] duration-700 ease-out hover:grayscale-0 hover:opacity-95"
           />
         </motion.div>
       ))}

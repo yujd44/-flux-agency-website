@@ -1,7 +1,6 @@
 "use client";
 
 import clsx from "clsx";
-import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { serviceCategories, type ServiceCategoryId } from "@/lib/services-data";
 import BidiBlock from "@/components/ui/BidiBlock";
@@ -16,36 +15,34 @@ export default function CategoryNav({
   const tc = useTranslations("services.categories");
 
   return (
-    <nav className="chrome-ltr flex flex-col gap-1">
-      {serviceCategories.map((cat) => {
+    <nav className="chrome-ltr flex flex-col">
+      {serviceCategories.map((cat, index) => {
         const isActive = cat.id === active;
         return (
           <button
             key={cat.id}
             type="button"
             onClick={() => onChange(cat.id)}
-            className="group relative flex w-full items-center gap-4 py-3 text-left transition-opacity duration-500 sm:gap-5 lg:py-4"
+            className={clsx(
+              "group relative flex w-full items-start gap-4 border-t border-border py-5 text-left transition-colors duration-300 sm:gap-5 lg:py-6",
+              index === serviceCategories.length - 1 && "border-b border-border",
+            )}
           >
-            <span className="relative flex h-full w-[3px] shrink-0 items-stretch self-stretch">
-              {isActive && (
-                <motion.span
-                  layoutId="category-indicator"
-                  className="absolute inset-y-0 w-full rounded-full bg-accent"
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
-              )}
+            <span className="relative mt-2 flex h-4 w-4 shrink-0 items-center justify-center">
+              <span
+                className={clsx(
+                  "eng-marker transition-opacity duration-300",
+                  isActive ? "opacity-100" : "opacity-0 group-hover:opacity-40",
+                )}
+              />
             </span>
-            <span className="flex min-w-0 flex-1 flex-col gap-1">
-              <span className="chrome-ltr text-[11px] font-medium tracking-[0.15em] text-muted">
-                {tc(`${cat.id}.number`)}
-              </span>
+            <span className="flex min-w-0 flex-1 flex-col gap-2">
+              <span className="label-mono text-muted">{tc(`${cat.id}.number`)}</span>
               <BidiBlock as="span">
                 <span
                   className={clsx(
-                    "block text-balance text-[26px] leading-[1.15] font-semibold tracking-tight break-words [overflow-wrap:anywhere] transition-all duration-500 sm:text-[36px] sm:leading-[1.1] lg:text-[52px] xl:text-[64px]",
-                    isActive
-                      ? "scale-100 text-text opacity-100"
-                      : "scale-[0.97] text-muted/50 opacity-80 group-hover:text-muted group-hover:opacity-100",
+                    "block text-balance text-[1.75rem] font-medium leading-[1.1] tracking-tight break-words [overflow-wrap:anywhere] transition-colors duration-300 sm:text-[2.25rem] lg:text-[3.25rem] xl:text-[3.75rem]",
+                    isActive ? "text-text" : "text-muted/55 group-hover:text-muted",
                   )}
                 >
                   {tc(`${cat.id}.title`)}

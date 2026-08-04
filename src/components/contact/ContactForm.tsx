@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
 import BidiBlock from "@/components/ui/BidiBlock";
 
 type Status = "idle" | "submitting" | "success" | "error";
+
+const fieldClass =
+  "w-full border border-border bg-bg px-4 py-3.5 text-base text-text placeholder:text-muted/60 outline-none transition-colors focus:border-accent-secondary";
 
 export default function ContactForm() {
   const t = useTranslations("contact.form");
@@ -24,14 +26,12 @@ export default function ContactForm() {
   if (status === "success") {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col items-start gap-4 rounded-2xl border border-accent/30 bg-accent-soft p-8"
+        className="flex flex-col items-start gap-4 border border-border bg-surface/60 p-8"
       >
-        <span className="flex h-10 w-10 items-center justify-center rounded-full border border-accent/50">
-          <Check className="h-5 w-5 text-accent" />
-        </span>
-        <BidiBlock as="span" className="text-[15px] leading-relaxed text-text">
+        <span className="eng-marker" aria-hidden="true" />
+        <BidiBlock as="span" className="text-lg leading-[1.7] text-text">
           {t("success")}
         </BidiBlock>
       </motion.div>
@@ -39,9 +39,9 @@ export default function ContactForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-7">
       <div className="text-content">
-        <label htmlFor="name" className="mb-2 block text-[13px] font-medium text-muted">
+        <label htmlFor="name" className="label-mono mb-3 block text-muted">
           {t("name")}
         </label>
         <input
@@ -50,12 +50,12 @@ export default function ContactForm() {
           value={values.name}
           onChange={(e) => setValues((v) => ({ ...v, name: e.target.value }))}
           placeholder={t("namePlaceholder")}
-          className="w-full rounded-xl border border-border bg-surface/50 px-4 py-3.5 text-[15px] text-text placeholder:text-muted/70 outline-none transition-colors focus:border-accent"
+          className={fieldClass}
         />
       </div>
 
       <div className="text-content">
-        <label htmlFor="email" className="mb-2 block text-[13px] font-medium text-muted">
+        <label htmlFor="email" className="label-mono mb-3 block text-muted">
           {t("email")}
         </label>
         <input
@@ -66,12 +66,12 @@ export default function ContactForm() {
           value={values.email}
           onChange={(e) => setValues((v) => ({ ...v, email: e.target.value }))}
           placeholder={t("emailPlaceholder")}
-          className="w-full rounded-xl border border-border bg-surface/50 px-4 py-3.5 text-[15px] text-text placeholder:text-muted/70 outline-none transition-colors focus:border-accent"
+          className={fieldClass}
         />
       </div>
 
       <div className="text-content">
-        <label htmlFor="message" className="mb-2 block text-[13px] font-medium text-muted">
+        <label htmlFor="message" className="label-mono mb-3 block text-muted">
           {t("message")}
         </label>
         <textarea
@@ -81,15 +81,11 @@ export default function ContactForm() {
           value={values.message}
           onChange={(e) => setValues((v) => ({ ...v, message: e.target.value }))}
           placeholder={t("messagePlaceholder")}
-          className="w-full resize-none rounded-xl border border-border bg-surface/50 px-4 py-3.5 text-[15px] text-text placeholder:text-muted/70 outline-none transition-colors focus:border-accent"
+          className={`${fieldClass} resize-none`}
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={status === "submitting"}
-        className="mt-2 inline-flex items-center justify-center rounded-full border border-accent bg-accent px-6 py-3.5 text-[13px] font-medium uppercase tracking-[0.12em] text-white transition-opacity hover:bg-accent/90 disabled:opacity-60"
-      >
+      <button type="submit" disabled={status === "submitting"} className="btn-primary mt-2 self-start disabled:opacity-60">
         {status === "submitting" ? t("submitting") : t("submit")}
       </button>
     </form>
