@@ -88,16 +88,17 @@ export default function Hero() {
 
       {/*
         Client asset: landscape cream + ribbon on the right.
-        Full-bleed cover, object-right so sculpture bleeds top/right; left cream crops safely.
+        Never object-cover / negative bleed — that zooms into texture.
+        contain + right/bottom + air around the box = full silhouette at gallery scale.
       */}
       <div
         ref={artRef}
-        className="pointer-events-auto absolute inset-0 z-0"
+        className="pointer-events-auto absolute inset-0 z-0 overflow-hidden"
         style={{ perspective: "1400px" }}
         aria-hidden="true"
       >
         <div
-          className="absolute -top-[2%] -right-[2%] bottom-0 left-0 transition-transform duration-500 ease-out will-change-transform lg:-top-[4%] lg:-right-[3%]"
+          className="absolute top-[9%] right-0 bottom-[7%] left-[4%] transition-transform duration-500 ease-out will-change-transform sm:top-[10%] sm:bottom-[8%] sm:left-[8%] lg:top-[11%] lg:bottom-[9%] lg:left-[12%]"
           style={{
             transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
           }}
@@ -107,8 +108,8 @@ export default function Hero() {
             alt=""
             fill
             priority
-            sizes="100vw"
-            className="object-cover object-right"
+            sizes="(max-width: 1024px) 100vw, 75vw"
+            className="object-contain object-right object-bottom"
           />
         </div>
       </div>
