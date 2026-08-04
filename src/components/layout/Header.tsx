@@ -58,7 +58,7 @@ export default function Header() {
             >
               <LayoutGrid className="h-3 w-3 opacity-60" strokeWidth={1.25} />
               <span>{t("letsTalk")}</span>
-              <ArrowRight className="h-3 w-3" strokeWidth={1.25} />
+              <ArrowRight className="h-3 w-3 rtl:-scale-x-100" strokeWidth={1.25} />
             </Link>
             <LanguageSwitcher className="[&_button]:text-[10px] [&_button]:tracking-[0.26em]" />
           </div>

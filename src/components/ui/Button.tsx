@@ -30,7 +30,12 @@ export function Button({
   const inner = (
     <>
       <span>{children}</span>
-      {showArrow && <ArrowRight className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />}
+      {showArrow && (
+        <ArrowRight
+          className="h-3.5 w-3.5 shrink-0 rtl:-scale-x-100"
+          strokeWidth={1.5}
+        />
+      )}
     </>
   );
 
