@@ -301,6 +301,14 @@ html[lang="ar"] .hero-accent {
   transform-origin: 70% 55%;
 }
 
+.hero-edge-fade {
+  background:
+    linear-gradient(90deg, var(--color-bg) 0%, transparent 40%),
+    linear-gradient(270deg, var(--color-bg) 0%, transparent 10%),
+    linear-gradient(180deg, var(--color-bg) 0%, transparent 16%),
+    linear-gradient(0deg, var(--color-bg) 0%, transparent 20%);
+}
+
 /* Whole-sculpture soft float — obvious vertical breath */
 @keyframes hero-sculpture-float {
   0%,

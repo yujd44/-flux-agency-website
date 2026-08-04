@@ -96,17 +96,7 @@ export default function Hero() {
         </div>
 
         {/* Edge fade — match --color-bg so WebGL frame dissolves */}
-        <div
-          className="pointer-events-none absolute inset-0 z-[2]"
-          style={{
-            background: `
-              linear-gradient(90deg, var(--color-bg) 0%, transparent 40%),
-              linear-gradient(270deg, var(--color-bg) 0%, transparent 10%),
-              linear-gradient(180deg, var(--color-bg) 0%, transparent 16%),
-              linear-gradient(0deg, var(--color-bg) 0%, transparent 20%)
-            `,
-          }}
-        />
+        <div className="hero-edge-fade pointer-events-none absolute inset-0 z-[2]" />
 
         <div className="pointer-events-none absolute inset-0 z-[3] hidden sm:block">
           {DUST.map((d, i) => (
