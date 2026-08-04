@@ -8,12 +8,12 @@ export default function Header() {
   return (
     <>
       <header className="fixed top-0 right-0 left-0 z-50 bg-transparent">
-        <div className="chrome-ltr mx-auto flex w-full max-w-[var(--page-max)] items-center justify-between px-[var(--page-pad)] py-3">
-          <MethodaLogo size={20} />
+        <div className="chrome-ltr mx-auto flex h-11 w-full max-w-[var(--page-max)] items-center justify-between px-[var(--page-pad)]">
+          <MethodaLogo size={18} morph />
           <LanguageSwitcher className="[&_button]:text-[10px] [&_button]:tracking-[0.26em]" />
         </div>
       </header>
-      <div className="h-[52px]" aria-hidden="true" />
+      <div className="h-11" aria-hidden="true" />
     </>
   );
 }

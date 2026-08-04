@@ -1,16 +1,17 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
 import BidiBlock from "@/components/ui/BidiBlock";
-import { Link } from "@/i18n/navigation";
-
-const TRUSTED = ["Solvix", "Nexora", "Akira Systems", "Lumen", "Dayone"] as const;
-
-/** Soft parallax tilt — keep tiny so it stays premium, not toy-like. */
-const MAX_TILT = 0.7;
+import HeroHeadline from "@/components/home/HeroHeadline";
+import HeroConstellation from "@/components/home/HeroConstellation";
+import AmbientToggle from "@/components/home/AmbientToggle";
+import { useRibbonFx } from "@/hooks/useRibbonFx";
+import { useTimeAccent } from "@/hooks/useTimeAccent";
+import { useMagnetic } from "@/hooks/useMagnetic";
+import { useCrosshair } from "@/hooks/useCrosshair";
 
 const DUST = [
   { left: "58%", top: "28%", size: 1.5, delay: "0s", dur: "9s" },
@@ -25,69 +26,35 @@ const DUST = [
   { left: "85%", top: "72%", size: 1.1, delay: "1.8s", dur: "12.5s" },
 ] as const;
 
+function MagneticCta({ label }: { label: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  useMagnetic(ref, { strength: 0.32, radius: 140 });
+  return (
+    <span ref={ref} className="inline-block will-change-transform">
+      <Button href="/services" variant="primary" className="hero-cta-magnetic">
+        {label}
+      </Button>
+    </span>
+  );
+}
+
 export default function Hero() {
   const t = useTranslations("home.hero");
+  const zoneRef = useRef<HTMLElement>(null);
   const artRef = useRef<HTMLDivElement>(null);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const [spot, setSpot] = useState({ x: 72, y: 48, active: false });
-
-  const pillarParts = t("pillars")
-    .split(/[·•]/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-
-  useEffect(() => {
-    const el = artRef.current;
-    if (!el) return;
-
-    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReduced) return;
-
-    let raf = 0;
-    let nextTilt = { x: 0, y: 0 };
-    let nextSpot = { x: 72, y: 48, active: false };
-
-    function flush() {
-      raf = 0;
-      setTilt(nextTilt);
-      setSpot(nextSpot);
-    }
-
-    function onMove(e: MouseEvent) {
-      const rect = el!.getBoundingClientRect();
-      const nx = (e.clientX - rect.left) / rect.width;
-      const ny = (e.clientY - rect.top) / rect.height;
-      const px = nx - 0.5;
-      const py = ny - 0.5;
-      nextTilt = {
-        x: -(py * MAX_TILT * 2),
-        y: px * MAX_TILT * 2,
-      };
-      nextSpot = {
-        x: Math.min(100, Math.max(0, nx * 100)),
-        y: Math.min(100, Math.max(0, ny * 100)),
-        active: true,
-      };
-      if (!raf) raf = requestAnimationFrame(flush);
-    }
-
-    function onLeave() {
-      nextTilt = { x: 0, y: 0 };
-      nextSpot = { ...nextSpot, active: false };
-      if (!raf) raf = requestAnimationFrame(flush);
-    }
-
-    el.addEventListener("mousemove", onMove, { passive: true });
-    el.addEventListener("mouseleave", onLeave);
-    return () => {
-      el.removeEventListener("mousemove", onMove);
-      el.removeEventListener("mouseleave", onLeave);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, []);
+  const crosshairRef = useRef<HTMLDivElement>(null);
+  const fx = useRibbonFx(artRef);
+  useTimeAccent();
+  useCrosshair(zoneRef, crosshairRef);
 
   return (
-    <section className="relative flex min-h-[calc(100svh-52px)] flex-col overflow-hidden">
+    <section
+      ref={zoneRef}
+      className="hero-zone relative flex min-h-[calc(100svh-44px)] flex-col overflow-hidden"
+    >
+      {/* Custom crosshair cursor (desktop) */}
+      <div ref={crosshairRef} className="hero-crosshair" aria-hidden="true" />
+
       {/* Ambient dark grid */}
       <div className="blueprint-grid pointer-events-none absolute inset-0 opacity-[0.35]" />
 
@@ -109,9 +76,10 @@ export default function Hero() {
         aria-hidden="true"
       >
         <div
-          className="hero-ribbon-stage absolute inset-0 transition-transform duration-700 ease-out will-change-transform"
+          className="hero-ribbon-stage absolute inset-0 will-change-transform"
           style={{
-            transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+            transform: `translate3d(0, ${fx.scrollY}px, 0) rotateX(${fx.tiltX}deg) rotateY(${fx.tiltY}deg)`,
+            transition: fx.spotActive ? "none" : "transform 0.7s ease-out",
           }}
         >
           <div className="hero-ribbon-mask absolute inset-0">
@@ -132,9 +100,18 @@ export default function Hero() {
           <div
             className="pointer-events-none absolute inset-0 transition-opacity duration-500"
             style={{
-              opacity: spot.active ? 1 : 0.35,
-              background: `radial-gradient(circle 28vmin at ${spot.x}% ${spot.y}%, rgba(255,180,140,0.16) 0%, rgba(168,85,247,0.08) 28%, transparent 62%)`,
+              opacity: fx.spotActive ? 1 : 0.35,
+              background: `radial-gradient(circle 28vmin at ${fx.spotX}% ${fx.spotY}%, rgba(255,180,140,0.16) 0%, rgba(168,85,247,0.08) 28%, transparent 62%)`,
               mixBlendMode: "soft-light",
+            }}
+          />
+
+          {/* Glass refraction / specular highlight */}
+          <div
+            className="hero-ribbon-specular pointer-events-none absolute inset-0"
+            style={{
+              opacity: fx.spotActive ? 0.85 : 0.25,
+              background: `radial-gradient(ellipse 18vmin 12vmin at ${fx.specularX}% ${fx.specularY}%, rgba(255,255,255,0.22) 0%, rgba(255,200,180,0.08) 35%, transparent 70%)`,
             }}
           />
         </div>
@@ -169,6 +146,8 @@ export default function Hero() {
             />
           ))}
         </div>
+
+        <HeroConstellation />
       </div>
 
       {/* Copy — structural LTR column */}
@@ -182,72 +161,35 @@ export default function Hero() {
               </span>
             </div>
 
-            <h1 className="hero-headline animate-fade-up max-w-[12ch] text-[2.15rem] font-medium leading-[1.16] tracking-[-0.015em] text-text sm:max-w-[15ch] sm:text-[2.9rem] lg:max-w-[14ch] lg:text-[3.4rem] xl:text-[3.75rem]">
-              <span className="text-content">{t("titleBefore")}</span>
-              <span className="hero-accent">{t("titleAccent")}</span>
-              <span className="text-content">{t("titleAfter")}</span>
-            </h1>
+            <HeroHeadline
+              before={t("titleBefore")}
+              accent={t("titleAccent")}
+              after={t("titleAfter")}
+            />
 
             <p className="animate-fade-up mt-6 max-w-[22rem] text-[0.95rem] font-light leading-[1.8] text-muted sm:mt-7 sm:max-w-[24rem] sm:text-[1rem] lg:mt-8 lg:max-w-[26rem]">
               {t("subtitle")}
             </p>
 
             <div className="animate-fade-up chrome-ltr mt-9 sm:mt-11">
-              <Button href="/services" variant="primary" className="hero-cta-magnetic">
-                {t("cta")}
-              </Button>
+              <MagneticCta label={t("cta")} />
             </div>
           </BidiBlock>
-
-          {/* Trusted by — present on the dark mock */}
-          <div className="animate-fade-up mt-14 max-w-xl lg:mt-16">
-            <div className="label-mono mb-4 text-[9px] tracking-[0.28em] text-muted/55">
-              {t("trustedBy")}
-            </div>
-            <div className="chrome-ltr flex flex-wrap items-center gap-x-7 gap-y-3 text-[11px] font-medium tracking-[0.16em] text-text/40 uppercase">
-              {TRUSTED.map((name) => (
-                <span key={name}>{name}</span>
-              ))}
-            </div>
-          </div>
         </div>
 
-        {/* Bottom status bar */}
-        <div className="chrome-ltr relative z-10 mx-[var(--page-pad)] flex items-center justify-between gap-4 border-t border-white/10 bg-transparent py-3.5">
-          <div className="flex min-w-0 items-center gap-3">
-            <span
-              className="relative inline-flex h-4 w-4 shrink-0 items-center justify-center"
-              aria-hidden="true"
-            >
-              <span className="absolute inset-0 rounded-full border border-white/35" />
-              <span className="absolute inset-[3px] rounded-full border border-white/25" />
-              <span className="absolute inset-[6px] rounded-full bg-accent shadow-[0_0_8px_rgba(255,106,61,0.7)]" />
-            </span>
-            <Link
-              href="/services"
-              className="label-mono flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[10px] tracking-[0.18em] text-muted/80 transition-colors hover:text-text"
-            >
-              {pillarParts.map((part, i) => (
-                <span key={part} className="inline-flex items-center gap-2">
-                  {i > 0 && (
-                    <span className="inline-block h-[4px] w-[4px] shrink-0 bg-accent" aria-hidden="true" />
-                  )}
-                  <span className="truncate">{part}</span>
-                </span>
-              ))}
-            </Link>
-          </div>
-          <div className="hidden shrink-0 items-center gap-3 sm:flex">
-            <span className="label-mono text-[10px] tracking-[0.22em] text-muted/70">
-              {t("scrollHint")}
-            </span>
-            <span className="relative inline-flex h-7 w-px items-end" aria-hidden="true">
-              <span className="absolute inset-x-0 top-0 bottom-1 bg-white/35" />
-              <span className="absolute bottom-0 left-1/2 h-0 w-0 -translate-x-1/2 border-x-[3px] border-t-[4px] border-x-transparent border-t-white/45" />
-            </span>
-          </div>
+        {/* Scroll hint */}
+        <div className="chrome-ltr relative z-10 mx-[var(--page-pad)] flex items-center justify-end gap-3 border-t border-white/10 py-3.5">
+          <span className="label-mono text-[10px] tracking-[0.22em] text-muted/70">
+            {t("scrollHint")}
+          </span>
+          <span className="relative inline-flex h-7 w-px items-end" aria-hidden="true">
+            <span className="absolute inset-x-0 top-0 bottom-1 bg-white/35" />
+            <span className="absolute bottom-0 left-1/2 h-0 w-0 -translate-x-1/2 border-x-[3px] border-t-[4px] border-x-transparent border-t-white/45" />
+          </span>
         </div>
       </div>
+
+      <AmbientToggle />
     </section>
   );
 }

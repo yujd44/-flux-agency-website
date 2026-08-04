@@ -13,6 +13,7 @@ import {
 } from "@/lib/fonts";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import PortalTransition from "@/components/home/PortalTransition";
 import "../globals.css";
 
 export function generateStaticParams() {
@@ -60,6 +61,7 @@ export default async function LocaleLayout({
             <Header />
             <main className="flex-1">{children}</main>
             <Footer />
+            <PortalTransition />
           </div>
         </NextIntlClientProvider>
       </body>

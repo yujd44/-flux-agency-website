@@ -341,12 +341,109 @@ html[lang="ar"] .hero-accent {
 
 /* Magnetic primary CTA — subtle pull on hover */
 .hero-cta-magnetic {
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s ease;
+  transition: filter 0.2s ease;
 }
 
 .hero-cta-magnetic:hover {
-  transform: translateY(-2px) scale(1.02);
   filter: brightness(1.1);
+}
+
+/* Hero zone — custom crosshair cursor (fine pointer only) */
+@media (pointer: fine) {
+  .hero-zone {
+    cursor: none;
+  }
+
+  .hero-zone a,
+  .hero-zone button {
+    cursor: none;
+  }
+
+  .hero-crosshair {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 18px;
+    height: 18px;
+    margin: -9px 0 0 -9px;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 70;
+    opacity: 0;
+    mix-blend-mode: difference;
+    transition: opacity 0.2s ease;
+  }
+
+  .hero-zone:hover .hero-crosshair {
+    opacity: 1;
+  }
+
+  .hero-crosshair::before,
+  .hero-crosshair::after {
+    content: "";
+    position: absolute;
+    background: rgba(255, 255, 255, 0.55);
+  }
+
+  .hero-crosshair::before {
+    left: 50%;
+    top: -4px;
+    bottom: -4px;
+    width: 1px;
+    transform: translateX(-50%);
+  }
+
+  .hero-crosshair::after {
+    top: 50%;
+    left: -4px;
+    right: -4px;
+    height: 1px;
+    transform: translateY(-50%);
+  }
+}
+
+.hero-ribbon-specular {
+  mix-blend-mode: soft-light;
+  transition: opacity 0.4s ease;
+  will-change: background;
+}
+
+.hero-constellation-node:hover span:last-child {
+  color: var(--color-text);
+}
+
+.hero-constellation-node:hover span:first-child > span:first-child {
+  background: rgba(255, 106, 61, 0.55);
+}
+
+/* Soft portal wipe on route change */
+.portal-wipe {
+  background: radial-gradient(
+    ellipse 80% 60% at 50% 40%,
+    rgba(255, 106, 61, 0.12) 0%,
+    rgba(139, 92, 246, 0.1) 40%,
+    var(--color-bg) 75%
+  );
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+
+.portal-wipe-active {
+  opacity: 1;
+  animation: portal-fade 0.52s ease forwards;
+}
+
+@keyframes portal-fade {
+  0% {
+    opacity: 0;
+  }
+  35% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -355,8 +452,17 @@ html[lang="ar"] .hero-accent {
     animation: none !important;
   }
 
-  .hero-cta-magnetic:hover {
-    transform: none;
+  .hero-zone {
+    cursor: auto;
+  }
+
+  .hero-crosshair {
+    display: none !important;
+  }
+
+  .portal-wipe-active {
+    animation: none;
+    opacity: 0;
   }
 }
 
