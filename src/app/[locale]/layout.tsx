@@ -47,11 +47,13 @@ export default async function LocaleLayout({
       dir={dir}
       className={`${fontLatin.variable} ${fontMono.variable} ${fontHebrew.variable} ${fontArabic.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-bg text-text">
+      <body className="flex min-h-full flex-col bg-bg text-text">
         <NextIntlClientProvider messages={messages}>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          <div className="page-frame">
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
         </NextIntlClientProvider>
       </body>
     </html>

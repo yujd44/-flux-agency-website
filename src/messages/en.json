@@ -6,8 +6,10 @@
   "nav": {
     "home": "Home",
     "services": "Services",
+    "approach": "Approach",
     "portfolio": "Work",
     "about": "About",
+    "insights": "Insights",
     "contact": "Contact",
     "letsTalk": "Let's Talk",
     "menu": "Menu",
@@ -40,7 +42,7 @@
       "subtitle": "Methodea designs, builds, and scales digital systems that drive real business impact.",
       "cta": "Explore Services",
       "ctaSecondary": "Our Approach",
-      "pillars": "Scalable solutions • Clear process • Measurable results",
+      "pillars": "Scalable solutions · Clear process · Measurable results",
       "scrollHint": "Scroll to explore"
     },
     "stats": {
@@ -489,6 +491,13 @@
       "title": "Ready to engineer something lasting?",
       "subtitle": "Tell us what you need built.",
       "button": "Let's talk"
+    }
+  },
+  "insights": {
+    "hero": {
+      "eyebrow": "Insights",
+      "title": "Notes from the studio",
+      "subtitle": "Short perspectives on systems, architecture, and building digital products that last. More pieces coming soon."
     }
   },
   "contact": {

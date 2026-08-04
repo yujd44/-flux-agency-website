@@ -9,13 +9,14 @@ import LanguageSwitcher from "./LanguageSwitcher";
 import MobileMenu from "./MobileMenu";
 import MethodaLogo from "@/components/brand/MethodaLogo";
 
-/** Center nav — routes kept; labels styled as mono caps via i18n. */
-const navKeys = ["services", "portfolio", "about", "contact"] as const;
+/** Center nav — contact only via header CTA. */
+const navKeys = ["services", "approach", "portfolio", "about", "insights"] as const;
 const navHrefs: Record<(typeof navKeys)[number], string> = {
   services: "/services",
+  approach: "/about#approach",
   portfolio: "/portfolio",
   about: "/about",
-  contact: "/contact",
+  insights: "/insights",
 };
 
 export default function Header() {
@@ -25,14 +26,15 @@ export default function Header() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-bg/70 backdrop-blur-[1.5px]">
+      <header className="fixed top-[var(--frame-inset)] right-[var(--frame-inset)] left-[var(--frame-inset)] z-50 border-b border-border/50 bg-bg/70 backdrop-blur-[1.5px]">
         <div className="chrome-ltr mx-auto flex w-full max-w-[var(--page-max)] items-center justify-between px-[var(--page-pad)] py-5">
           <MethodaLogo size={22} />
 
           <nav className="hidden items-center gap-11 xl:gap-14 lg:flex">
             {navKeys.map((key) => {
               const href = navHrefs[key];
-              const active = pathname === href;
+              const pathOnly = href.split("#")[0] ?? href;
+              const active = pathname === pathOnly && !href.includes("#");
               return (
                 <Link
                   key={key}

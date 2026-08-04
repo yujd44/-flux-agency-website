@@ -8,12 +8,13 @@ import { Link } from "@/i18n/navigation";
 import LanguageSwitcher from "./LanguageSwitcher";
 import MethodaLogo from "@/components/brand/MethodaLogo";
 
-const navKeys = ["services", "portfolio", "about", "contact"] as const;
+const navKeys = ["services", "approach", "portfolio", "about", "insights"] as const;
 const navHrefs: Record<(typeof navKeys)[number], string> = {
   services: "/services",
+  approach: "/about#approach",
   portfolio: "/portfolio",
   about: "/about",
-  contact: "/contact",
+  insights: "/insights",
 };
 
 export default function MobileMenu({

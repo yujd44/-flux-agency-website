@@ -7,8 +7,16 @@ import { ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import BidiBlock from "@/components/ui/BidiBlock";
 
-const PILLARS = ["STRATEGY", "ARCHITECTURE", "DEVELOPMENT", "AUTOMATION", "SUPPORT"] as const;
+/** Percent coords relative to the hero section — leaders terminate ON the upper-right ribbon. */
+const PILLARS = [
+  { label: "STRATEGY", y: 16, endX: 70, endY: 18 },
+  { label: "ARCHITECTURE", y: 26, endX: 66, endY: 26 },
+  { label: "DEVELOPMENT", y: 36, endX: 74, endY: 32 },
+  { label: "AUTOMATION", y: 46, endX: 68, endY: 40 },
+  { label: "SUPPORT", y: 56, endX: 76, endY: 46 },
+] as const;
 const MAX_TILT = 0.35;
+const GUIDE_X = 54;
 
 export default function Hero() {
   const t = useTranslations("home.hero");
@@ -45,11 +53,11 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative flex min-h-[calc(100svh-64px)] flex-col overflow-hidden">
+    <section className="relative flex min-h-[calc(100svh-64px-(var(--frame-inset)*2))] flex-col overflow-hidden">
       {/* Step 5 — grid almost invisible */}
       <div className="blueprint-grid pointer-events-none absolute inset-0 opacity-[0.22]" />
 
-      {/* Step 1+2 — monumental sculpture as page plane, not a right column card */}
+      {/* Upper-right sculpture — knot sits above free lower field (no TRUSTED BY) */}
       <div
         ref={artRef}
         className="pointer-events-auto absolute inset-0 z-0"
@@ -57,7 +65,7 @@ export default function Hero() {
         aria-hidden="true"
       >
         <div
-          className="absolute -top-[10%] -right-[8%] bottom-[-12%] left-[42%] transition-transform duration-500 ease-out will-change-transform sm:left-[34%] lg:left-[33%] xl:left-[35%]"
+          className="absolute top-[2%] right-[-2%] h-[58%] w-[58%] transition-transform duration-500 ease-out will-change-transform sm:top-[1%] sm:right-[-1%] sm:h-[56%] sm:w-[54%] lg:top-0 lg:right-0 lg:h-[54%] lg:w-[50%] xl:w-[48%]"
           style={{
             transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
           }}
@@ -67,15 +75,67 @@ export default function Hero() {
             alt=""
             fill
             priority
-            sizes="(max-width: 1024px) 85vw, 68vw"
-            className="object-cover object-[12%_46%] sm:object-[16%_44%] lg:object-[20%_42%] scale-[1.08]"
+            sizes="(max-width: 1024px) 60vw, 48vw"
+            className="object-contain object-right-top"
           />
         </div>
 
-        {/* Soft blend into page bg — no framed rectangle */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-[52%] bg-gradient-to-r from-bg from-35% via-bg/85 to-transparent sm:w-[42%] lg:w-[40%]" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-bg/35 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg/50 to-transparent" />
+        {/* Soft blend into page bg on the left only */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-[48%] bg-gradient-to-r from-bg from-40% via-bg/80 to-transparent sm:w-[40%] lg:w-[38%]" />
+      </div>
+
+      {/* Engineering annotations — section-scoped so leaders land on the ribbon */}
+      <div
+        className="pointer-events-none absolute inset-0 z-20 hidden lg:block"
+        aria-hidden="true"
+      >
+        <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line
+            x1={GUIDE_X}
+            y1="12"
+            x2={GUIDE_X}
+            y2="60"
+            stroke="rgba(80,70,60,0.3)"
+            strokeWidth="1"
+            strokeDasharray="3 3"
+            vectorEffect="non-scaling-stroke"
+          />
+          {PILLARS.map((p) => (
+            <line
+              key={p.label}
+              x1={GUIDE_X}
+              y1={p.y}
+              x2={p.endX}
+              y2={p.endY}
+              stroke="rgba(80,70,60,0.34)"
+              strokeWidth="1"
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+        </svg>
+
+        {PILLARS.map((p) => (
+          <div key={p.label}>
+            <span
+              className="label-mono absolute text-[9px] tracking-[0.2em] text-muted/60"
+              style={{
+                top: `${p.y}%`,
+                right: `${100 - GUIDE_X + 1}%`,
+                transform: "translateY(-50%)",
+              }}
+            >
+              {p.label}
+            </span>
+            <span
+              className="absolute h-[3px] w-[3px] bg-accent"
+              style={{
+                top: `${p.endY}%`,
+                left: `${p.endX}%`,
+                transform: "translate(-50%, -50%)",
+              }}
+            />
+          </div>
+        ))}
       </div>
 
       {/* Copy — airy, lighter weight; sits in the left field of one composition */}
@@ -103,62 +163,38 @@ export default function Hero() {
               <Button href="/services" variant="primary">
                 {t("cta")}
               </Button>
-              <Button href="/about" variant="ghost" showArrow={false}>
+              <Button href="/about#approach" variant="ghost" showArrow={false}>
                 {t("ctaSecondary")}
               </Button>
             </div>
           </BidiBlock>
-
-          {/* Step 4 — strategy pillars as engineering schematic in the mid zone */}
-          <div className="pointer-events-none absolute top-[26%] bottom-[28%] left-[min(52%,calc(100%-11rem))] z-20 hidden lg:block xl:left-[54%]">
-            <div className="relative flex h-full flex-col justify-between py-2">
-              {/* Vertical guide */}
-              <div className="absolute top-0 bottom-0 left-[calc(100%-1px)] w-px bg-[rgba(80,70,60,0.18)]" />
-              {/* Long horizontal datum across mid field toward sculpture */}
-              <div className="absolute top-1/2 right-0 h-px w-[min(28vw,220px)] translate-x-full -translate-y-1/2 bg-[rgba(80,70,60,0.14)]" />
-
-              {PILLARS.map((label, i) => (
-                <div key={label} className="relative flex items-center justify-end gap-3 pr-3">
-                  <span className="label-mono text-[9px] tracking-[0.2em] text-muted/55">
-                    {label}
-                  </span>
-                  {/* Tick + square terminal */}
-                  <span
-                    className="absolute right-0 top-1/2 h-px w-5 -translate-y-1/2 bg-[rgba(80,70,60,0.2)]"
-                    aria-hidden="true"
-                  />
-                  <span
-                    className={`eng-marker absolute right-[-2px] top-1/2 -translate-y-1/2 ${
-                      i % 2 === 1 ? "opacity-40" : "opacity-75"
-                    }`}
-                    aria-hidden="true"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
-        {/* Step 7 — bottom bar as unifier across the composition */}
+        {/* Bottom bar — radar mark + scroll cue with separate arrow icon */}
         <div className="chrome-ltr relative z-10 mx-[var(--page-pad)] flex items-center justify-between gap-4 border-t border-[rgba(80,70,60,0.14)] py-3.5">
           <div className="flex min-w-0 items-center gap-3">
             <span
-              className="relative inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center"
+              className="relative inline-flex h-4 w-4 shrink-0 items-center justify-center"
               aria-hidden="true"
             >
-              <span className="absolute inset-0 rounded-full border border-border-strong/70" />
-              <span className="absolute inset-[2.5px] rounded-full border border-accent/80" />
-              <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-border-strong/70" />
-              <span className="absolute top-1/2 left-0 h-px w-full -translate-y-1/2 bg-border-strong/70" />
+              <span className="absolute inset-0 rounded-full border border-border-strong/80" />
+              <span className="absolute inset-[3px] rounded-full border border-border-strong/60" />
+              <span className="absolute inset-[6px] rounded-full bg-accent/80" />
             </span>
             <span className="label-mono truncate text-[10px] tracking-[0.22em] text-muted/70">
               {t("pillars")}
             </span>
           </div>
-          <span className="label-mono hidden shrink-0 items-center gap-2 text-[10px] tracking-[0.22em] text-muted/70 sm:inline-flex">
-            {t("scrollHint")}
-            <ArrowDown className="h-3 w-3" strokeWidth={1.25} aria-hidden="true" />
-          </span>
+          <div className="hidden shrink-0 items-center gap-4 sm:flex">
+            <span className="label-mono text-[10px] tracking-[0.22em] text-muted/70">
+              {t("scrollHint")}
+            </span>
+            <ArrowDown
+              className="h-3.5 w-3.5 text-muted/70"
+              strokeWidth={1.25}
+              aria-hidden="true"
+            />
+          </div>
         </div>
       </div>
     </section>

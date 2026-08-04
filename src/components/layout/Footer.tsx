@@ -4,11 +4,13 @@ import Container from "@/components/ui/Container";
 import MethodaLogo from "@/components/brand/MethodaLogo";
 import LanguageSwitcher from "./LanguageSwitcher";
 
-const navKeys = ["services", "portfolio", "about", "contact"] as const;
+const navKeys = ["services", "approach", "portfolio", "about", "insights", "contact"] as const;
 const navHrefs: Record<(typeof navKeys)[number], string> = {
   services: "/services",
+  approach: "/about#approach",
   portfolio: "/portfolio",
   about: "/about",
+  insights: "/insights",
   contact: "/contact",
 };
 

@@ -86,7 +86,7 @@ export default async function AboutPage({
         </Container>
       </section>
 
-      <section className="border-t border-border py-20 lg:py-24">
+      <section id="approach" className="scroll-mt-24 border-t border-border py-20 lg:py-24">
         <Container>
           <SectionHeading eyebrow={tApproach("eyebrow")} title={tApproach("title")} />
           <ItemsGrid items={approachItems} />
