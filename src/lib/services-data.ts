@@ -18,6 +18,10 @@ import {
   Mail,
   Headphones,
   Wrench,
+  Layers,
+  Workflow,
+  Server,
+  Megaphone,
   type LucideIcon,
 } from "lucide-react";
 
@@ -47,6 +51,13 @@ export type ServiceCategoryId =
   | "businessAutomation"
   | "infrastructure"
   | "communication";
+
+export const categoryIcons: Record<ServiceCategoryId, LucideIcon> = {
+  digitalProducts: Layers,
+  businessAutomation: Workflow,
+  infrastructure: Server,
+  communication: Megaphone,
+};
 
 export const serviceIcons: Record<ServiceItemId, LucideIcon> = {
   websites: Globe,

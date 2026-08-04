@@ -2,7 +2,11 @@
 
 import clsx from "clsx";
 import { useTranslations } from "next-intl";
-import { serviceCategories, type ServiceCategoryId } from "@/lib/services-data";
+import {
+  categoryIcons,
+  serviceCategories,
+  type ServiceCategoryId,
+} from "@/lib/services-data";
 import BidiBlock from "@/components/ui/BidiBlock";
 
 export default function CategoryNav({
@@ -18,6 +22,7 @@ export default function CategoryNav({
     <nav className="chrome-ltr flex flex-col">
       {serviceCategories.map((cat, index) => {
         const isActive = cat.id === active;
+        const Icon = categoryIcons[cat.id];
         return (
           <button
             key={cat.id}
@@ -36,8 +41,15 @@ export default function CategoryNav({
                 )}
               />
             </span>
-            <span className="flex min-w-0 flex-1 flex-col gap-2">
-              <span className="label-mono text-muted">{tc(`${cat.id}.number`)}</span>
+            <span className="flex min-w-0 flex-1 flex-col gap-2.5">
+              <Icon
+                className={clsx(
+                  "h-4 w-4 transition-colors duration-300",
+                  isActive ? "text-text/75" : "text-muted/55 group-hover:text-muted",
+                )}
+                strokeWidth={1.25}
+                aria-hidden="true"
+              />
               <BidiBlock as="span">
                 <span
                   className={clsx(

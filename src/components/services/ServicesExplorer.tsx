@@ -19,9 +19,8 @@ export default function ServicesExplorer() {
   }
 
   return (
-    <section className="relative border-t border-border py-16 lg:min-h-[calc(100vh-78px)] lg:py-20">
-      <div className="blueprint-grid pointer-events-none absolute inset-0 opacity-25 [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
-      <div className="chrome-ltr relative mx-auto grid w-full max-w-[1600px] grid-cols-1 gap-12 px-6 sm:px-8 lg:grid-cols-[38%_62%] lg:gap-16 lg:px-16 xl:px-20">
+    <section className="section-atmosphere relative border-t border-border py-16 lg:min-h-[calc(100vh-78px)] lg:py-20">
+      <div className="chrome-ltr relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-1 gap-12 px-6 sm:px-8 lg:grid-cols-[38%_62%] lg:gap-16 lg:px-16 xl:px-20">
         <div className="lg:sticky lg:top-28 lg:self-start">
           <CategoryNav active={category} onChange={handleCategoryChange} />
           <p className="chrome-ltr label-mono mt-6 text-muted lg:hidden">

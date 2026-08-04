@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { ServiceItemId } from "@/lib/services-data";
+import { serviceIcons, type ServiceItemId } from "@/lib/services-data";
 import BidiBlock from "@/components/ui/BidiBlock";
 
 export default function ServiceCard({
@@ -16,6 +16,7 @@ export default function ServiceCard({
   onSelect: (id: ServiceItemId) => void;
 }) {
   const ti = useTranslations("services.items");
+  const Icon = serviceIcons[id];
 
   return (
     <motion.button
@@ -27,9 +28,11 @@ export default function ServiceCard({
       className="group relative flex h-full w-full flex-col justify-between bg-bg p-6 text-left transition-colors duration-300 hover:bg-surface/60 sm:p-7"
     >
       <div className="chrome-ltr flex items-center justify-between">
-        <span className="label-mono text-muted">
-          {String(index + 1).padStart(2, "0")}
-        </span>
+        <Icon
+          className="h-4 w-4 text-muted transition-colors duration-300 group-hover:text-text/80"
+          strokeWidth={1.25}
+          aria-hidden="true"
+        />
         <ArrowUpRight
           className="h-4 w-4 text-muted transition-colors duration-300 group-hover:text-accent-secondary"
           strokeWidth={1.5}

@@ -8,6 +8,7 @@ import Container from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { Link } from "@/i18n/navigation";
+import { categoryIcons } from "@/lib/services-data";
 
 const categories = [
   "digitalProducts",
@@ -29,6 +30,7 @@ export default function ServicesTeaser() {
   const t = useTranslations("home.servicesTeaser");
   const tc = useTranslations("services.categories");
   const [active, setActive] = useState<CategoryKey>("digitalProducts");
+  const ActiveIcon = categoryIcons[active];
 
   return (
     <section className="section-atmosphere border-t border-border py-24 lg:py-32">
@@ -64,8 +66,8 @@ export default function ServicesTeaser() {
                 transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                 className="flex h-full flex-1 flex-col"
               >
-                <span className="label-mono text-muted">
-                  {tc(`${active}.number`)}
+                <span className="chrome-ltr inline-flex text-muted" aria-hidden="true">
+                  <ActiveIcon className="h-5 w-5" strokeWidth={1.25} />
                 </span>
                 <div className="mt-auto pt-12">
                   <h3 className="text-content text-3xl font-medium tracking-tight text-text sm:text-4xl lg:text-[42px] lg:leading-[1.1]">
@@ -89,6 +91,7 @@ export default function ServicesTeaser() {
           <div className="flex flex-col gap-px bg-border" role="list">
             {categories.map((key) => {
               const isActive = key === active;
+              const Icon = categoryIcons[key];
 
               return (
                 <Link
@@ -121,14 +124,14 @@ export default function ServicesTeaser() {
                       )}
                       aria-hidden="true"
                     />
-                    <span
+                    <Icon
                       className={clsx(
-                        "label-mono transition-colors duration-300",
+                        "h-4 w-4 shrink-0 transition-colors duration-300",
                         isActive ? "text-text/80" : "text-muted group-hover:text-text/70",
                       )}
-                    >
-                      {tc(`${key}.number`)}
-                    </span>
+                      strokeWidth={1.25}
+                      aria-hidden="true"
+                    />
                   </div>
                   <span
                     className={clsx(
