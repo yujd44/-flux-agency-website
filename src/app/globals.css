@@ -279,123 +279,40 @@ html[lang="ar"] .hero-accent {
   scrollbar-width: none;
 }
 
-/* Soft feather so spiral / fallback dissolves into --color-bg */
-.hero-spiral-mask,
-.hero-ribbon-mask {
-  -webkit-mask-image:
-    linear-gradient(90deg, transparent 0%, black 48%, black 94%, transparent 100%),
-    linear-gradient(180deg, transparent 0%, black 10%, black 92%, transparent 100%);
-  mask-image:
-    linear-gradient(90deg, transparent 0%, black 48%, black 94%, transparent 100%),
-    linear-gradient(180deg, transparent 0%, black 10%, black 92%, transparent 100%);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
+/* Hero video — full-bleed atmosphere + copy-side scrim */
+.hero-bg-video {
+  background-color: #05070a;
 }
 
-.hero-spiral-stage {
-  transform: translate3d(20%, 2%, 0) scale(1.08);
-  transform-origin: 82% 52%;
-}
-
-.hero-edge-fade {
+.hero-video-scrim {
   background:
-    linear-gradient(90deg, var(--color-bg) 0%, transparent 46%),
-    linear-gradient(270deg, var(--color-bg) 0%, transparent 10%),
-    linear-gradient(180deg, var(--color-bg) 0%, transparent 16%),
-    linear-gradient(0deg, var(--color-bg) 0%, transparent 20%);
+    linear-gradient(
+      90deg,
+      rgba(5, 7, 10, 0.78) 0%,
+      rgba(5, 7, 10, 0.52) 34%,
+      rgba(5, 7, 10, 0.18) 58%,
+      rgba(5, 7, 10, 0.08) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(5, 7, 10, 0.35) 0%,
+      transparent 22%,
+      transparent 72%,
+      rgba(5, 7, 10, 0.72) 100%
+    );
 }
 
-/* Whole-sculpture soft float — museum-calm breath */
-@keyframes hero-sculpture-float {
-  0%,
-  100% {
-    transform: translate3d(0, 4px, 0);
-  }
-  50% {
-    transform: translate3d(0, -8px, 0);
-  }
-}
-
-.hero-sculpture-float {
-  animation: hero-sculpture-float 14s ease-in-out infinite;
-  will-change: transform;
-}
-
-/* Soft violet atmosphere behind the sculpture */
-@keyframes hero-spiral-glow {
-  0%,
-  100% {
-    opacity: 0.55;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.78;
-    transform: scale(1.03);
-  }
-}
-
-.hero-spiral-glow {
+/* Mid-page cinematic band — feather into page bg */
+.cinematic-band-scrim {
   background:
-    radial-gradient(ellipse 42% 40% at 80% 48%, rgba(107, 63, 160, 0.22) 0%, transparent 72%),
-    radial-gradient(ellipse 30% 28% at 84% 42%, rgba(180, 60, 140, 0.12) 0%, transparent 70%),
-    radial-gradient(ellipse 28% 24% at 76% 72%, rgba(40, 36, 72, 0.18) 0%, transparent 68%);
-  mix-blend-mode: screen;
-  animation: hero-spiral-glow 9s ease-in-out infinite;
-  will-change: opacity, transform;
-}
-
-@keyframes hero-floor-glow {
-  0%,
-  100% {
-    opacity: 0.55;
-  }
-  50% {
-    opacity: 0.78;
-  }
-}
-
-.hero-floor-glow {
-  background: radial-gradient(
-    ellipse 72% 58% at 78% 100%,
-    rgba(107, 63, 160, 0.22) 0%,
-    rgba(160, 55, 120, 0.12) 34%,
-    rgba(40, 36, 72, 0.1) 56%,
-    transparent 80%
-  );
-  animation: hero-floor-glow 9s ease-in-out infinite;
-}
-
-@keyframes hero-dust-drift {
-  0%,
-  100% {
-    opacity: 0.12;
-    transform: translate3d(0, 0, 0);
-  }
-  40% {
-    opacity: 0.32;
-  }
-  50% {
-    opacity: 0.2;
-    transform: translate3d(6px, -12px, 0);
-  }
-}
-
-.hero-dust {
-  opacity: 0.22;
-  box-shadow: 0 0 4px rgba(200, 180, 255, 0.25);
-  animation-name: hero-dust-drift;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  will-change: transform, opacity;
+    linear-gradient(180deg, var(--color-bg) 0%, transparent 28%, transparent 72%, var(--color-bg) 100%),
+    linear-gradient(90deg, rgba(5, 7, 10, 0.25) 0%, transparent 40%, transparent 60%, rgba(5, 7, 10, 0.25) 100%);
 }
 
 /* Magnetic primary CTA — subtle pull on hover */
 .hero-cta-magnetic {
   transition: filter 0.2s ease;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
 }
 
 .hero-cta-magnetic:hover {
@@ -432,13 +349,6 @@ html[lang="ar"] .hero-accent {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-sculpture-float,
-  .hero-spiral-glow,
-  .hero-floor-glow,
-  .hero-dust {
-    animation: none !important;
-  }
-
   .portal-wipe-active {
     animation: none;
     opacity: 0;
