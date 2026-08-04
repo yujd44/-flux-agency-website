@@ -3,7 +3,14 @@ import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing, rtlLocales, type Locale } from "@/i18n/routing";
-import { fontLatin, fontMono, fontHeadline, fontHebrew, fontArabic } from "@/lib/fonts";
+import {
+  fontLatin,
+  fontMono,
+  fontHeadline,
+  fontAccent,
+  fontHebrew,
+  fontArabic,
+} from "@/lib/fonts";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import "../globals.css";
@@ -45,7 +52,7 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       dir={dir}
-      className={`${fontLatin.variable} ${fontMono.variable} ${fontHeadline.variable} ${fontHebrew.variable} ${fontArabic.variable} h-full antialiased`}
+      className={`${fontLatin.variable} ${fontMono.variable} ${fontHeadline.variable} ${fontAccent.variable} ${fontHebrew.variable} ${fontArabic.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-bg text-text">
         <NextIntlClientProvider messages={messages}>

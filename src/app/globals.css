@@ -8,7 +8,7 @@
   --color-border-strong: rgba(80, 70, 60, 0.18);
   --color-text: #161616;
   --color-muted: #555555;
-  --color-accent: #b89c7a;
+  --color-accent: #a68a78;
   --color-accent-secondary: #8d735d;
   --color-accent-soft: rgba(184, 156, 122, 0.16);
   --color-button: #111111;
@@ -152,10 +152,10 @@ html[lang="ar"] body {
   background: var(--color-accent);
 }
 
-/* Hero headline — Manrope geometric grotesk ~400 (nav stays mono) */
+/* Hero headline — geometric grotesk (nav stays mono) */
 .hero-headline {
   font-family: var(--font-headline), var(--font-latin), system-ui, sans-serif;
-  font-weight: 400;
+  font-weight: 500;
 }
 
 html[lang="he"] .hero-headline {
@@ -166,11 +166,23 @@ html[lang="ar"] .hero-headline {
   font-family: var(--font-ar), var(--font-headline), system-ui, sans-serif;
 }
 
-/* Headline accent — warm sand, same face, not a loud separate object */
+/* Headline accent — refined serif italic, muted tan (mock) */
 .hero-accent {
   color: var(--color-accent);
-  font-weight: 400;
-  font-style: normal;
+  font-family: var(--font-accent), var(--font-headline), Georgia, serif;
+  font-weight: 500;
+  font-style: italic;
+  letter-spacing: 0.01em;
+}
+
+html[lang="he"] .hero-accent {
+  font-family: var(--font-he), var(--font-accent), serif;
+  font-style: italic;
+}
+
+html[lang="ar"] .hero-accent {
+  font-family: var(--font-ar), var(--font-accent), serif;
+  font-style: italic;
 }
 
 /* Primary button base (architectural, no glow/gradient) */
@@ -233,9 +245,9 @@ html[lang="ar"] .hero-headline {
   letter-spacing: 0.2em;
   text-transform: uppercase;
   text-decoration: underline;
-  text-underline-offset: 6px;
+  text-underline-offset: 7px;
   text-decoration-thickness: 1px;
-  text-decoration-color: var(--color-accent);
+  text-decoration-color: rgba(22, 22, 22, 0.55);
   transition: color 0.2s ease, text-decoration-color 0.2s ease;
 }
 

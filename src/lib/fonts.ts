@@ -1,4 +1,5 @@
 import {
+  Cormorant_Garamond,
   Geist,
   Geist_Mono,
   IBM_Plex_Sans_Hebrew,
@@ -20,11 +21,23 @@ export const fontMono = Geist_Mono({
   display: "swap",
 });
 
-/** Hero headline — geometric grotesk ~400; Cyrillic (Fontshare General Sans/Switzer lack it). */
+/** Hero headline — geometric grotesk; Cyrillic-capable. */
 export const fontHeadline = Manrope({
   variable: "--font-headline",
   subsets: ["latin", "cyrillic"],
-  weight: ["400", "500"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+});
+
+/**
+ * Accent word ("intelligent") — refined serif italic (mock).
+ * Cormorant covers Latin + Cyrillic; HE/AR fall back in CSS.
+ */
+export const fontAccent = Cormorant_Garamond({
+  variable: "--font-accent",
+  subsets: ["latin", "cyrillic"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 

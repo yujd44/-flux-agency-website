@@ -26,11 +26,11 @@ export default function Header() {
 
   return (
     <>
-      <header className="fixed top-[var(--frame-inset)] right-[var(--frame-inset)] left-[var(--frame-inset)] z-50 border-b border-border/50 bg-bg/70 backdrop-blur-[1.5px]">
-        <div className="chrome-ltr mx-auto flex w-full max-w-[var(--page-max)] items-center justify-between px-[var(--page-pad)] py-5">
-          <MethodaLogo size={22} />
+      <header className="fixed top-[var(--frame-inset)] right-[var(--frame-inset)] left-[var(--frame-inset)] z-50 border-b border-border/40 bg-bg/55 backdrop-blur-[1px]">
+        <div className="chrome-ltr mx-auto flex w-full max-w-[var(--page-max)] items-center justify-between px-[var(--page-pad)] py-[1.15rem]">
+          <MethodaLogo size={20} />
 
-          <nav className="hidden items-center gap-11 xl:gap-14 lg:flex">
+          <nav className="hidden items-center gap-10 xl:gap-12 lg:flex">
             {navKeys.map((key) => {
               const href = navHrefs[key];
               const pathOnly = href.split("#")[0] ?? href;
@@ -40,8 +40,8 @@ export default function Header() {
                   key={key}
                   href={href}
                   className={clsx(
-                    "label-mono text-content text-[10px] font-normal tracking-[0.3em] transition-colors duration-200",
-                    active ? "text-text" : "text-muted/75 hover:text-text",
+                    "label-mono text-content text-[10px] font-normal tracking-[0.28em] transition-colors duration-200",
+                    active ? "text-text" : "text-muted/70 hover:text-text",
                   )}
                 >
                   {t(key)}
@@ -50,17 +50,17 @@ export default function Header() {
             })}
           </nav>
 
-          <div className="hidden items-center gap-5 lg:flex">
+          <div className="hidden items-center gap-4 lg:flex">
             <Link
               href="/contact"
-              className="chrome-ltr inline-flex h-[38px] items-center gap-2 border border-border-strong/80 px-3.5 text-[10px] font-normal tracking-[0.28em] uppercase text-text/90 transition-colors hover:border-accent-secondary"
+              className="chrome-ltr inline-flex h-[36px] items-center gap-2 border border-[rgba(22,22,22,0.55)] px-3.5 text-[10px] font-normal tracking-[0.26em] uppercase text-text transition-colors hover:border-accent-secondary"
               style={{ fontFamily: "var(--font-geist-mono), ui-monospace, monospace" }}
             >
-              <LayoutGrid className="h-3 w-3 opacity-60" strokeWidth={1.25} />
+              <LayoutGrid className="h-3 w-3 opacity-55" strokeWidth={1.25} />
               <span>{t("letsTalk")}</span>
               <ArrowRight className="h-3 w-3 rtl:-scale-x-100" strokeWidth={1.25} />
             </Link>
-            <LanguageSwitcher className="[&_button]:text-[10px] [&_button]:tracking-[0.26em]" />
+            <LanguageSwitcher className="[&_button]:text-[10px] [&_button]:tracking-[0.24em]" />
           </div>
 
           <button
