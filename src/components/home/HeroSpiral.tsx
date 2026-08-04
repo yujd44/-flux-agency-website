@@ -18,7 +18,8 @@ const SPIRAL: SpiralParams = {
   height: 4.35,
   width: 0.92,
   thickness: 0.155,
-  segments: 220,
+  // Dense enough for smooth curves without looking faceted while spinning
+  segments: 360,
 };
 
 /** Helix frame: center + orthonormal basis (tangent, binormal, normal). */
@@ -38,47 +39,44 @@ function frameAt(t: number, p: SpiralParams) {
   let binormal = new THREE.Vector3().crossVectors(tangent, radial).normalize();
   if (binormal.lengthSq() < 1e-4) binormal.set(0, 1, 0);
   const normal = new THREE.Vector3().crossVectors(binormal, tangent).normalize();
-  // Re-orthogonalize binormal for a stable ribbon face
   binormal = new THREE.Vector3().crossVectors(tangent, normal).normalize();
 
   return { center, tangent, binormal, normal };
 }
 
 /**
- * Rim palette matched to reference:
- * cool teal/cyan at the base → magenta/pink mid → warm orange-magenta on upper edges.
+ * Brand rim: teal/cyan base → magenta mid → orange/pink upper edge.
  */
 function rimColor(t: number, out: THREE.Color) {
-  const cyan = new THREE.Color("#2ecfc4");
-  const teal = new THREE.Color("#1aa8b8");
+  const cyan = new THREE.Color("#2ee6d8");
+  const teal = new THREE.Color("#1ab8c4");
   const magenta = new THREE.Color("#e056c5");
-  const pink = new THREE.Color("#ff6b9d");
-  const orange = new THREE.Color("#ff7a4a");
+  const violet = new THREE.Color("#b86cff");
+  const orange = new THREE.Color("#ff7a45");
 
-  if (t < 0.28) {
-    const k = t / 0.28;
-    return out.copy(cyan).lerp(teal, k * 0.55);
+  if (t < 0.26) {
+    const k = t / 0.26;
+    return out.copy(cyan).lerp(teal, k * 0.5);
   }
-  if (t < 0.55) {
-    const k = (t - 0.28) / 0.27;
-    return out.copy(teal).lerp(magenta, 0.35 + k * 0.65);
+  if (t < 0.52) {
+    const k = (t - 0.26) / 0.26;
+    return out.copy(teal).lerp(magenta, 0.25 + k * 0.75);
   }
-  if (t < 0.78) {
-    const k = (t - 0.55) / 0.23;
-    return out.copy(magenta).lerp(pink, k);
+  if (t < 0.74) {
+    const k = (t - 0.52) / 0.22;
+    return out.copy(magenta).lerp(violet, k * 0.55);
   }
-  return out.copy(pink).lerp(orange, (t - 0.78) / 0.22);
+  return out.copy(violet).lerp(orange, (t - 0.74) / 0.26);
 }
 
 /**
- * Soft lilac/cream wash along the helix — readable on metal+clearcoat,
- * warm→cool so faces carry gradient, not only the rim.
+ * Readable mid-tone body wash — warm gray / lilac, not charcoal void.
  */
 function bodyTint(t: number, out: THREE.Color) {
-  const cool = new THREE.Color("#c9d4e6"); // cool blue-lilac at base
-  const cream = new THREE.Color("#efe6dc"); // soft cream mid
-  const lilac = new THREE.Color("#e4d6e8"); // muted lilac
-  const warm = new THREE.Color("#f0d5c4"); // peach warmth toward top
+  const cool = new THREE.Color("#c5d0e4");
+  const cream = new THREE.Color("#ebe2d8");
+  const lilac = new THREE.Color("#ddd0e4");
+  const warm = new THREE.Color("#edd4c4");
   if (t < 0.32) {
     return out.copy(cool).lerp(cream, t / 0.32);
   }
@@ -89,12 +87,11 @@ function bodyTint(t: number, out: THREE.Color) {
 }
 
 /**
- * Thick helical slab — smooth premium body with soft face tint.
- * Cross-section: width × thickness rectangle swept along helix.
+ * Opaque helical slab — width × thickness rectangle swept along helix.
+ * Opaque only: no transparency sorting / shreds when layers overlap.
  */
 function buildRibbonGeometry(p: SpiralParams) {
   const positions: number[] = [];
-  const normals: number[] = [];
   const colors: number[] = [];
   const uvs: number[] = [];
   const indices: number[] = [];
@@ -103,15 +100,14 @@ function buildRibbonGeometry(p: SpiralParams) {
 
   const hw = p.width * 0.5;
   const ht = p.thickness * 0.5;
-  // Local cross-section corners in (binormal, normal) plane
   const corners: [number, number][] = [
     [-hw, -ht],
     [hw, -ht],
     [hw, ht],
     [-hw, ht],
   ];
-  const creamWash = new THREE.Color("#f7eee6");
-  const coolWash = new THREE.Color("#d2dceb");
+  const creamWash = new THREE.Color("#f4ebe3");
+  const coolWash = new THREE.Color("#d0dae8");
 
   for (let i = 0; i <= p.segments; i++) {
     const t = i / p.segments;
@@ -125,17 +121,12 @@ function buildRibbonGeometry(p: SpiralParams) {
         .addScaledVector(binormal, u)
         .addScaledVector(normal, v);
       positions.push(pos.x, pos.y, pos.z);
-      // Approximate face normal; refined by computeVertexNormals for smooth sides
-      const n = normal.clone().multiplyScalar(v >= 0 ? 1 : -1);
-      if (Math.abs(u) > hw * 0.85) {
-        n.copy(binormal).multiplyScalar(u > 0 ? 1 : -1);
-      }
-      normals.push(n.x, n.y, n.z);
-      // Across-ribbon wash + slight face lift so planes read with depth
+
       const k = (u / hw + 1) * 0.5;
       across.copy(coolWash).lerp(creamWash, k);
-      const face = tint.clone().lerp(across, 0.28);
-      const faceLift = Math.abs(v) > ht * 0.5 ? 1.05 : 0.97;
+      const face = tint.clone().lerp(across, 0.32);
+      // Slight face lift so top planes read brighter than underside
+      const faceLift = v >= 0 ? 1.08 : 0.92;
       colors.push(face.r * faceLift, face.g * faceLift, face.b * faceLift);
       uvs.push(t * p.turns, c < 2 ? 0 : 1);
     }
@@ -143,7 +134,6 @@ function buildRibbonGeometry(p: SpiralParams) {
     if (i < p.segments) {
       const a = i * 4;
       const b = a + 4;
-      // Side quads
       for (let e = 0; e < 4; e++) {
         const e1 = (e + 1) % 4;
         indices.push(a + e, a + e1, b + e, a + e1, b + e1, b + e);
@@ -151,14 +141,12 @@ function buildRibbonGeometry(p: SpiralParams) {
     }
   }
 
-  // Cap ends
   const last = p.segments * 4;
   indices.push(0, 1, 2, 0, 2, 3);
   indices.push(last + 0, last + 2, last + 1, last + 0, last + 3, last + 2);
 
   const geo = new THREE.BufferGeometry();
   geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-  geo.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
   geo.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
   geo.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
   geo.setIndex(indices);
@@ -166,103 +154,55 @@ function buildRibbonGeometry(p: SpiralParams) {
   return geo;
 }
 
-/** Thin emissive strip along outer + inner rim edges only. */
-function buildRimGeometry(p: SpiralParams, side: 1 | -1, rimHalf = 0.028) {
-  const positions: number[] = [];
-  const colors: number[] = [];
-  const indices: number[] = [];
-  const col = new THREE.Color();
+/** Path along outer/inner top rim of the slab. */
+function rimPath(p: SpiralParams, side: 1 | -1, lift = 0.003): THREE.Vector3[] {
+  const pts: THREE.Vector3[] = [];
   const hw = p.width * 0.5;
   const ht = p.thickness * 0.5;
-
   for (let i = 0; i <= p.segments; i++) {
     const t = i / p.segments;
-    const { center, tangent, binormal, normal } = frameAt(t, p);
-    // Outer/inner edge center, slightly proud of the slab face
-    const base = center
-      .clone()
-      .addScaledVector(binormal, side * hw)
-      .addScaledVector(normal, ht + 0.004);
-
-    const a = base
-      .clone()
-      .addScaledVector(tangent, rimHalf)
-      .addScaledVector(binormal, side * 0.012);
-    const b = base
-      .clone()
-      .addScaledVector(tangent, -rimHalf)
-      .addScaledVector(binormal, side * -0.006)
-      .addScaledVector(normal, -0.01);
-
-    positions.push(a.x, a.y, a.z, b.x, b.y, b.z);
-    rimColor(t, col);
-    colors.push(col.r, col.g, col.b, col.r * 0.55, col.g * 0.55, col.b * 0.65);
-
-    if (i < p.segments) {
-      const i0 = i * 2;
-      indices.push(i0, i0 + 1, i0 + 2, i0 + 1, i0 + 3, i0 + 2);
-    }
+    const { center, binormal, normal } = frameAt(t, p);
+    pts.push(
+      center
+        .clone()
+        .addScaledVector(binormal, side * hw)
+        .addScaledVector(normal, ht + lift),
+    );
   }
-
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-  geo.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
-  geo.setIndex(indices);
-  geo.computeVertexNormals();
-  return geo;
+  return pts;
 }
 
-/** Soft wider halo behind the hard rim — glow bleed onto concrete. */
-function buildRimHaloGeometry(p: SpiralParams, side: 1 | -1) {
-  const positions: number[] = [];
-  const colors: number[] = [];
-  const indices: number[] = [];
+/**
+ * Opaque emissive rim tube — no transparency, no DoubleSide shreds.
+ * Vertex colors follow brand teal → magenta → orange along the helix.
+ */
+function buildRimTube(
+  p: SpiralParams,
+  side: 1 | -1,
+  tubeRadius: number,
+  colorScale = 1,
+  lift = 0.003,
+) {
+  const pts = rimPath(p, side, lift);
+  const curve = new THREE.CatmullRomCurve3(pts, false, "catmullrom", 0.35);
+  const tubular = p.segments;
+  const radial = 6;
+  const geo = new THREE.TubeGeometry(curve, tubular, tubeRadius, radial, false);
+
   const col = new THREE.Color();
-  const hw = p.width * 0.5;
-  const ht = p.thickness * 0.5;
-  const rimHalf = 0.055;
-
-  for (let i = 0; i <= p.segments; i++) {
-    const t = i / p.segments;
-    const { center, tangent, binormal, normal } = frameAt(t, p);
-    const base = center
-      .clone()
-      .addScaledVector(binormal, side * (hw - 0.02))
-      .addScaledVector(normal, ht + 0.001);
-
-    const a = base
-      .clone()
-      .addScaledVector(tangent, rimHalf)
-      .addScaledVector(binormal, side * 0.03)
-      .addScaledVector(normal, 0.012);
-    const b = base
-      .clone()
-      .addScaledVector(tangent, -rimHalf)
-      .addScaledVector(binormal, side * -0.05)
-      .addScaledVector(normal, -0.02);
-
-    positions.push(a.x, a.y, a.z, b.x, b.y, b.z);
+  const colors = new Float32Array(geo.attributes.position.count * 3);
+  for (let i = 0; i <= tubular; i++) {
+    const t = i / tubular;
     rimColor(t, col);
-    // Dimmer halo so it reads as soft bleed, not a second hard edge
-    colors.push(
-      col.r * 0.55,
-      col.g * 0.5,
-      col.b * 0.6,
-      col.r * 0.12,
-      col.g * 0.14,
-      col.b * 0.18,
-    );
-
-    if (i < p.segments) {
-      const i0 = i * 2;
-      indices.push(i0, i0 + 1, i0 + 2, i0 + 1, i0 + 3, i0 + 2);
+    col.multiplyScalar(colorScale);
+    for (let j = 0; j <= radial; j++) {
+      const idx = i * (radial + 1) + j;
+      colors[idx * 3] = col.r;
+      colors[idx * 3 + 1] = col.g;
+      colors[idx * 3 + 2] = col.b;
     }
   }
-
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
   geo.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
-  geo.setIndex(indices);
   geo.computeVertexNormals();
   return geo;
 }
@@ -274,17 +214,17 @@ function buildRimHaloGeometry(p: SpiralParams, side: 1 | -1) {
 function makeStudioEnv(renderer: THREE.WebGLRenderer) {
   const pmrem = new THREE.PMREMGenerator(renderer);
   const envScene = new THREE.Scene();
-  envScene.add(new THREE.HemisphereLight(0xfff0e6, 0x1a2838, 1.1));
-  const key = new THREE.DirectionalLight(0xffe4d4, 1.4);
+  envScene.add(new THREE.HemisphereLight(0xfff2e8, 0x1a2838, 1.25));
+  const key = new THREE.DirectionalLight(0xffe8d8, 1.55);
   key.position.set(3.5, 4.5, 2.5);
   envScene.add(key);
-  const cool = new THREE.DirectionalLight(0xa8c4e8, 0.85);
+  const cool = new THREE.DirectionalLight(0xb0c8ec, 0.95);
   cool.position.set(-2.5, 1.2, 3);
   envScene.add(cool);
-  const magenta = new THREE.DirectionalLight(0xff8ec8, 0.35);
+  const magenta = new THREE.DirectionalLight(0xff8ec8, 0.45);
   magenta.position.set(1.2, 0.8, -3);
   envScene.add(magenta);
-  const teal = new THREE.PointLight(0x2ecfc4, 0.55, 12, 2);
+  const teal = new THREE.PointLight(0x2ecfc4, 0.7, 12, 2);
   teal.position.set(0, -2.5, 1.5);
   envScene.add(teal);
   const envMap = pmrem.fromScene(envScene, 0.04).texture;
@@ -293,7 +233,7 @@ function makeStudioEnv(renderer: THREE.WebGLRenderer) {
 }
 
 /**
- * Dedicated WebGL spiral — polished physical ribbon + neon rim, soft studio lit.
+ * Dedicated WebGL spiral — opaque physical body + emissive rim tubes.
  * Resource-aware: capped DPR, soft shadows, pauses off-screen / reduced-motion.
  */
 export default function HeroSpiral() {
@@ -323,8 +263,8 @@ export default function HeroSpiral() {
     }
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 50);
-    // Frame further right — leave left clear for copy
+    // Slightly wider near plane margin so spinning edges stay in frustum
+    const camera = new THREE.PerspectiveCamera(36, 1, 0.2, 60);
     camera.position.set(3.85, 0.45, 5.55);
     camera.lookAt(1.55, -0.08, 0);
 
@@ -333,8 +273,7 @@ export default function HeroSpiral() {
     renderer.setClearColor(0x000000, 0);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    // Keep midtones readable on dark page bg (avoid crushed charcoal body)
-    renderer.toneMappingExposure = 1.12;
+    renderer.toneMappingExposure = 1.18;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mount.appendChild(renderer.domElement);
@@ -348,7 +287,6 @@ export default function HeroSpiral() {
     scene.environment = envMap;
 
     const group = new THREE.Group();
-    // Sit on the right; slight lean away from vertical (reference tilt)
     group.position.set(1.62, -0.22, 0);
     const baseTiltX = -0.34;
     const baseTiltZ = 0.2;
@@ -358,64 +296,61 @@ export default function HeroSpiral() {
 
     const ribbonGeo = buildRibbonGeometry(SPIRAL);
     const ribbonMat = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color("#ebe6e2"),
-      roughness: 0.28,
-      metalness: 0.62,
-      clearcoat: 0.78,
-      clearcoatRoughness: 0.18,
+      color: new THREE.Color("#f0ebe6"),
+      roughness: 0.32,
+      metalness: 0.38,
+      clearcoat: 0.92,
+      clearcoatRoughness: 0.14,
       ior: 1.45,
       flatShading: false,
       vertexColors: true,
-      // Quiet fill so deep folds stay readable without flattening shine
-      emissive: new THREE.Color("#3a4250"),
-      emissiveIntensity: 0.06,
+      // Quiet fill so folds stay readable against dark page bg
+      emissive: new THREE.Color("#4a4558"),
+      emissiveIntensity: 0.09,
       envMap,
-      envMapIntensity: 0.95,
+      envMapIntensity: 1.05,
+      side: THREE.FrontSide,
     });
     const ribbon = new THREE.Mesh(ribbonGeo, ribbonMat);
     ribbon.castShadow = true;
     ribbon.receiveShadow = true;
     group.add(ribbon);
 
+    // Opaque rim tubes — hard edge + softer wider tube (no alpha sorting)
     const rimMat = new THREE.MeshBasicMaterial({
       vertexColors: true,
-      transparent: true,
-      opacity: 0.95,
-      side: THREE.DoubleSide,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
+      toneMapped: false,
+      side: THREE.FrontSide,
     });
     const haloMat = new THREE.MeshBasicMaterial({
       vertexColors: true,
-      transparent: true,
-      opacity: 0.42,
-      side: THREE.DoubleSide,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
+      toneMapped: false,
+      side: THREE.FrontSide,
     });
-    const rimOuterGeo = buildRimGeometry(SPIRAL, 1);
-    const rimInnerGeo = buildRimGeometry(SPIRAL, -1, 0.022);
-    const haloOuterGeo = buildRimHaloGeometry(SPIRAL, 1);
-    const haloInnerGeo = buildRimHaloGeometry(SPIRAL, -1);
+    const rimOuterGeo = buildRimTube(SPIRAL, 1, 0.016, 1.05, 0.004);
+    const rimInnerGeo = buildRimTube(SPIRAL, -1, 0.013, 0.95, 0.004);
+    const haloOuterGeo = buildRimTube(SPIRAL, 1, 0.038, 0.38, 0.002);
+    const haloInnerGeo = buildRimTube(SPIRAL, -1, 0.032, 0.32, 0.002);
     const rimOuter = new THREE.Mesh(rimOuterGeo, rimMat);
     const rimInner = new THREE.Mesh(rimInnerGeo, rimMat);
     const haloOuter = new THREE.Mesh(haloOuterGeo, haloMat);
     const haloInner = new THREE.Mesh(haloInnerGeo, haloMat);
+    // Draw soft glow first, hard rim on top; both write depth → no shreds
     group.add(haloOuter, haloInner, rimOuter, rimInner);
 
-    // Dark soft floor + quiet reflective catcher under the sculpture
     const floorY = -SPIRAL.height * 0.48;
-    const floorGeo = new THREE.CircleGeometry(3.6, 48);
+    const floorGeo = new THREE.CircleGeometry(3.6, 64);
     const floorMat = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color("#08090c"),
-      metalness: 0.55,
-      roughness: 0.38,
-      clearcoat: 0.25,
-      clearcoatRoughness: 0.45,
+      color: new THREE.Color("#0a0b10"),
+      metalness: 0.45,
+      roughness: 0.42,
+      clearcoat: 0.2,
+      clearcoatRoughness: 0.5,
       transparent: true,
-      opacity: 0.52,
+      opacity: 0.62,
       envMap,
-      envMapIntensity: 0.45,
+      envMapIntensity: 0.4,
+      depthWrite: false,
     });
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
@@ -423,22 +358,31 @@ export default function HeroSpiral() {
     floor.receiveShadow = true;
     scene.add(floor);
 
-    // Cool teal/cyan ground glow under the base (reference)
-    const glowGeo = new THREE.CircleGeometry(2.35, 32);
+    // Opaque contact shadow catcher — real soft shadow without alpha shreds
+    const shadowCatcherGeo = new THREE.CircleGeometry(2.8, 48);
+    const shadowCatcherMat = new THREE.ShadowMaterial({
+      opacity: 0.45,
+    });
+    const shadowCatcher = new THREE.Mesh(shadowCatcherGeo, shadowCatcherMat);
+    shadowCatcher.rotation.x = -Math.PI / 2;
+    shadowCatcher.position.set(1.62, floorY + 0.002, 0.2);
+    shadowCatcher.receiveShadow = true;
+    scene.add(shadowCatcher);
+
+    const glowGeo = new THREE.CircleGeometry(2.35, 40);
     const glowMat = new THREE.MeshBasicMaterial({
       color: new THREE.Color("#1fc4c0"),
       transparent: true,
-      opacity: 0.28,
+      opacity: 0.26,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
     const glow = new THREE.Mesh(glowGeo, glowMat);
     glow.rotation.x = -Math.PI / 2;
-    glow.position.set(1.65, floorY + 0.01, 0.15);
+    glow.position.set(1.65, floorY + 0.008, 0.15);
     scene.add(glow);
 
-    // Soft magenta bloom disc slightly above floor for warm bounce
-    const warmGlowGeo = new THREE.CircleGeometry(1.6, 28);
+    const warmGlowGeo = new THREE.CircleGeometry(1.6, 32);
     const warmGlowMat = new THREE.MeshBasicMaterial({
       color: new THREE.Color("#c44aa8"),
       transparent: true,
@@ -448,17 +392,16 @@ export default function HeroSpiral() {
     });
     const warmGlow = new THREE.Mesh(warmGlowGeo, warmGlowMat);
     warmGlow.rotation.x = -Math.PI / 2;
-    warmGlow.position.set(1.75, floorY + 0.015, -0.1);
+    warmGlow.position.set(1.75, floorY + 0.012, -0.1);
     scene.add(warmGlow);
 
-    // Soft studio lights — shaped for metal/clearcoat without neon candy
-    const hemi = new THREE.HemisphereLight(0xf4efe8, 0x2a3545, 0.55);
+    const hemi = new THREE.HemisphereLight(0xf4efe8, 0x2a3545, 0.62);
     scene.add(hemi);
 
-    const ambient = new THREE.AmbientLight(0xb8c0cc, 0.28);
+    const ambient = new THREE.AmbientLight(0xc0c6d0, 0.32);
     scene.add(ambient);
 
-    const key = new THREE.DirectionalLight(0xfff1e6, 1.15);
+    const key = new THREE.DirectionalLight(0xfff1e6, 1.25);
     key.position.set(4.2, 5.5, 3.8);
     key.castShadow = true;
     key.shadow.mapSize.set(1024, 1024);
@@ -469,29 +412,27 @@ export default function HeroSpiral() {
     key.shadow.camera.top = 5;
     key.shadow.camera.bottom = -5;
     key.shadow.bias = -0.00035;
-    key.shadow.normalBias = 0.02;
-    key.shadow.radius = 3.5;
+    key.shadow.normalBias = 0.025;
+    key.shadow.radius = 4;
     scene.add(key);
 
-    // Camera-facing fill — keeps the ribbon face readable, not a silhouette
-    const fill = new THREE.DirectionalLight(0xd8e4f2, 0.62);
+    const fill = new THREE.DirectionalLight(0xd8e4f2, 0.7);
     fill.position.set(camera.position.x - 0.4, 1.6, camera.position.z + 0.6);
     scene.add(fill);
 
-    const sideFill = new THREE.DirectionalLight(0xb8c4d8, 0.38);
+    const sideFill = new THREE.DirectionalLight(0xb8c4d8, 0.42);
     sideFill.position.set(-3.5, 1.8, 2.2);
     scene.add(sideFill);
 
-    const rimLight = new THREE.DirectionalLight(0xff8ab8, 0.42);
+    const rimLight = new THREE.DirectionalLight(0xff8ab8, 0.5);
     rimLight.position.set(1.5, 1.2, -4);
     scene.add(rimLight);
 
-    // Cool bounce from below (reads as floor teal reflection)
-    const bounce = new THREE.PointLight(0x2ecfc4, 0.7, 8, 2);
+    const bounce = new THREE.PointLight(0x2ecfc4, 0.78, 8, 2);
     bounce.position.set(1.7, floorY + 0.4, 1.2);
     scene.add(bounce);
 
-    const warmBounce = new THREE.PointLight(0xff9a6b, 0.48, 7, 2);
+    const warmBounce = new THREE.PointLight(0xff9a6b, 0.55, 7, 2);
     warmBounce.position.set(2.0, 0.6, -1.2);
     scene.add(warmBounce);
 
@@ -544,15 +485,13 @@ export default function HeroSpiral() {
       last = now;
       clock.t += dt;
 
-      // Gentle helix turn — keep base tilt, breathe slightly on X
-      group.rotation.y = clock.t * 0.26;
-      group.rotation.x = baseTiltX + Math.sin(clock.t * 0.4) * 0.03;
+      // Gentle helix turn — keep base tilt, slight breath on X/Y
+      group.rotation.y = clock.t * 0.22;
+      group.rotation.x = baseTiltX + Math.sin(clock.t * 0.4) * 0.025;
       group.rotation.z = baseTiltZ;
-      group.position.y = -0.22 + Math.sin(clock.t * 0.5) * 0.04;
+      group.position.y = -0.22 + Math.sin(clock.t * 0.5) * 0.035;
 
-      rimMat.opacity = 0.88 + Math.sin(clock.t * 1.05) * 0.08;
-      haloMat.opacity = 0.36 + Math.sin(clock.t * 0.85) * 0.08;
-      glowMat.opacity = 0.22 + Math.sin(clock.t * 0.85) * 0.06;
+      glowMat.opacity = 0.2 + Math.sin(clock.t * 0.85) * 0.05;
 
       renderer.render(scene, camera);
       raf = requestAnimationFrame(tick);
@@ -575,6 +514,8 @@ export default function HeroSpiral() {
       haloMat.dispose();
       floorGeo.dispose();
       floorMat.dispose();
+      shadowCatcherGeo.dispose();
+      shadowCatcherMat.dispose();
       glowGeo.dispose();
       glowMat.dispose();
       warmGlowGeo.dispose();
