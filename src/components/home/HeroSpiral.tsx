@@ -71,14 +71,30 @@ function rimColor(t: number, out: THREE.Color) {
 }
 
 /**
- * Thick helical slab — matte concrete body (no face gradient).
+ * Subtle warm→cool tint along the helix (reads premium on light concrete).
+ * Base is near-white so MeshStandardMaterial albedo stays bright.
+ */
+function bodyTint(t: number, out: THREE.Color) {
+  const cool = new THREE.Color("#d8e0ea"); // soft blue-gray mid/base
+  const mid = new THREE.Color("#e8e4e0"); // neutral warm concrete
+  const warm = new THREE.Color("#f0ddd0"); // peach warmth toward top
+  if (t < 0.45) {
+    return out.copy(cool).lerp(mid, t / 0.45);
+  }
+  return out.copy(mid).lerp(warm, (t - 0.45) / 0.55);
+}
+
+/**
+ * Thick helical slab — light matte concrete with soft face tint.
  * Cross-section: width × thickness rectangle swept along helix.
  */
 function buildRibbonGeometry(p: SpiralParams) {
   const positions: number[] = [];
   const normals: number[] = [];
+  const colors: number[] = [];
   const uvs: number[] = [];
   const indices: number[] = [];
+  const tint = new THREE.Color();
 
   const hw = p.width * 0.5;
   const ht = p.thickness * 0.5;
@@ -93,6 +109,7 @@ function buildRibbonGeometry(p: SpiralParams) {
   for (let i = 0; i <= p.segments; i++) {
     const t = i / p.segments;
     const { center, binormal, normal } = frameAt(t, p);
+    bodyTint(t, tint);
 
     for (let c = 0; c < 4; c++) {
       const [u, v] = corners[c];
@@ -107,6 +124,9 @@ function buildRibbonGeometry(p: SpiralParams) {
         n.copy(binormal).multiplyScalar(u > 0 ? 1 : -1);
       }
       normals.push(n.x, n.y, n.z);
+      // Slightly lift broad faces vs thin edges so the ribbon plane reads clearly
+      const faceLift = Math.abs(v) > ht * 0.5 ? 1.06 : 0.96;
+      colors.push(tint.r * faceLift, tint.g * faceLift, tint.b * faceLift);
       uvs.push(t * p.turns, c < 2 ? 0 : 1);
     }
 
@@ -129,6 +149,7 @@ function buildRibbonGeometry(p: SpiralParams) {
   const geo = new THREE.BufferGeometry();
   geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
   geo.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
+  geo.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
   geo.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
   geo.setIndex(indices);
   geo.computeVertexNormals();
@@ -236,19 +257,19 @@ function buildRimHaloGeometry(p: SpiralParams, side: 1 | -1) {
   return geo;
 }
 
-/** Tiny procedural concrete grain — albedo + roughness variation. */
+/** Tiny procedural concrete grain — bright albedo + roughness variation. */
 function makeConcreteMaps(size = 128) {
   const data = new Uint8Array(size * size * 4);
   const rough = new Uint8Array(size * size);
   for (let i = 0; i < size * size; i++) {
     const n = Math.random();
-    // Light-medium concrete gray with subtle cool cast
-    const g = 148 + Math.floor(n * 42);
-    data[i * 4] = g;
-    data[i * 4 + 1] = g + 1;
-    data[i * 4 + 2] = g + 4;
+    // Light concrete — readable mid-gray, not charcoal
+    const g = 198 + Math.floor(n * 36);
+    data[i * 4] = Math.min(255, g + 2);
+    data[i * 4 + 1] = g;
+    data[i * 4 + 2] = Math.min(255, g + 6);
     data[i * 4 + 3] = 255;
-    rough[i] = 200 + Math.floor(n * 50);
+    rough[i] = 175 + Math.floor(n * 55);
   }
   const map = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
   map.wrapS = map.wrapT = THREE.RepeatWrapping;
@@ -263,7 +284,7 @@ function makeConcreteMaps(size = 128) {
 }
 
 /**
- * Dedicated WebGL spiral — matte concrete slab + neon rim, soft studio lit.
+ * Dedicated WebGL spiral — light matte concrete slab + neon rim, soft studio lit.
  * Resource-aware: capped DPR, soft shadows, pauses off-screen / reduced-motion.
  */
 export default function HeroSpiral() {
@@ -303,7 +324,8 @@ export default function HeroSpiral() {
     renderer.setClearColor(0x000000, 0);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.92;
+    // Keep midtones readable on dark page bg (avoid crushed charcoal body)
+    renderer.toneMappingExposure = 1.22;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mount.appendChild(renderer.domElement);
@@ -328,12 +350,16 @@ export default function HeroSpiral() {
 
     const ribbonGeo = buildRibbonGeometry(SPIRAL);
     const ribbonMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color("#b0b5bc"),
+      color: new THREE.Color("#e6e9ee"),
       map,
       roughnessMap,
-      roughness: 0.97,
+      roughness: 0.9,
       metalness: 0,
       flatShading: false,
+      vertexColors: true,
+      // Soft lift so shadowed folds never fall to void-black
+      emissive: new THREE.Color("#6a707a"),
+      emissiveIntensity: 0.18,
       envMapIntensity: 0,
     });
     const ribbon = new THREE.Mesh(ribbonGeo, ribbonMat);
@@ -411,11 +437,14 @@ export default function HeroSpiral() {
     warmGlow.position.set(1.75, floorY + 0.015, -0.1);
     scene.add(warmGlow);
 
-    // Soft studio lights — matte concrete, avoid hard specular spikes
-    const ambient = new THREE.AmbientLight(0x8a929c, 0.42);
+    // Soft studio lights — bright matte concrete, no hard specular spikes
+    const hemi = new THREE.HemisphereLight(0xf2f0ec, 0x3a4555, 0.95);
+    scene.add(hemi);
+
+    const ambient = new THREE.AmbientLight(0xc8cdd6, 0.72);
     scene.add(ambient);
 
-    const key = new THREE.DirectionalLight(0xffe8d8, 0.85);
+    const key = new THREE.DirectionalLight(0xfff1e6, 1.35);
     key.position.set(4.2, 5.5, 3.8);
     key.castShadow = true;
     key.shadow.mapSize.set(1024, 1024);
@@ -427,22 +456,28 @@ export default function HeroSpiral() {
     key.shadow.camera.bottom = -5;
     key.shadow.bias = -0.00035;
     key.shadow.normalBias = 0.02;
+    key.shadow.radius = 3.5;
     scene.add(key);
 
-    const fill = new THREE.DirectionalLight(0xb8c4d8, 0.55);
-    fill.position.set(-3.5, 1.8, 2.2);
+    // Camera-facing fill — keeps the ribbon face readable, not a silhouette
+    const fill = new THREE.DirectionalLight(0xd8e4f2, 0.95);
+    fill.position.set(camera.position.x - 0.4, 1.6, camera.position.z + 0.6);
     scene.add(fill);
 
-    const rimLight = new THREE.DirectionalLight(0xff8ab8, 0.4);
+    const sideFill = new THREE.DirectionalLight(0xb8c4d8, 0.55);
+    sideFill.position.set(-3.5, 1.8, 2.2);
+    scene.add(sideFill);
+
+    const rimLight = new THREE.DirectionalLight(0xff8ab8, 0.35);
     rimLight.position.set(1.5, 1.2, -4);
     scene.add(rimLight);
 
     // Cool bounce from below (reads as floor teal reflection)
-    const bounce = new THREE.PointLight(0x2ecfc4, 0.7, 8, 2);
+    const bounce = new THREE.PointLight(0x2ecfc4, 0.55, 8, 2);
     bounce.position.set(1.7, floorY + 0.4, 1.2);
     scene.add(bounce);
 
-    const warmBounce = new THREE.PointLight(0xff6b9d, 0.35, 7, 2);
+    const warmBounce = new THREE.PointLight(0xff9a6b, 0.4, 7, 2);
     warmBounce.position.set(2.0, 0.6, -1.2);
     scene.add(warmBounce);
 
