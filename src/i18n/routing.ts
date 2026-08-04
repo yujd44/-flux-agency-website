@@ -1,6 +1,6 @@
 import { defineRouting } from "next-intl/routing";
 
-export const locales = ["he", "ru", "en", "ar"] as const;
+export const locales = ["he", "ru", "en", "ar", "uz"] as const;
 export type Locale = (typeof locales)[number];
 
 export const defaultLocale: Locale = "he";
@@ -10,6 +10,7 @@ export const localeLabels: Record<Locale, string> = {
   ru: "Русский",
   en: "English",
   ar: "العربية",
+  uz: "Oʻzbekcha",
 };
 
 export const localeShortLabels: Record<Locale, string> = {
@@ -17,6 +18,7 @@ export const localeShortLabels: Record<Locale, string> = {
   ru: "RU",
   en: "EN",
   ar: "AR",
+  uz: "UZ",
 };
 
 export const rtlLocales: Locale[] = ["he", "ar"];

@@ -1,0 +1,491 @@
+{
+  "meta": {
+    "title": "METHODEA — Biz tizimlarni yaratamiz",
+    "description": "Methodea haqiqiy biznes natija beradigan raqamli tizimlarni loyihalaydi, quradi va kengaytiradi."
+  },
+  "nav": {
+    "home": "Bosh sahifa",
+    "services": "Xizmatlar",
+    "approach": "Yondashuv",
+    "portfolio": "Ishlar",
+    "about": "Biz haqimizda",
+    "insights": "Tahlillar",
+    "contact": "Aloqa",
+    "letsTalk": "Yozing",
+    "menu": "Menyu",
+    "close": "Yopish"
+  },
+  "common": {
+    "exploreMore": "Batafsil",
+    "viewAll": "Hammasini koʻrish",
+    "viewCase": "Loyihani koʻrish",
+    "viewLiveSite": "Saytni ochish",
+    "exploreService": "Xizmat haqida",
+    "backToServices": "Kategoriyalarga qaytish",
+    "getInTouch": "Bogʻlanish",
+    "startProject": "Loyihani boshlash",
+    "readMore": "Davomini oʻqish",
+    "language": "Til",
+    "scrollDown": "Pastga",
+    "allRightsReserved": "Barcha huquqlar himoyalangan.",
+    "switchToLight": "Yorugʻ mavzuga oʻtish",
+    "switchToDark": "Qorongʻu mavzuga oʻtish"
+  },
+  "home": {
+    "hero": {
+      "badge": "Raqamli yechimlar, puxta ishlab chiqilgan",
+      "eyebrow": "Raqamli yechimlar, puxta ishlab chiqilgan",
+      "titleBefore": "Biz murakkablikni ",
+      "titleAccent": "aqlli",
+      "titleAfter": " tizimlarga aylantiramiz.",
+      "title": "Biz murakkablikni aqlli tizimlarga aylantiramiz.",
+      "subtitle": "Methodea haqiqiy biznes natija beradigan raqamli tizimlarni loyihalaydi, quradi va kengaytiradi.",
+      "cta": "Xizmatlarni koʻrish",
+      "ctaSecondary": "Yondashuvimiz",
+      "pillars": "Masshtab · Aniq jarayon · Oʻlchanadigan natija",
+      "scrollHint": "Pastga aylantiring"
+    },
+    "stats": {
+      "projects": {
+        "value": "120+",
+        "label": "Yakunlangan loyihalar"
+      },
+      "experience": {
+        "value": "8+",
+        "label": "Yillik tajriba"
+      },
+      "countries": {
+        "value": "15",
+        "label": "Faol mamlakatlar"
+      },
+      "endToEnd": {
+        "value": "24/7",
+        "label": "Texnik yordam"
+      }
+    },
+    "servicesTeaser": {
+      "eyebrow": "Nima qilamiz",
+      "title": "Toʻrt yoʻnalish, bitta hunar",
+      "subtitle": "Mahsulotlardan infratuzilmagacha — har bir loyiha bir xil eʼtibor bilan yaratiladi.",
+      "cta": "Xizmatlarni koʻrish"
+    },
+    "portfolioTeaser": {
+      "eyebrow": "Tanlangan ishlar",
+      "title": "Soʻnggi tuzilmalar",
+      "subtitle": "Biz loyihalagan, qurgan va ishga tushirgan bir necha tizimlar.",
+      "cta": "Ishlarni koʻrish"
+    },
+    "philosophy": {
+      "eyebrow": "Yondashuvimiz",
+      "title": "Arxitektura kabi",
+      "body": "Har bir mahsulot — tuzilma: oʻlchangan, sinovdan oʻtgan, uzoq muddatga moʻljallangan. Hech narsa oʻz oʻrnini oqlamaguncha chiqarilmaydi."
+    }
+  },
+  "services": {
+    "hero": {
+      "eyebrow": "Imkoniyatlar",
+      "title": "Xizmatlar, puxta ishlab chiqilgan",
+      "subtitle": "Toʻrt yoʻnalish. Bitta sifat meʼyori. Tanlang."
+    },
+    "categories": {
+      "digitalProducts": {
+        "number": "01",
+        "title": "Raqamli mahsulotlar",
+        "watermark": "DIGITAL PRODUCTS",
+        "description": "Oʻsish uchun yaratilgan interfeyslar va platformalar."
+      },
+      "businessAutomation": {
+        "number": "02",
+        "title": "Biznes avtomatlashtirish",
+        "watermark": "BUSINESS AUTOMATION",
+        "description": "Operatsiyalaringizdagi ishqalanishni yoʻqotadigan tizimlar."
+      },
+      "infrastructure": {
+        "number": "03",
+        "title": "Infratuzilma",
+        "watermark": "INFRASTRUCTURE",
+        "description": "Kompromissiz masshtablash uchun yaratilgan asos."
+      },
+      "communication": {
+        "number": "04",
+        "title": "Kommunikatsiya",
+        "watermark": "COMMUNICATION",
+        "description": "Mijozlaringizga yaqin tutadigan kanallar."
+      }
+    },
+    "items": {
+      "websites": {
+        "title": "Veb-saytlar",
+        "description": "Aniqlik va konversiya uchun yaratilgan korporativ va brend saytlar.",
+        "detailDescription": "Korporativ sayt koʻpincha brendingizning dunyo bilan birinchi jiddiy suhbatidir. Biz tez, aniq, tahririy saytlarni loyihalaymiz va quramiz — SEO uchun tuzilgan, boshqarish oson va qiziqishni murojaatga aylantiradigan.",
+        "features": [
+          "Korporativ saytlar",
+          "Maxsus dizayn-tizimlar",
+          "SEO arxitekturasi",
+          "CMS integratsiyasi",
+          "Analitika va kuzatuv",
+          "Ishlashni optimallashtirish"
+        ]
+      },
+      "landingPages": {
+        "title": "Landing sahifalar",
+        "description": "Bitta aniq maqsad atrofida qurilgan yuqori konversiyali sahifalar.",
+        "detailDescription": "Har bir kampaniya orqasidagi media byudjetdek jiddiy sahifani talab qiladi. Biz landinglarni bitta harakat atrofida loyihalaymiz, sinaymiz va har bir skroll oʻzini oqlaguncha takomillashtiramiz.",
+        "features": [
+          "Konversiyaga yoʻnaltirilgan joylashuv",
+          "A/B test sozlamasi",
+          "Matn va xabarlar",
+          "Tez yuklanish",
+          "Lid yigʻish integratsiyasi",
+          "Analitika panellari"
+        ]
+      },
+      "webApplications": {
+        "title": "Veb-ilovalar",
+        "description": "Biznesingiz bilan birga oʻsadigan maxsus platformalar va ichki vositalar.",
+        "detailDescription": "Ichki panellardan mijozga ochiq platformalargacha — biz birinchi kundan ishlab chiqarish darajasidagi arxitektura bilan veb-ilovalar quramiz; mahsulot va jamoa oʻsganda ham qoʻllab-quvvatlash oson boʻlishi uchun.",
+        "features": [
+          "Maxsus arxitektura",
+          "API loyihalash va integratsiya",
+          "Rolga asoslangan kirish",
+          "Masshtablanuvchi backend",
+          "Avtomatlashtirilgan testlar",
+          "Doimiy texnik qoʻllab-quvvatlash"
+        ]
+      },
+      "clientPortals": {
+        "title": "Mijoz portallari",
+        "description": "Mijozlaringiz ish va maʼlumotlarni real vaqtda kuzatadigan xavfsiz, brendli makonlar.",
+        "detailDescription": "Mijoz portali tarqoq email zanjirini yagona ishonchli manbaga aylantiradi. Biz mijozlaringiz jarayonni kuzatishi, hujjatlarga kirishi va muloqot qilishi mumkin boʻlgan xavfsiz, brendli portallar yaratamiz — ikki tomon yukini kamaytirib.",
+        "features": [
+          "Xavfsiz autentifikatsiya",
+          "Real vaqtda yangilanishlar",
+          "Hujjatlarni boshqarish",
+          "Maxsus ruxsatlar",
+          "Brendli tajriba",
+          "Bildirishnomalar va ogohlantirishlar"
+        ]
+      },
+      "onlineStores": {
+        "title": "Internet-doʻkonlar",
+        "description": "Aniqlik va tezlik bilan sotish uchun yaratilgan e-commerce tajribasi.",
+        "detailDescription": "Biz sotayotgan mahsulotlardek premium tuygʻu beradigan internet-doʻkonlar quramiz — tez toʻlov, oʻylangan merchandising va jamoangiz haqiqatan yoqtiradigan admin tajribasi.",
+        "features": [
+          "Maxsus vitrinalar",
+          "Toʻlov integratsiyalari",
+          "Ombor boshqaruvi",
+          "Mobil uchun checkout",
+          "SEO va merchandising",
+          "Ishlashni optimallashtirish"
+        ]
+      },
+      "telegramBots": {
+        "title": "Telegram botlar",
+        "description": "Sotuv, qoʻllab-quvvatlash va hamjamiyat uchun avtomatlashtirilgan Telegram tajribalari.",
+        "detailDescription": "Telegram koʻplab bozorlarda savdo va muloqotning asosiy kanaliga aylandi. Biz brendingizning insoniy ohangini yoʻqotmasdan sotuv, onboarding va qoʻllab-quvvatlashni avtomatlashtiradigan botlar yaratamiz.",
+        "features": [
+          "Maxsus bot mantiqi",
+          "Toʻlov va buyurtma oqimlari",
+          "CRM sinxronizatsiyasi",
+          "Koʻp tilli qoʻllab-quvvatlash",
+          "Admin panellar",
+          "Analitika va hisobotlar"
+        ]
+      },
+      "crmIntegration": {
+        "title": "CRM integratsiyasi",
+        "description": "Mijoz maʼlumotlarini yagona ishonchli manbaga birlashtirish.",
+        "detailDescription": "Biz CRM tizimlarini ulaymiz va sozlaymiz — sotuv, qoʻllab-quvvatlash, marketing jamoalari bir xil aniq mijoz tasviridan ishlashi uchun, takroriy maʼlumot va qoʻlda qayta kiritishsiz.",
+        "features": [
+          "Maʼlumotlarni birlashtirish",
+          "Maxsus voronkalar",
+          "Uchinchi tomon integratsiyalari",
+          "Avtomatik maʼlumot sinxroni",
+          "Jamoa onboardingi",
+          "Hisobotlar va panellar"
+        ]
+      },
+      "workflowAutomation": {
+        "title": "Ish jarayonini avtomatlashtirish",
+        "description": "Jamoangizning kundalik ishidan takroriy qoʻl mehnatini olib tashlash.",
+        "detailDescription": "Biz operatsion jarayonlaringizni xaritalaymiz va takroriy qismlarni avtomatlashtirilgan tizimlarga aylantiramiz — jamoangizni haqiqatan mulohaza talab qiladigan ishga boʻshatib.",
+        "features": [
+          "Jarayonlarni xaritalash",
+          "Maxsus avtomatlashtirishlar",
+          "Vositalar integratsiyasi",
+          "Tasdiqlash oqimlari",
+          "Xatolarni monitoring qilish",
+          "Hujjatlashtirish va trening"
+        ]
+      },
+      "aiChatbots": {
+        "title": "AI chat-botlar",
+        "description": "Mijozlarning haqiqiy savollariga javob beradigan suhbatdosh yordamchilar.",
+        "detailDescription": "Biz skriptli oqimlardan tashqariga chiqadigan AI chat-botlarni loyihalaymiz va oʻrgatamiz — niyatni tushunadi, bilim bazangizdan foydalanadi va kerak boʻlganda odamga muloyimlik bilan uzatadi.",
+        "features": [
+          "Maxsus bilim bazasi",
+          "Tabiiy til oqimlari",
+          "Koʻp kanalda joylashtirish",
+          "Odamga uzatish mantiqi",
+          "Doimiy oʻqitish",
+          "Samaradorlik analitikasi"
+        ]
+      },
+      "processConsulting": {
+        "title": "Jarayon konsaltingi",
+        "description": "Operatsiyalaringiz qanday ishlashi mumkinligi haqida tashqi nigoh.",
+        "detailDescription": "Baʼzan eng yuqori taʼsirli ish — diagnostika. Biz joriy operatsiyalarni audit qilamiz, yechishga arziydigan tor joylarni aniqlaymiz va avtomatlashtirish hamda yaxshilash uchun aniq, ustuvor yoʻl xaritasini taqdim etamiz.",
+        "features": [
+          "Operatsion audit",
+          "Tor joylar tahlili",
+          "Avtomatlashtirish yoʻl xaritasi",
+          "Vosita tavsiyalari",
+          "Benefitisiarlar bilan vorkshoplar",
+          "Joriy etishni qoʻllab-quvvatlash"
+        ]
+      },
+      "dataDashboards": {
+        "title": "Maʼlumot panellari",
+        "description": "Muhim koʻrsatkichlarga aniq, real vaqtdagi koʻrinish.",
+        "detailDescription": "Biz tarqoq maʼlumotlarni yagona, tushunarli koʻrinishga aylantiradigan panellar yaratamiz — koʻrsatish uchun emas, jamoangiz haqiqatan qabul qilishi kerak boʻlgan qarorlar uchun.",
+        "features": [
+          "Maxsus KPI dizayni",
+          "Jonli maʼlumot oqimlari",
+          "Koʻp manbali integratsiya",
+          "Rolga asoslangan koʻrinishlar",
+          "Avtomatik hisobotlar",
+          "Ogohlantirishlar va chegaralar"
+        ]
+      },
+      "cloudHosting": {
+        "title": "Bulutli hosting",
+        "description": "Ishonchli, masshtablanuvchi infratuzilma — toʻliq boshqaruv bilan.",
+        "detailDescription": "Biz yuk ostida tinch qoladigan bulut muhitlarini loyihalaymiz va boshqaramiz — toʻgʻri oʻlchamda, xarajatga eʼtiborli va biznesingiz tayanadigan zaxira bilan.",
+        "features": [
+          "Infratuzilma dizayni",
+          "Xarajatlarni optimallashtirish",
+          "Avto-masshtablash sozlamasi",
+          "Zaxira nusxa va tiklash",
+          "Koʻp mintaqali joylashtirish",
+          "24/7 monitoring"
+        ]
+      },
+      "devopsCicd": {
+        "title": "DevOps va CI/CD",
+        "description": "Avtomatlashtirilgan pipelineʼlar bilan ishonch bilan tezroq chiqaring.",
+        "detailDescription": "Biz deployni voqeadan oddiy ish tartibiga aylantiradigan uzluksiz integratsiya va yetkazib berish pipelineʼlarini quramiz — avtomatik testlar, bosqichma-bosqich rolloutdlar va kerak boʻlganda tez rollback.",
+        "features": [
+          "Pipeline arxitekturasi",
+          "Avtomatlashtirilgan testlar",
+          "Konteynerlashtirish",
+          "Bosqichma-bosqich deploylar",
+          "Rollback strategiyalari",
+          "Infratuzilma kod sifatida"
+        ]
+      },
+      "securityMonitoring": {
+        "title": "Xavfsizlik va monitoring",
+        "description": "Tizimlaringiz boʻylab proaktiv himoya va koʻrinish.",
+        "detailDescription": "Biz muammolarni mijozlaringizdan oldin ushlaydigan xavfsizlik amaliyotlari va monitoring tizimlarini joriy qilamiz — kirish nazoratidan anomaliyalar boʻyicha real vaqt ogohlantirishlarigacha.",
+        "features": [
+          "Zaiflik auditlari",
+          "Kirish nazorati",
+          "Real vaqt ogohlantirishlari",
+          "Loglarni boshqarish",
+          "Muvofiqlikni qoʻllab-quvvatlash",
+          "Insidentga javob rejalari"
+        ]
+      },
+      "scalableArchitecture": {
+        "title": "Masshtablanuvchi arxitektura",
+        "description": "Keyingi oʻsish bosqichingiz uchun yaratilgan texnik asos.",
+        "detailDescription": "Biz oʻsishni oldindan hisobga olgan tizim arxitekturasini loyihalaymiz — modulli, yaxshi hujjatlashtirilgan va keyinchalik qimmat qayta yozishga aylanadigan qisqa yoʻllarsiz.",
+        "features": [
+          "Tizim dizayni",
+          "Mikroservis strategiyasi",
+          "Maʼlumotlar bazasi arxitekturasi",
+          "Yuklama testlari",
+          "Texnik hujjatlashtirish",
+          "Migratsiya rejalashtirish"
+        ]
+      },
+      "messagingBots": {
+        "title": "WhatsApp va Telegram botlar",
+        "description": "Mijozlaringiz allaqachon ishlatadigan kanallarda avtomatlashtirilgan suhbatlar.",
+        "detailDescription": "Biz WhatsApp va Telegram uchun buyurtmalar, qoʻllab-quvvatlash va yangilanishlarni avtomatik boshqaradigan, shu bilan birga haqiqiy brend ovozini saqlaydigan messenjer avtomatlashtirishlarini quramiz.",
+        "features": [
+          "Koʻp platformali botlar",
+          "Buyurtma va bron oqimlari",
+          "CRM sinxronizatsiyasi",
+          "Ommaviy kampaniyalar",
+          "Koʻp tilli qoʻllab-quvvatlash",
+          "Analitika va hisobotlar"
+        ]
+      },
+      "emailMarketing": {
+        "title": "Email va marketing avtomatlashtirish",
+        "description": "Oʻzi ishlaydigan va natija beradigan lifecycle kampaniyalar.",
+        "detailDescription": "Biz onboardingdan ushlab qolishgacha email va marketing yoʻllarini loyihalaymiz va avtomatlashtiramiz — toza segmentatsiya asosida va haqiqiy daromad natijalariga nisbatan doimiy oʻlchov bilan.",
+        "features": [
+          "Lifecycle kampaniyalar",
+          "Auditoriyani segmentlash",
+          "Shablon tizimlari",
+          "A/B testlash",
+          "Yetkazib berishni optimallashtirish",
+          "Samaradorlik hisobotlari"
+        ]
+      },
+      "customerSupport": {
+        "title": "Mijozlarni qoʻllab-quvvatlash tizimlari",
+        "description": "Mijozlar bazangiz bilan birga oʻsadigan yordam infratuzilmasi.",
+        "detailDescription": "Biz haqiqiy murojaat hajmi va jamoa tuzilmangizga moslashtirilgan qoʻllab-quvvatlash tizimlarini — ticketlar, bilim bazalari, jonli chat — joriy qilamiz, shunda oʻsish bilan javob vaqti tez qoladi.",
+        "features": [
+          "Yordam xizmati sozlamasi",
+          "Bilim bazasi dizayni",
+          "Jonli chat integratsiyasi",
+          "SLA oqimlari",
+          "Jamoa treningi",
+          "Hisobot panellari"
+        ]
+      },
+      "internalTools": {
+        "title": "Ichki vositalar",
+        "description": "Jamoangiz haqiqatan qanday ishlashiga mos maxsus dasturiy taʼminot.",
+        "detailDescription": "Tayyor dasturlar kamdan-kam mukammal mos keladi. Biz aniq jarayonlaringizga mos engil ichki vositalar quramiz — admin panellardan hisobot utilitalarigacha — jamoangiz dasturga moslashishga kamroq vaqt sarflashi uchun.",
+        "features": [
+          "Maxsus admin panellar",
+          "Jarayonga xos vositalar",
+          "Uchinchi tomon integratsiyalari",
+          "Kirish nazorati",
+          "Tez prototiplash",
+          "Doimiy qoʻllab-quvvatlash"
+        ]
+      }
+    },
+    "detail": {
+      "featuresTitle": "Nima kiradi",
+      "cta": "Xizmat haqida"
+    },
+    "mobile": {
+      "tapToExpand": "Xizmatlarni koʻrish uchun bosing"
+    }
+  },
+  "portfolio": {
+    "hero": {
+      "eyebrow": "Tanlangan ishlar",
+      "title": "Qurilgan tizimlar, hayotda ishlayotgan",
+      "subtitle": "Uchta soʻnggi loyiha — oʻlchangan, ishga tushirilgan va hali ham ishlayotgan."
+    },
+    "cta": {
+      "title": "Tuzilma haqida gʻoyangiz bormi?",
+      "subtitle": "Nima yaratish kerakligini ayting.",
+      "button": "Suhbatni boshlash"
+    },
+    "cases": {
+      "case1": {
+        "title": "Imperium Building",
+        "tag": "Brend sayt · Koʻchmas mulk va development",
+        "description": "Xalqaro qurilish va koʻchmas mulk developeri uchun tahririy brend sayt — dramatik hero va oʻn yillik qurilishni yagona brend hikoyasiga aylantiradigan ikonik loyihalar galereyasi bilan."
+      },
+      "case2": {
+        "title": "1:1",
+        "tag": "Shaxsiy portfolio · Creative Developer",
+        "description": "Mustaqil creative dasturchi uchun shaxsiy portfolio — yorqin vizual hero va xalqaro mijozlar bazasiga moʻljallangan koʻp tilli navigatsiya atrofida qurilgan."
+      },
+      "case3": {
+        "title": "JOSTARS",
+        "tag": "Brend sayt · Fitness va coaching",
+        "description": "Sport zali va shaxsiy trening studiyasi uchun brend sayt — qorongʻu va keskin dizayn, laym-neon ovoz va intensivlikni raqamlarga aylantiradigan statistika paneli bilan."
+      }
+    }
+  },
+  "about": {
+    "hero": {
+      "eyebrow": "Studiya",
+      "title": "Biz tizimlarni yaratamiz.",
+      "subtitle": "Texnologiya studiyasi — aniq va uzoq muddatga."
+    },
+    "intro": {
+      "eyebrow": "Biz kimiz",
+      "paragraphs": [
+        "METHODEA — muhandislar va dizaynerlar studiyasi. Biz haqiqiy biznes natija beradigan raqamli tizimlarni loyihalaymiz va quramiz — aniq, bezakli shovqinsiz."
+      ]
+    },
+    "gallery": {
+      "eyebrow": "Studiya"
+    },
+    "approach": {
+      "eyebrow": "Yondashuv",
+      "title": "Qanday ishlaymiz",
+      "items": [
+        {
+          "title": "Muammoni aniqlaymiz",
+          "body": "Cheklovlar, maqsadlar va tizim koʻtarishi kerak boʻlgan haqiqiy yuk."
+        },
+        {
+          "title": "Tuzilmani loyihalaymiz",
+          "body": "Avvalo arxitektura — yagona butun sifatida."
+        },
+        {
+          "title": "Aniqlik bilan quramiz",
+          "body": "Oʻlchangan qadamlar. Bezakli shovqinsiz."
+        },
+        {
+          "title": "Ehtiyot bilan kengaytiramiz",
+          "body": "Tizim oʻsganda ishlatamiz va takomillashtiramiz."
+        }
+      ]
+    },
+    "cta": {
+      "title": "Boshlashga tayyormisiz?",
+      "subtitle": "Nima qurish kerakligini ayting.",
+      "button": "Yozing"
+    }
+  },
+  "insights": {
+    "hero": {
+      "eyebrow": "Tahlillar",
+      "title": "Studiyadan eslatmalar",
+      "subtitle": "Tizimlar, arxitektura va uzoq umr koʻradigan raqamli mahsulotlar haqida qisqa fikrlar. Tez orada yangi materiallar."
+    }
+  },
+  "contact": {
+    "hero": {
+      "eyebrow": "Aloqa",
+      "title": "Suhbatni boshlaylik",
+      "subtitle": "Nima yaratish kerakligini ayting. Bir ish kunida javob beramiz."
+    },
+    "form": {
+      "name": "Toʻliq ism",
+      "namePlaceholder": "Ismingiz",
+      "email": "Email",
+      "emailPlaceholder": "you@company.com",
+      "message": "Xabar",
+      "messagePlaceholder": "Loyihangiz haqida gapirib bering…",
+      "submit": "Xabar yuborish",
+      "submitting": "Yuborilmoqda…",
+      "success": "Rahmat — xabaringiz yuborildi. Tez orada bogʻlanamiz.",
+      "error": "Nimadir notoʻgʻri ketdi. Qayta urinib koʻring yoki toʻgʻridan-toʻgʻri yozing."
+    },
+    "info": {
+      "eyebrow": "Toʻgʻridan-toʻgʻri",
+      "title": "Oʻzingiz bogʻlanishni afzal koʻrasizmi?",
+      "email": "hello@methodea.com",
+      "phone": "+972 3 555 0192",
+      "addressLabel": "Studiya",
+      "address": "12 Rothschild Blvd, Tel Aviv, Isroil",
+      "hoursLabel": "Ish vaqti",
+      "hours": "Yak–Pay, 09:00–18:00 (IST)"
+    }
+  },
+  "footer": {
+    "tagline": "Texnologiya uchun arxitektura studiyasi — uzoq ishlaydigan tizimlarni yaratamiz.",
+    "navTitle": "Navigatsiya",
+    "contactTitle": "Aloqa",
+    "languageTitle": "Til",
+    "email": "hello@methodea.com",
+    "phone": "+972 3 555 0192",
+    "address": "12 Rothschild Blvd, Tel Aviv, Isroil",
+    "copyright": "METHODEA. Barcha huquqlar himoyalangan."
+  }
+}
