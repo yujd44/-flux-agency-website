@@ -9,7 +9,6 @@ import BidiBlock from "@/components/ui/BidiBlock";
 
 const PILLARS = ["STRATEGY", "ARCHITECTURE", "DEVELOPMENT", "AUTOMATION", "SUPPORT"] as const;
 const MAX_TILT = 0.5;
-const TRUSTED = ["Solvix", "Nexora", "Akira Systems", "Lumen", "Dayone"] as const;
 
 export default function Hero() {
   const t = useTranslations("home.hero");
@@ -52,26 +51,26 @@ export default function Hero() {
       <div className="pointer-events-none absolute inset-x-0 top-0 eng-line-h" />
       <div className="pointer-events-none absolute inset-y-0 left-[var(--page-pad)] hidden eng-line-v lg:block" />
 
-      <div className="chrome-ltr relative mx-auto grid w-full max-w-[var(--page-max)] flex-1 grid-cols-1 lg:grid-cols-[minmax(0,42%)_minmax(0,58%)]">
-        {/* Copy column — editorial air above, trust bar anchored low */}
-        <div className="relative z-10 flex flex-col px-[var(--page-pad)] pt-[14vh] pb-10 lg:pt-[16vh] lg:pb-12">
+      <div className="chrome-ltr relative mx-auto grid w-full max-w-[var(--page-max)] flex-1 grid-cols-1 lg:grid-cols-[minmax(0,44%)_minmax(0,56%)]">
+        {/* Copy column — airy stack matching mock proportions */}
+        <div className="relative z-10 flex flex-col justify-center px-[var(--page-pad)] pt-16 pb-12 sm:pt-[12vh] lg:pt-[14vh] lg:pb-16">
           <BidiBlock>
-            <div className="animate-fade-up chrome-ltr mb-7 inline-flex items-center gap-3">
+            <div className="animate-fade-up chrome-ltr mb-6 inline-flex items-center gap-3 lg:mb-8">
               <span className="eng-marker" aria-hidden="true" />
               <span className="label-mono text-muted">{t("eyebrow")}</span>
             </div>
 
-            <h1 className="animate-fade-up max-w-[11ch] text-[2.35rem] font-medium leading-[1.02] tracking-tight text-text sm:max-w-none sm:text-[3.25rem] lg:text-[3.75rem] xl:text-[4.15rem]">
+            <h1 className="animate-fade-up max-w-[12ch] text-[2.25rem] font-medium leading-[1.05] tracking-tight text-text sm:max-w-[16ch] sm:text-[3.1rem] lg:max-w-[15ch] lg:text-[3.55rem] xl:text-[3.9rem]">
               <span className="text-content">{t("titleBefore")}</span>
               <span className="hero-accent">{t("titleAccent")}</span>
               <span className="text-content">{t("titleAfter")}</span>
             </h1>
 
-            <p className="animate-fade-up mt-6 max-w-[28rem] text-base leading-[1.65] text-muted sm:text-lg">
+            <p className="animate-fade-up mt-5 max-w-[26rem] text-[0.95rem] leading-[1.7] text-muted sm:mt-6 sm:text-base lg:mt-7 lg:max-w-[27rem] lg:text-[1.05rem]">
               {t("subtitle")}
             </p>
 
-            <div className="animate-fade-up mt-9 flex flex-wrap items-center gap-x-8 gap-y-4">
+            <div className="animate-fade-up mt-8 flex flex-wrap items-center gap-x-9 gap-y-4 sm:mt-10">
               <Button href="/services" variant="primary">
                 {t("cta")}
               </Button>
@@ -80,37 +79,33 @@ export default function Hero() {
               </Button>
             </div>
           </BidiBlock>
-
-          <div className="animate-fade-up mt-auto pt-16 lg:pt-20">
-            <div className="label-mono mb-5 text-muted">{t("trustedBy")}</div>
-            <div className="chrome-ltr flex flex-wrap items-center gap-x-7 gap-y-3 text-[12px] font-medium tracking-[0.14em] text-text/50 uppercase">
-              {TRUSTED.map((name) => (
-                <span key={name}>{name}</span>
-              ))}
-            </div>
-          </div>
         </div>
 
-        {/* Ribbon column — bleeds off right/bottom; pillars sit in the valley */}
+        {/* Ribbon column — smaller art in right zone; pillars bridge text ↔ sculpture */}
         <div
           ref={artRef}
-          className="relative min-h-[320px] w-full sm:min-h-[420px] lg:min-h-0"
+          className="relative min-h-[280px] w-full sm:min-h-[360px] lg:min-h-0"
           style={{ perspective: "1200px" }}
         >
-          <div className="pointer-events-none absolute top-[18%] bottom-[28%] left-0 z-20 hidden lg:flex">
-            <div className="relative flex flex-col justify-between py-1 pr-5">
+          <div className="pointer-events-none absolute top-[22%] bottom-[30%] left-[2%] z-20 hidden lg:flex xl:left-[4%]">
+            <div className="relative flex flex-col justify-between py-1 pr-4">
               <div className="absolute top-1 bottom-1 right-0 w-px bg-[rgba(80,70,60,0.22)]" />
-              {PILLARS.map((label) => (
+              <div className="absolute top-1 right-0 h-px w-10 translate-x-full bg-[rgba(80,70,60,0.22)]" />
+              {PILLARS.map((label, i) => (
                 <div key={label} className="relative flex items-center justify-end gap-3 pr-3">
-                  <span className="label-mono text-muted/75">{label}</span>
-                  <span className="eng-marker absolute right-[-2px]" />
+                  <span className="label-mono text-[10px] tracking-[0.16em] text-muted/70">
+                    {label}
+                  </span>
+                  <span
+                    className={`eng-marker absolute right-[-2px] ${i % 2 === 1 ? "opacity-45" : ""}`}
+                  />
                 </div>
               ))}
             </div>
           </div>
 
           <div
-            className="absolute -inset-y-[6%] -right-[8%] left-[-6%] transition-transform duration-300 ease-out will-change-transform lg:left-[-2%]"
+            className="absolute top-[6%] bottom-[-4%] left-[14%] -right-[5%] transition-transform duration-300 ease-out will-change-transform sm:left-[18%] lg:left-[16%] lg:-right-[4%]"
             style={{
               transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
             }}
@@ -120,12 +115,12 @@ export default function Hero() {
               alt=""
               fill
               priority
-              sizes="(max-width: 1024px) 100vw, 60vw"
-              className="object-cover object-[42%_center] lg:object-center"
+              sizes="(max-width: 1024px) 100vw, 48vw"
+              className="object-contain object-right-bottom lg:object-[78%_42%]"
             />
           </div>
 
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-bg via-bg/50 to-transparent lg:w-[18%]" />
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-[30%] bg-gradient-to-r from-bg via-bg/55 to-transparent lg:w-[22%]" />
         </div>
       </div>
 
