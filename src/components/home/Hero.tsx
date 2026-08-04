@@ -104,8 +104,8 @@ export default function Hero() {
             <div
               className="pointer-events-none absolute inset-0 transition-opacity duration-500"
               style={{
-                opacity: fx.spotActive ? 1 : 0.55,
-                background: `radial-gradient(circle 42vmin at ${fx.spotX}% ${fx.spotY}%, rgba(255,180,140,0.32) 0%, rgba(168,85,247,0.16) 32%, transparent 68%)`,
+                opacity: fx.spotActive ? 1 : 0.62,
+                background: `radial-gradient(circle 42vmin at ${fx.spotX}% ${fx.spotY}%, rgba(255,180,140,0.36) 0%, rgba(168,85,247,0.18) 32%, transparent 68%)`,
                 mixBlendMode: "soft-light",
               }}
             />
@@ -114,8 +114,8 @@ export default function Hero() {
             <div
               className="hero-ribbon-specular pointer-events-none absolute inset-0"
               style={{
-                opacity: fx.spotActive ? 1 : 0.4,
-                background: `radial-gradient(ellipse 24vmin 16vmin at ${fx.specularX}% ${fx.specularY}%, rgba(255,255,255,0.32) 0%, rgba(255,200,180,0.14) 35%, transparent 70%)`,
+                opacity: fx.spotActive ? 1 : 0.48,
+                background: `radial-gradient(ellipse 24vmin 16vmin at ${fx.specularX}% ${fx.specularY}%, rgba(255,255,255,0.34) 0%, rgba(255,200,180,0.16) 35%, transparent 70%)`,
               }}
             />
           </div>

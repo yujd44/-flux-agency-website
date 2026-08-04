@@ -311,7 +311,7 @@ html[lang="ar"] .hero-accent {
 .hero-ribbon-orbit {
   transform-style: preserve-3d;
   transform-origin: 68% 55%;
-  animation: hero-ribbon-orbit 28s ease-in-out infinite;
+  animation: hero-ribbon-orbit 14s ease-in-out infinite;
   will-change: transform;
 }
 
@@ -355,12 +355,73 @@ html[lang="ar"] .hero-accent {
 }
 
 .hero-dust {
-  opacity: 0.4;
-  box-shadow: 0 0 4px rgba(255, 200, 160, 0.45);
+  opacity: 0.55;
+  box-shadow: 0 0 6px rgba(255, 200, 160, 0.55);
   animation-name: hero-dust-drift;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
   will-change: transform, opacity;
+}
+
+/* Service constellation — obvious interactive nodes over the ribbon */
+@keyframes hero-constellation-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  70% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@keyframes hero-constellation-draw {
+  0% {
+    stroke-dashoffset: 48;
+    opacity: 0.25;
+  }
+  45% {
+    stroke-dashoffset: 0;
+    opacity: 0.75;
+  }
+  100% {
+    stroke-dashoffset: -48;
+    opacity: 0.3;
+  }
+}
+
+.hero-constellation-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-dasharray: 10 6;
+  animation: hero-constellation-draw 5.2s ease-in-out infinite;
+}
+
+.hero-constellation-pulse {
+  background: radial-gradient(circle, rgba(255, 106, 61, 0.65) 0%, rgba(167, 139, 250, 0.25) 55%, transparent 70%);
+  animation: hero-constellation-pulse 2.2s ease-out infinite;
+}
+
+.hero-constellation-node {
+  border-radius: 999px;
+  padding: 0.35rem 0.55rem 0.35rem 0.4rem;
+  transition:
+    transform 0.22s ease,
+    filter 0.22s ease,
+    background-color 0.22s ease;
+  filter: drop-shadow(0 0 8px rgba(255, 106, 61, 0.4));
+}
+
+.hero-constellation-node:hover {
+  transform: scale(1.12);
+  filter: drop-shadow(0 0 16px rgba(255, 106, 61, 0.85));
+  background-color: rgba(12, 16, 22, 0.45);
+}
+
+.hero-constellation-node:focus-visible {
+  outline: 1px solid rgba(255, 160, 120, 0.7);
+  outline-offset: 3px;
 }
 
 /* Magnetic primary CTA — subtle pull on hover */
@@ -433,14 +494,6 @@ html[lang="ar"] .hero-accent {
   will-change: background;
 }
 
-.hero-constellation-node:hover span:last-child {
-  color: var(--color-text);
-}
-
-.hero-constellation-node:hover span:first-child > span:first-child {
-  background: rgba(255, 106, 61, 0.55);
-}
-
 /* Soft portal wipe on route change */
 .portal-wipe {
   background: radial-gradient(
@@ -473,8 +526,15 @@ html[lang="ar"] .hero-accent {
 @media (prefers-reduced-motion: reduce) {
   .hero-ribbon-orbit,
   .hero-ribbon-breathe,
-  .hero-dust {
+  .hero-dust,
+  .hero-constellation-pulse,
+  .hero-constellation-line {
     animation: none !important;
+  }
+
+  .hero-constellation-line {
+    opacity: 0.55;
+    stroke-dashoffset: 0;
   }
 
   .hero-zone {
