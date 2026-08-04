@@ -403,61 +403,6 @@ html[lang="ar"] .hero-accent {
   filter: brightness(1.1);
 }
 
-/* Hero zone — custom crosshair cursor (fine pointer only) */
-@media (pointer: fine) {
-  .hero-zone {
-    cursor: none;
-  }
-
-  .hero-zone a,
-  .hero-zone button {
-    cursor: none;
-  }
-
-  .hero-crosshair {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 18px;
-    height: 18px;
-    margin: -9px 0 0 -9px;
-    border: 1px solid rgba(255, 255, 255, 0.45);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 70;
-    opacity: 0;
-    mix-blend-mode: difference;
-    transition: opacity 0.2s ease;
-  }
-
-  .hero-zone:hover .hero-crosshair {
-    opacity: 1;
-  }
-
-  .hero-crosshair::before,
-  .hero-crosshair::after {
-    content: "";
-    position: absolute;
-    background: rgba(255, 255, 255, 0.55);
-  }
-
-  .hero-crosshair::before {
-    left: 50%;
-    top: -4px;
-    bottom: -4px;
-    width: 1px;
-    transform: translateX(-50%);
-  }
-
-  .hero-crosshair::after {
-    top: 50%;
-    left: -4px;
-    right: -4px;
-    height: 1px;
-    transform: translateY(-50%);
-  }
-}
-
 /* Soft portal wipe on route change */
 .portal-wipe {
   background: radial-gradient(
@@ -493,14 +438,6 @@ html[lang="ar"] .hero-accent {
   .hero-floor-glow,
   .hero-dust {
     animation: none !important;
-  }
-
-  .hero-zone {
-    cursor: auto;
-  }
-
-  .hero-crosshair {
-    display: none !important;
   }
 
   .portal-wipe-active {

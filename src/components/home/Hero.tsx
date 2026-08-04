@@ -9,7 +9,6 @@ import HeroHeadline from "@/components/home/HeroHeadline";
 import { useRibbonFx } from "@/hooks/useRibbonFx";
 import { useTimeAccent } from "@/hooks/useTimeAccent";
 import { useMagnetic } from "@/hooks/useMagnetic";
-import { useCrosshair } from "@/hooks/useCrosshair";
 
 const HeroSpiral = dynamic(() => import("@/components/home/HeroSpiral"), {
   ssr: false,
@@ -41,18 +40,14 @@ export default function Hero() {
   const t = useTranslations("home.hero");
   const zoneRef = useRef<HTMLElement>(null);
   const artRef = useRef<HTMLDivElement>(null);
-  const crosshairRef = useRef<HTMLDivElement>(null);
   const fx = useRibbonFx(artRef);
   useTimeAccent();
-  useCrosshair(zoneRef, crosshairRef);
 
   return (
     <section
       ref={zoneRef}
       className="hero-zone relative flex min-h-[calc(100svh-44px)] flex-col overflow-hidden"
     >
-      <div ref={crosshairRef} className="hero-crosshair" aria-hidden="true" />
-
       <div className="blueprint-grid pointer-events-none absolute inset-0 opacity-[0.35]" />
 
       {/* Soft floor glow under sculpture */}

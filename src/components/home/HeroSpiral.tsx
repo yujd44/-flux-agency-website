@@ -19,7 +19,7 @@ const SPIRAL: SpiralParams = {
   width: 0.92,
   thickness: 0.155,
   // Dense enough for smooth curves without looking faceted while spinning
-  segments: 360,
+  segments: 420,
 };
 
 /** Helix frame: center + orthonormal basis (tangent, binormal, normal). */
@@ -147,6 +147,12 @@ function buildRibbonGeometry(p: SpiralParams) {
   geo.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
   geo.setIndex(indices);
   geo.computeVertexNormals();
+  // Tangents for anisotropic brushed speculars along the helix
+  try {
+    geo.computeTangents();
+  } catch {
+    // Older / incomplete geometry — anisotropy falls back gracefully
+  }
   return geo;
 }
 
@@ -169,7 +175,7 @@ function rimPath(p: SpiralParams, side: 1 | -1, lift = 0.003): THREE.Vector3[] {
 }
 
 /**
- * Opaque emissive rim tube — no transparency, no DoubleSide shreds.
+ * Opaque emissive rim tube — physical material, no flat MeshBasic slabs.
  * Vertex colors follow brand teal → magenta → orange along the helix.
  */
 function buildRimTube(
@@ -182,7 +188,8 @@ function buildRimTube(
   const pts = rimPath(p, side, lift);
   const curve = new THREE.CatmullRomCurve3(pts, false, "catmullrom", 0.35);
   const tubular = p.segments;
-  const radial = 6;
+  // Higher radial count → smooth round tubes, no faceted purple strips
+  const radial = 12;
   const geo = new THREE.TubeGeometry(curve, tubular, tubeRadius, radial, false);
 
   const col = new THREE.Color();
@@ -204,32 +211,61 @@ function buildRimTube(
 }
 
 /**
- * Soft studio environment for metal/clearcoat reflections —
- * cool floor bounce + warm key, no harsh HDR spikes.
+ * Contrast-rich studio env — bright key + cool bounce so clearcoat
+ * produces sharp hotspots on charcoal curves.
  */
 function makeStudioEnv(renderer: THREE.WebGLRenderer) {
   const pmrem = new THREE.PMREMGenerator(renderer);
   const envScene = new THREE.Scene();
-  envScene.add(new THREE.HemisphereLight(0xfff2e8, 0x1a2838, 1.25));
-  const key = new THREE.DirectionalLight(0xffe8d8, 1.55);
-  key.position.set(3.5, 4.5, 2.5);
+  envScene.add(new THREE.HemisphereLight(0xfff2e8, 0x121820, 0.85));
+
+  // Hard specular anchors in the env map (living reflections while spinning)
+  const key = new THREE.DirectionalLight(0xfff4ea, 2.4);
+  key.position.set(4.2, 5.8, 2.8);
   envScene.add(key);
-  const cool = new THREE.DirectionalLight(0xb0c8ec, 0.95);
-  cool.position.set(-2.5, 1.2, 3);
+
+  const hot = new THREE.DirectionalLight(0xffffff, 1.8);
+  hot.position.set(-1.2, 3.5, 4.5);
+  envScene.add(hot);
+
+  const cool = new THREE.DirectionalLight(0xb8d0f0, 1.15);
+  cool.position.set(-3.2, 1.4, 2.6);
   envScene.add(cool);
-  const magenta = new THREE.DirectionalLight(0xff8ec8, 0.45);
-  magenta.position.set(1.2, 0.8, -3);
+
+  const magenta = new THREE.DirectionalLight(0xff7ab8, 0.75);
+  magenta.position.set(1.4, 0.6, -3.4);
   envScene.add(magenta);
-  const teal = new THREE.PointLight(0x2ecfc4, 0.7, 12, 2);
-  teal.position.set(0, -2.5, 1.5);
+
+  const teal = new THREE.PointLight(0x2ecfc4, 1.1, 14, 2);
+  teal.position.set(0, -2.2, 1.8);
   envScene.add(teal);
-  const envMap = pmrem.fromScene(envScene, 0.04).texture;
+
+  // Small bright spheres act as specular “windows” in the PMREM
+  const sparkGeo = new THREE.SphereGeometry(0.35, 16, 12);
+  const sparkMat = new THREE.MeshBasicMaterial({ color: 0xfff8f0 });
+  const sparkA = new THREE.Mesh(sparkGeo, sparkMat);
+  sparkA.position.set(5.5, 6.2, 4.2);
+  envScene.add(sparkA);
+  const sparkB = new THREE.Mesh(sparkGeo, sparkMat.clone());
+  (sparkB.material as THREE.MeshBasicMaterial).color.set(0xe8f0ff);
+  sparkB.position.set(-4.8, 3.8, 5.5);
+  envScene.add(sparkB);
+  const sparkC = new THREE.Mesh(sparkGeo, sparkMat.clone());
+  (sparkC.material as THREE.MeshBasicMaterial).color.set(0xffc8e8);
+  sparkC.position.set(2.2, 1.5, -5.8);
+  envScene.add(sparkC);
+
+  const envMap = pmrem.fromScene(envScene, 0.02).texture;
+  sparkGeo.dispose();
+  sparkMat.dispose();
+  (sparkB.material as THREE.Material).dispose();
+  (sparkC.material as THREE.Material).dispose();
   pmrem.dispose();
   return envMap;
 }
 
 /**
- * Dedicated WebGL spiral — opaque physical body + emissive rim tubes.
+ * Dedicated WebGL spiral — opaque physical body + lit rim tubes.
  * Resource-aware: capped DPR, soft shadows, pauses off-screen / reduced-motion.
  */
 export default function HeroSpiral() {
@@ -250,7 +286,7 @@ export default function HeroSpiral() {
       renderer = new THREE.WebGLRenderer({
         antialias: true,
         alpha: true,
-        powerPreference: "low-power",
+        powerPreference: "high-performance",
         failIfMajorPerformanceCaveat: false,
       });
     } catch {
@@ -264,12 +300,13 @@ export default function HeroSpiral() {
     camera.position.set(3.85, 0.45, 5.55);
     camera.lookAt(1.55, -0.08, 0);
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    // Higher DPR for cleaner rim edges (AA + denser sampling)
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     renderer.setPixelRatio(dpr);
     renderer.setClearColor(0x000000, 0);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.18;
+    renderer.toneMappingExposure = 1.28;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mount.appendChild(renderer.domElement);
@@ -293,18 +330,23 @@ export default function HeroSpiral() {
     const ribbonGeo = buildRibbonGeometry(SPIRAL);
     const ribbonMat = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color("#4a5058"),
-      roughness: 0.42,
-      metalness: 0.72,
-      clearcoat: 0.55,
-      clearcoatRoughness: 0.28,
-      ior: 1.45,
+      roughness: 0.26,
+      metalness: 0.86,
+      clearcoat: 0.92,
+      clearcoatRoughness: 0.08,
+      ior: 1.48,
+      sheen: 0.35,
+      sheenRoughness: 0.4,
+      sheenColor: new THREE.Color("#c8b0c8"),
+      anisotropy: 0.72,
+      anisotropyRotation: 0,
       flatShading: false,
       vertexColors: true,
-      // Soft graphite fill — brushed charcoal, not crushed black
-      emissive: new THREE.Color("#1a1e28"),
-      emissiveIntensity: 0.06,
+      // Keep charcoal readable without washing out speculars
+      emissive: new THREE.Color("#12151c"),
+      emissiveIntensity: 0.03,
       envMap,
-      envMapIntensity: 0.95,
+      envMapIntensity: 1.55,
       side: THREE.FrontSide,
     });
     const ribbon = new THREE.Mesh(ribbonGeo, ribbonMat);
@@ -312,27 +354,36 @@ export default function HeroSpiral() {
     ribbon.receiveShadow = true;
     group.add(ribbon);
 
-    // Opaque rim tubes — hard edge + softer wider tube (no alpha sorting)
-    const rimMat = new THREE.MeshBasicMaterial({
+    // Physical neon rims — lit metal + vertex-tinted emissive (no flat Basic slabs)
+    const rimMat = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color("#ffffff"),
+      roughness: 0.16,
+      metalness: 0.62,
+      clearcoat: 0.75,
+      clearcoatRoughness: 0.1,
       vertexColors: true,
-      toneMapped: false,
+      emissive: new THREE.Color("#ffffff"),
+      emissiveIntensity: 0.72,
+      envMap,
+      envMapIntensity: 1.05,
+      toneMapped: true,
       side: THREE.FrontSide,
     });
-    const haloMat = new THREE.MeshBasicMaterial({
-      vertexColors: true,
-      toneMapped: false,
-      side: THREE.FrontSide,
-    });
-    const rimOuterGeo = buildRimTube(SPIRAL, 1, 0.016, 1.05, 0.004);
-    const rimInnerGeo = buildRimTube(SPIRAL, -1, 0.013, 0.95, 0.004);
-    const haloOuterGeo = buildRimTube(SPIRAL, 1, 0.038, 0.38, 0.002);
-    const haloInnerGeo = buildRimTube(SPIRAL, -1, 0.032, 0.32, 0.002);
+    // Tint emissive by vertex color so cyan→magenta→orange stays brand-true
+    rimMat.onBeforeCompile = (shader) => {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        "#include <emissivemap_fragment>",
+        `#include <emissivemap_fragment>
+#ifdef USE_COLOR
+  totalEmissiveRadiance *= vColor;
+#endif`,
+      );
+    };
+    const rimOuterGeo = buildRimTube(SPIRAL, 1, 0.015, 1.2, 0.004);
+    const rimInnerGeo = buildRimTube(SPIRAL, -1, 0.012, 1.1, 0.004);
     const rimOuter = new THREE.Mesh(rimOuterGeo, rimMat);
     const rimInner = new THREE.Mesh(rimInnerGeo, rimMat);
-    const haloOuter = new THREE.Mesh(haloOuterGeo, haloMat);
-    const haloInner = new THREE.Mesh(haloInnerGeo, haloMat);
-    // Draw soft glow first, hard rim on top; both write depth → no shreds
-    group.add(haloOuter, haloInner, rimOuter, rimInner);
+    group.add(rimOuter, rimInner);
 
     const floorY = -SPIRAL.height * 0.48;
     const floorGeo = new THREE.CircleGeometry(3.6, 64);
@@ -391,13 +442,14 @@ export default function HeroSpiral() {
     warmGlow.position.set(1.75, floorY + 0.012, -0.1);
     scene.add(warmGlow);
 
-    const hemi = new THREE.HemisphereLight(0xf4efe8, 0x2a3545, 0.62);
+    const hemi = new THREE.HemisphereLight(0xf4efe8, 0x2a3545, 0.55);
     scene.add(hemi);
 
-    const ambient = new THREE.AmbientLight(0xc0c6d0, 0.32);
+    const ambient = new THREE.AmbientLight(0xc0c6d0, 0.22);
     scene.add(ambient);
 
-    const key = new THREE.DirectionalLight(0xfff1e6, 1.25);
+    // Stronger key — hard specular hotspots on charcoal curves
+    const key = new THREE.DirectionalLight(0xfff4ea, 2.15);
     key.position.set(4.2, 5.5, 3.8);
     key.castShadow = true;
     key.shadow.mapSize.set(1024, 1024);
@@ -412,25 +464,34 @@ export default function HeroSpiral() {
     key.shadow.radius = 4;
     scene.add(key);
 
-    const fill = new THREE.DirectionalLight(0xd8e4f2, 0.7);
+    const fill = new THREE.DirectionalLight(0xd8e4f2, 0.55);
     fill.position.set(camera.position.x - 0.4, 1.6, camera.position.z + 0.6);
     scene.add(fill);
 
-    const sideFill = new THREE.DirectionalLight(0xb8c4d8, 0.42);
+    const sideFill = new THREE.DirectionalLight(0xb8c4d8, 0.38);
     sideFill.position.set(-3.5, 1.8, 2.2);
     scene.add(sideFill);
 
-    const rimLight = new THREE.DirectionalLight(0xff8ab8, 0.5);
+    const rimLight = new THREE.DirectionalLight(0xff8ab8, 0.72);
     rimLight.position.set(1.5, 1.2, -4);
     scene.add(rimLight);
 
-    const bounce = new THREE.PointLight(0x2ecfc4, 0.78, 8, 2);
+    const bounce = new THREE.PointLight(0x2ecfc4, 0.95, 8, 2);
     bounce.position.set(1.7, floorY + 0.4, 1.2);
     scene.add(bounce);
 
-    const warmBounce = new THREE.PointLight(0xff9a6b, 0.55, 7, 2);
+    const warmBounce = new THREE.PointLight(0xff9a6b, 0.7, 7, 2);
     warmBounce.position.set(2.0, 0.6, -1.2);
     scene.add(warmBounce);
+
+    // Moving accent light — living speculars while the helix rotates
+    const wander = new THREE.PointLight(0xffe8d8, 1.65, 9, 2);
+    wander.position.set(3.2, 2.4, 2.8);
+    scene.add(wander);
+
+    const wanderCool = new THREE.PointLight(0xc8dcff, 0.85, 8, 2);
+    wanderCool.position.set(0.4, 1.2, 3.5);
+    scene.add(wanderCool);
 
     let visible = true;
     let raf = 0;
@@ -487,6 +548,20 @@ export default function HeroSpiral() {
       group.rotation.z = baseTiltZ;
       group.position.y = -0.22 + Math.sin(clock.t * 0.5) * 0.035;
 
+      // Orbit key accents around the sculpture for living hotspots
+      const a = clock.t * 0.55;
+      wander.position.set(
+        1.62 + Math.cos(a) * 2.8,
+        1.8 + Math.sin(a * 0.7) * 1.1,
+        Math.sin(a) * 2.6,
+      );
+      const b = clock.t * 0.38 + 1.7;
+      wanderCool.position.set(
+        1.62 + Math.cos(b) * 2.2,
+        0.6 + Math.sin(b * 1.1) * 0.9,
+        Math.sin(b) * 2.4,
+      );
+
       glowMat.opacity = 0.2 + Math.sin(clock.t * 0.85) * 0.05;
 
       renderer.render(scene, camera);
@@ -504,10 +579,7 @@ export default function HeroSpiral() {
       ribbonMat.dispose();
       rimOuterGeo.dispose();
       rimInnerGeo.dispose();
-      haloOuterGeo.dispose();
-      haloInnerGeo.dispose();
       rimMat.dispose();
-      haloMat.dispose();
       floorGeo.dispose();
       floorMat.dispose();
       shadowCatcherGeo.dispose();
