@@ -71,21 +71,25 @@ function rimColor(t: number, out: THREE.Color) {
 }
 
 /**
- * Subtle warm→cool tint along the helix (reads premium on light concrete).
- * Base is near-white so MeshStandardMaterial albedo stays bright.
+ * Soft lilac/cream wash along the helix — readable on metal+clearcoat,
+ * warm→cool so faces carry gradient, not only the rim.
  */
 function bodyTint(t: number, out: THREE.Color) {
-  const cool = new THREE.Color("#d8e0ea"); // soft blue-gray mid/base
-  const mid = new THREE.Color("#e8e4e0"); // neutral warm concrete
-  const warm = new THREE.Color("#f0ddd0"); // peach warmth toward top
-  if (t < 0.45) {
-    return out.copy(cool).lerp(mid, t / 0.45);
+  const cool = new THREE.Color("#c9d4e6"); // cool blue-lilac at base
+  const cream = new THREE.Color("#efe6dc"); // soft cream mid
+  const lilac = new THREE.Color("#e4d6e8"); // muted lilac
+  const warm = new THREE.Color("#f0d5c4"); // peach warmth toward top
+  if (t < 0.32) {
+    return out.copy(cool).lerp(cream, t / 0.32);
   }
-  return out.copy(mid).lerp(warm, (t - 0.45) / 0.55);
+  if (t < 0.62) {
+    return out.copy(cream).lerp(lilac, (t - 0.32) / 0.3);
+  }
+  return out.copy(lilac).lerp(warm, (t - 0.62) / 0.38);
 }
 
 /**
- * Thick helical slab — light matte concrete with soft face tint.
+ * Thick helical slab — smooth premium body with soft face tint.
  * Cross-section: width × thickness rectangle swept along helix.
  */
 function buildRibbonGeometry(p: SpiralParams) {
@@ -95,6 +99,7 @@ function buildRibbonGeometry(p: SpiralParams) {
   const uvs: number[] = [];
   const indices: number[] = [];
   const tint = new THREE.Color();
+  const across = new THREE.Color();
 
   const hw = p.width * 0.5;
   const ht = p.thickness * 0.5;
@@ -105,6 +110,8 @@ function buildRibbonGeometry(p: SpiralParams) {
     [hw, ht],
     [-hw, ht],
   ];
+  const creamWash = new THREE.Color("#f7eee6");
+  const coolWash = new THREE.Color("#d2dceb");
 
   for (let i = 0; i <= p.segments; i++) {
     const t = i / p.segments;
@@ -124,9 +131,12 @@ function buildRibbonGeometry(p: SpiralParams) {
         n.copy(binormal).multiplyScalar(u > 0 ? 1 : -1);
       }
       normals.push(n.x, n.y, n.z);
-      // Slightly lift broad faces vs thin edges so the ribbon plane reads clearly
-      const faceLift = Math.abs(v) > ht * 0.5 ? 1.06 : 0.96;
-      colors.push(tint.r * faceLift, tint.g * faceLift, tint.b * faceLift);
+      // Across-ribbon wash + slight face lift so planes read with depth
+      const k = (u / hw + 1) * 0.5;
+      across.copy(coolWash).lerp(creamWash, k);
+      const face = tint.clone().lerp(across, 0.28);
+      const faceLift = Math.abs(v) > ht * 0.5 ? 1.05 : 0.97;
+      colors.push(face.r * faceLift, face.g * faceLift, face.b * faceLift);
       uvs.push(t * p.turns, c < 2 ? 0 : 1);
     }
 
@@ -257,34 +267,33 @@ function buildRimHaloGeometry(p: SpiralParams, side: 1 | -1) {
   return geo;
 }
 
-/** Tiny procedural concrete grain — bright albedo + roughness variation. */
-function makeConcreteMaps(size = 128) {
-  const data = new Uint8Array(size * size * 4);
-  const rough = new Uint8Array(size * size);
-  for (let i = 0; i < size * size; i++) {
-    const n = Math.random();
-    // Light concrete — readable mid-gray, not charcoal
-    const g = 198 + Math.floor(n * 36);
-    data[i * 4] = Math.min(255, g + 2);
-    data[i * 4 + 1] = g;
-    data[i * 4 + 2] = Math.min(255, g + 6);
-    data[i * 4 + 3] = 255;
-    rough[i] = 175 + Math.floor(n * 55);
-  }
-  const map = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
-  map.wrapS = map.wrapT = THREE.RepeatWrapping;
-  map.colorSpace = THREE.SRGBColorSpace;
-  map.needsUpdate = true;
-
-  const roughnessMap = new THREE.DataTexture(rough, size, size, THREE.RedFormat);
-  roughnessMap.wrapS = roughnessMap.wrapT = THREE.RepeatWrapping;
-  roughnessMap.needsUpdate = true;
-
-  return { map, roughnessMap };
+/**
+ * Soft studio environment for metal/clearcoat reflections —
+ * cool floor bounce + warm key, no harsh HDR spikes.
+ */
+function makeStudioEnv(renderer: THREE.WebGLRenderer) {
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const envScene = new THREE.Scene();
+  envScene.add(new THREE.HemisphereLight(0xfff0e6, 0x1a2838, 1.1));
+  const key = new THREE.DirectionalLight(0xffe4d4, 1.4);
+  key.position.set(3.5, 4.5, 2.5);
+  envScene.add(key);
+  const cool = new THREE.DirectionalLight(0xa8c4e8, 0.85);
+  cool.position.set(-2.5, 1.2, 3);
+  envScene.add(cool);
+  const magenta = new THREE.DirectionalLight(0xff8ec8, 0.35);
+  magenta.position.set(1.2, 0.8, -3);
+  envScene.add(magenta);
+  const teal = new THREE.PointLight(0x2ecfc4, 0.55, 12, 2);
+  teal.position.set(0, -2.5, 1.5);
+  envScene.add(teal);
+  const envMap = pmrem.fromScene(envScene, 0.04).texture;
+  pmrem.dispose();
+  return envMap;
 }
 
 /**
- * Dedicated WebGL spiral — light matte concrete slab + neon rim, soft studio lit.
+ * Dedicated WebGL spiral — polished physical ribbon + neon rim, soft studio lit.
  * Resource-aware: capped DPR, soft shadows, pauses off-screen / reduced-motion.
  */
 export default function HeroSpiral() {
@@ -325,7 +334,7 @@ export default function HeroSpiral() {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     // Keep midtones readable on dark page bg (avoid crushed charcoal body)
-    renderer.toneMappingExposure = 1.22;
+    renderer.toneMappingExposure = 1.12;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mount.appendChild(renderer.domElement);
@@ -334,6 +343,9 @@ export default function HeroSpiral() {
       height: "100%",
       display: "block",
     });
+
+    const envMap = makeStudioEnv(renderer);
+    scene.environment = envMap;
 
     const group = new THREE.Group();
     // Sit on the right; slight lean away from vertical (reference tilt)
@@ -344,23 +356,21 @@ export default function HeroSpiral() {
     group.rotation.z = baseTiltZ;
     scene.add(group);
 
-    const { map, roughnessMap } = makeConcreteMaps(128);
-    map.repeat.set(3.2, 1.4);
-    roughnessMap.repeat.set(3.2, 1.4);
-
     const ribbonGeo = buildRibbonGeometry(SPIRAL);
-    const ribbonMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color("#e6e9ee"),
-      map,
-      roughnessMap,
-      roughness: 0.9,
-      metalness: 0,
+    const ribbonMat = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color("#ebe6e2"),
+      roughness: 0.28,
+      metalness: 0.62,
+      clearcoat: 0.78,
+      clearcoatRoughness: 0.18,
+      ior: 1.45,
       flatShading: false,
       vertexColors: true,
-      // Soft lift so shadowed folds never fall to void-black
-      emissive: new THREE.Color("#6a707a"),
-      emissiveIntensity: 0.18,
-      envMapIntensity: 0,
+      // Quiet fill so deep folds stay readable without flattening shine
+      emissive: new THREE.Color("#3a4250"),
+      emissiveIntensity: 0.06,
+      envMap,
+      envMapIntensity: 0.95,
     });
     const ribbon = new THREE.Mesh(ribbonGeo, ribbonMat);
     ribbon.castShadow = true;
@@ -393,15 +403,19 @@ export default function HeroSpiral() {
     const haloInner = new THREE.Mesh(haloInnerGeo, haloMat);
     group.add(haloOuter, haloInner, rimOuter, rimInner);
 
-    // Dark soft floor + contact shadow catcher (low metalness — no glossy pool)
+    // Dark soft floor + quiet reflective catcher under the sculpture
     const floorY = -SPIRAL.height * 0.48;
     const floorGeo = new THREE.CircleGeometry(3.6, 48);
-    const floorMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color("#0a0b0e"),
-      metalness: 0.18,
-      roughness: 0.72,
+    const floorMat = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color("#08090c"),
+      metalness: 0.55,
+      roughness: 0.38,
+      clearcoat: 0.25,
+      clearcoatRoughness: 0.45,
       transparent: true,
-      opacity: 0.48,
+      opacity: 0.52,
+      envMap,
+      envMapIntensity: 0.45,
     });
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
@@ -437,14 +451,14 @@ export default function HeroSpiral() {
     warmGlow.position.set(1.75, floorY + 0.015, -0.1);
     scene.add(warmGlow);
 
-    // Soft studio lights — bright matte concrete, no hard specular spikes
-    const hemi = new THREE.HemisphereLight(0xf2f0ec, 0x3a4555, 0.95);
+    // Soft studio lights — shaped for metal/clearcoat without neon candy
+    const hemi = new THREE.HemisphereLight(0xf4efe8, 0x2a3545, 0.55);
     scene.add(hemi);
 
-    const ambient = new THREE.AmbientLight(0xc8cdd6, 0.72);
+    const ambient = new THREE.AmbientLight(0xb8c0cc, 0.28);
     scene.add(ambient);
 
-    const key = new THREE.DirectionalLight(0xfff1e6, 1.35);
+    const key = new THREE.DirectionalLight(0xfff1e6, 1.15);
     key.position.set(4.2, 5.5, 3.8);
     key.castShadow = true;
     key.shadow.mapSize.set(1024, 1024);
@@ -460,24 +474,24 @@ export default function HeroSpiral() {
     scene.add(key);
 
     // Camera-facing fill — keeps the ribbon face readable, not a silhouette
-    const fill = new THREE.DirectionalLight(0xd8e4f2, 0.95);
+    const fill = new THREE.DirectionalLight(0xd8e4f2, 0.62);
     fill.position.set(camera.position.x - 0.4, 1.6, camera.position.z + 0.6);
     scene.add(fill);
 
-    const sideFill = new THREE.DirectionalLight(0xb8c4d8, 0.55);
+    const sideFill = new THREE.DirectionalLight(0xb8c4d8, 0.38);
     sideFill.position.set(-3.5, 1.8, 2.2);
     scene.add(sideFill);
 
-    const rimLight = new THREE.DirectionalLight(0xff8ab8, 0.35);
+    const rimLight = new THREE.DirectionalLight(0xff8ab8, 0.42);
     rimLight.position.set(1.5, 1.2, -4);
     scene.add(rimLight);
 
     // Cool bounce from below (reads as floor teal reflection)
-    const bounce = new THREE.PointLight(0x2ecfc4, 0.55, 8, 2);
+    const bounce = new THREE.PointLight(0x2ecfc4, 0.7, 8, 2);
     bounce.position.set(1.7, floorY + 0.4, 1.2);
     scene.add(bounce);
 
-    const warmBounce = new THREE.PointLight(0xff9a6b, 0.4, 7, 2);
+    const warmBounce = new THREE.PointLight(0xff9a6b, 0.48, 7, 2);
     warmBounce.position.set(2.0, 0.6, -1.2);
     scene.add(warmBounce);
 
@@ -565,8 +579,7 @@ export default function HeroSpiral() {
       glowMat.dispose();
       warmGlowGeo.dispose();
       warmGlowMat.dispose();
-      map.dispose();
-      roughnessMap.dispose();
+      envMap.dispose();
       renderer.dispose();
       if (renderer.domElement.parentNode === mount) {
         mount.removeChild(renderer.domElement);

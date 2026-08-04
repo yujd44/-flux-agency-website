@@ -6,7 +6,6 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
 import BidiBlock from "@/components/ui/BidiBlock";
 import HeroHeadline from "@/components/home/HeroHeadline";
-import AmbientToggle from "@/components/home/AmbientToggle";
 import { useRibbonFx } from "@/hooks/useRibbonFx";
 import { useTimeAccent } from "@/hooks/useTimeAccent";
 import { useMagnetic } from "@/hooks/useMagnetic";
@@ -153,8 +152,6 @@ export default function Hero() {
           </span>
         </div>
       </div>
-
-      <AmbientToggle />
     </section>
   );
 }
