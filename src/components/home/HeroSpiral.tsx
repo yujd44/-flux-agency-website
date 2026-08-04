@@ -15,14 +15,15 @@ type SpiralParams = {
 };
 
 const SPIRAL: SpiralParams = {
-  turns: 2.15,
-  radius: 1.28,
-  height: 4.35,
-  width: 0.92,
-  // Enough thickness to read as a solid bar, not a paper sheet
-  thickness: 0.2,
-  segments: 380,
-  profile: 20,
+  // Slightly more turns + tighter helix so a slender band still has presence
+  turns: 2.55,
+  radius: 1.18,
+  height: 4.55,
+  // Slim luxury band — not a tubular stadium bar
+  width: 0.38,
+  thickness: 0.055,
+  segments: 420,
+  profile: 18,
 };
 
 /** Helix frame: center + orthonormal basis (tangent, binormal, normal). */
@@ -48,22 +49,33 @@ function frameAt(t: number, p: SpiralParams) {
 }
 
 /**
- * Luxury brand ribbon: rose-gold → magenta → orchid → deep violet.
- * Matches site CTA coral→magenta→violet without pastel cyan wash.
+ * Multi-stop luxury gradient along the ribbon length.
+ * Champagne → rose → magenta → orchid → amethyst → deep violet,
+ * with a restrained teal edge near the tip — premium, not rainbow strobe.
  */
-function brandGradient(t: number, out: THREE.Color) {
-  const roseGold = new THREE.Color("#c86a52");
-  const magenta = new THREE.Color("#d63a8a");
-  const orchid = new THREE.Color("#a855c8");
-  const deepViolet = new THREE.Color("#5b35c4");
+const GRADIENT_STOPS: { t: number; hex: string }[] = [
+  { t: 0, hex: "#d4a574" }, // soft champagne / gold highlight
+  { t: 0.14, hex: "#c45a6a" }, // rose
+  { t: 0.32, hex: "#d63a8a" }, // brand magenta
+  { t: 0.5, hex: "#a855c8" }, // orchid
+  { t: 0.68, hex: "#6b3fa0" }, // deep amethyst
+  { t: 0.84, hex: "#4a2f8a" }, // deep violet
+  { t: 1, hex: "#2f5a6e" }, // restrained teal edge
+];
 
-  if (t < 0.28) {
-    return out.copy(roseGold).lerp(magenta, t / 0.28);
+const _gradB = new THREE.Color();
+
+function brandGradient(t: number, out: THREE.Color) {
+  const u = THREE.MathUtils.clamp(t, 0, 1);
+  for (let i = 0; i < GRADIENT_STOPS.length - 1; i++) {
+    const a = GRADIENT_STOPS[i];
+    const b = GRADIENT_STOPS[i + 1];
+    if (u <= b.t || i === GRADIENT_STOPS.length - 2) {
+      const local = (u - a.t) / Math.max(1e-6, b.t - a.t);
+      return out.set(a.hex).lerp(_gradB.set(b.hex), local);
+    }
   }
-  if (t < 0.58) {
-    return out.copy(magenta).lerp(orchid, (t - 0.28) / 0.3);
-  }
-  return out.copy(orchid).lerp(deepViolet, (t - 0.58) / 0.42);
+  return out.set(GRADIENT_STOPS[GRADIENT_STOPS.length - 1].hex);
 }
 
 /**
@@ -71,7 +83,8 @@ function brandGradient(t: number, out: THREE.Color) {
  * Filled volume when swept — reads as one solid ribbon, not dual shells.
  */
 function stadiumProfile(hw: number, ht: number, samples: number): [number, number][] {
-  const r = Math.min(ht, hw * 0.42);
+  // Tight end radius — flat band with refined caps, not a fat capsule
+  const r = Math.min(ht * 0.92, hw * 0.28);
   const flat = Math.max(0, hw - r);
   const half = Math.max(4, Math.ceil(samples / 2));
   const pts: [number, number][] = [];
@@ -98,8 +111,8 @@ function buildRibbonGeometry(p: SpiralParams) {
   const indices: number[] = [];
   const tint = new THREE.Color();
   const face = new THREE.Color();
-  const obsidian = new THREE.Color("#1a1520");
-  const rimLift = new THREE.Color("#f0c4b0");
+  const deepBase = new THREE.Color("#2a1830");
+  const rimLift = new THREE.Color("#e8c9a8");
 
   const hw = p.width * 0.5;
   const ht = p.thickness * 0.5;
@@ -108,8 +121,8 @@ function buildRibbonGeometry(p: SpiralParams) {
 
   for (let i = 0; i <= p.segments; i++) {
     const t = i / p.segments;
-    const { center, binormal, normal } = frameAt(t, p);
     brandGradient(t, tint);
+    const { center, binormal, normal } = frameAt(t, p);
 
     for (let c = 0; c < ring; c++) {
       const [u, v] = profile[c];
@@ -119,12 +132,12 @@ function buildRibbonGeometry(p: SpiralParams) {
         .addScaledVector(normal, v);
       positions.push(pos.x, pos.y, pos.z);
 
-      // Obsidian body with rich brand wash; outer rim slightly warmer
+      // Rich brand body (visible on dark), subtle champagne rim — not black void
       const across = (u / hw + 1) * 0.5;
-      const edge = Math.pow(Math.abs(u) / hw, 1.35);
-      face.copy(obsidian).lerp(tint, 0.62 + across * 0.18);
-      face.lerp(rimLift, edge * 0.12);
-      const lift = 0.9 + Math.max(0, v / ht) * 0.14;
+      const edge = Math.pow(Math.abs(u) / hw, 1.5);
+      face.copy(deepBase).lerp(tint, 0.78 + across * 0.12);
+      face.lerp(rimLift, edge * 0.1);
+      const lift = 0.92 + Math.max(0, v / ht) * 0.1;
       colors.push(face.r * lift, face.g * lift, face.b * lift);
       uvs.push(t * p.turns, c / ring);
     }
@@ -144,7 +157,7 @@ function buildRibbonGeometry(p: SpiralParams) {
   {
     const { center } = frameAt(0, p);
     brandGradient(0, tint);
-    face.copy(obsidian).lerp(tint, 0.7);
+    face.copy(deepBase).lerp(tint, 0.82);
     positions.push(center.x, center.y, center.z);
     colors.push(face.r, face.g, face.b);
     uvs.push(0, 0.5);
@@ -157,7 +170,7 @@ function buildRibbonGeometry(p: SpiralParams) {
   {
     const { center } = frameAt(1, p);
     brandGradient(1, tint);
-    face.copy(obsidian).lerp(tint, 0.7);
+    face.copy(deepBase).lerp(tint, 0.82);
     positions.push(center.x, center.y, center.z);
     colors.push(face.r, face.g, face.b);
     uvs.push(p.turns, 0.5);
@@ -183,29 +196,29 @@ function buildRibbonGeometry(p: SpiralParams) {
 function makeStudioEnv(renderer: THREE.WebGLRenderer) {
   const pmrem = new THREE.PMREMGenerator(renderer);
   const envScene = new THREE.Scene();
-  envScene.add(new THREE.HemisphereLight(0xfff0e8, 0x121018, 0.85));
+  envScene.add(new THREE.HemisphereLight(0xfff0e8, 0x121018, 0.7));
 
-  const key = new THREE.DirectionalLight(0xfff2ea, 2.0);
+  const key = new THREE.DirectionalLight(0xfff2ea, 1.35);
   key.position.set(4.2, 5.8, 2.8);
   envScene.add(key);
 
-  const hot = new THREE.DirectionalLight(0xffffff, 1.45);
+  const hot = new THREE.DirectionalLight(0xffffff, 0.95);
   hot.position.set(-1.2, 3.5, 4.5);
   envScene.add(hot);
 
-  const cool = new THREE.DirectionalLight(0xc8b8e8, 0.95);
+  const cool = new THREE.DirectionalLight(0xc8b8e8, 0.7);
   cool.position.set(-3.2, 1.4, 2.6);
   envScene.add(cool);
 
-  const magenta = new THREE.DirectionalLight(0xff6ab0, 1.15);
+  const magenta = new THREE.DirectionalLight(0xff6ab0, 0.75);
   magenta.position.set(1.4, 0.6, -3.4);
   envScene.add(magenta);
 
-  const rose = new THREE.PointLight(0xe07050, 1.1, 14, 2);
+  const rose = new THREE.PointLight(0xe07050, 0.75, 14, 2);
   rose.position.set(0, -2.2, 1.8);
   envScene.add(rose);
 
-  const violet = new THREE.PointLight(0x8b5cf6, 1.15, 12, 2);
+  const violet = new THREE.PointLight(0x8b5cf6, 0.8, 12, 2);
   violet.position.set(2.5, 2.0, -2.0);
   envScene.add(violet);
 
@@ -284,12 +297,12 @@ export default function HeroSpiral() {
     camera.position.set(3.85, 0.45, 5.55);
     camera.lookAt(1.55, -0.08, 0);
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
     renderer.setPixelRatio(dpr);
     renderer.setClearColor(0x000000, 0);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.18;
+    renderer.toneMappingExposure = 1.08;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mount.appendChild(renderer.domElement);
@@ -313,23 +326,24 @@ export default function HeroSpiral() {
     const ribbonGeo = buildRibbonGeometry(SPIRAL);
     const ribbonMat = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color("#ffffff"),
-      roughness: 0.32,
-      metalness: 0.72,
-      clearcoat: 0.95,
-      clearcoatRoughness: 0.18,
-      ior: 1.48,
-      sheen: 0.55,
-      sheenRoughness: 0.38,
-      sheenColor: new THREE.Color("#c080e8"),
-      iridescence: 0.55,
-      iridescenceIOR: 1.45,
-      iridescenceThicknessRange: [180, 420],
+      // Soft luxury enamel — clearcoat/sheen without candy-plastic blowout
+      roughness: 0.42,
+      metalness: 0.48,
+      clearcoat: 0.62,
+      clearcoatRoughness: 0.32,
+      ior: 1.45,
+      sheen: 0.42,
+      sheenRoughness: 0.48,
+      sheenColor: new THREE.Color("#b070d0"),
+      iridescence: 0.28,
+      iridescenceIOR: 1.35,
+      iridescenceThicknessRange: [220, 380],
       flatShading: false,
       vertexColors: true,
       emissive: new THREE.Color("#ffffff"),
-      emissiveIntensity: 0.22,
+      emissiveIntensity: 0.16,
       envMap,
-      envMapIntensity: 1.45,
+      envMapIntensity: 0.95,
       side: THREE.FrontSide,
     });
     tintEmissiveByVertexColor(ribbonMat);
@@ -400,7 +414,7 @@ export default function HeroSpiral() {
     const ambient = new THREE.AmbientLight(0xc8c0d4, 0.3);
     scene.add(ambient);
 
-    const key = new THREE.DirectionalLight(0xfff4ea, 1.75);
+    const key = new THREE.DirectionalLight(0xfff4ea, 1.35);
     key.position.set(4.2, 5.5, 3.8);
     key.castShadow = true;
     key.shadow.mapSize.set(1024, 1024);
@@ -423,23 +437,23 @@ export default function HeroSpiral() {
     sideFill.position.set(-3.5, 1.8, 2.2);
     scene.add(sideFill);
 
-    const rimLight = new THREE.DirectionalLight(0xff7ab8, 0.9);
+    const rimLight = new THREE.DirectionalLight(0xff7ab8, 0.65);
     rimLight.position.set(1.5, 1.2, -4);
     scene.add(rimLight);
 
-    const bounce = new THREE.PointLight(0xb06cff, 0.95, 8, 2);
+    const bounce = new THREE.PointLight(0xb06cff, 0.65, 8, 2);
     bounce.position.set(1.7, floorY + 0.4, 1.2);
     scene.add(bounce);
 
-    const warmBounce = new THREE.PointLight(0xe07050, 0.8, 7, 2);
+    const warmBounce = new THREE.PointLight(0xe07050, 0.55, 7, 2);
     warmBounce.position.set(2.0, 0.6, -1.2);
     scene.add(warmBounce);
 
-    const wander = new THREE.PointLight(0xffe8d8, 1.2, 9, 2);
+    const wander = new THREE.PointLight(0xffe8d8, 0.75, 9, 2);
     wander.position.set(3.2, 2.4, 2.8);
     scene.add(wander);
 
-    const wanderCool = new THREE.PointLight(0xd0b8ff, 0.85, 8, 2);
+    const wanderCool = new THREE.PointLight(0xd0b8ff, 0.55, 8, 2);
     wanderCool.position.set(0.4, 1.2, 3.5);
     scene.add(wanderCool);
 
