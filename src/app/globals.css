@@ -279,15 +279,15 @@ html[lang="ar"] .hero-accent {
   scrollbar-width: none;
 }
 
-/* Soft feather so spiral dissolves into --color-bg without crushing copy */
+/* Soft feather so spiral / fallback dissolves into --color-bg */
 .hero-spiral-mask,
 .hero-ribbon-mask {
   -webkit-mask-image:
-    linear-gradient(90deg, transparent 0%, transparent 22%, black 52%, black 96%, transparent 100%),
-    linear-gradient(180deg, transparent 0%, black 8%, black 90%, transparent 100%);
+    linear-gradient(90deg, transparent 0%, black 48%, black 94%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, black 10%, black 88%, transparent 100%);
   mask-image:
-    linear-gradient(90deg, transparent 0%, transparent 22%, black 52%, black 96%, transparent 100%),
-    linear-gradient(180deg, transparent 0%, black 8%, black 90%, transparent 100%);
+    linear-gradient(90deg, transparent 0%, black 48%, black 94%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, black 10%, black 88%, transparent 100%);
   -webkit-mask-composite: source-in;
   mask-composite: intersect;
   -webkit-mask-repeat: no-repeat;
@@ -297,32 +297,16 @@ html[lang="ar"] .hero-accent {
 }
 
 .hero-spiral-stage {
-  transform: translate3d(6%, 0, 0) scale(1.04);
-  transform-origin: 78% 50%;
-}
-
-.hero-spiral-perspective {
-  perspective: 1400px;
-  perspective-origin: 72% 48%;
-  transform-style: preserve-3d;
-}
-
-.hero-spiral-figure {
-  transform-style: preserve-3d;
-  transform-origin: 72% 50%;
-}
-
-.hero-spiral-bloom,
-.hero-spiral-img {
-  transform-style: preserve-3d;
+  transform: translate3d(20%, 2%, 0) scale(1.08);
+  transform-origin: 82% 52%;
 }
 
 .hero-edge-fade {
   background:
-    linear-gradient(90deg, var(--color-bg) 0%, var(--color-bg) 18%, transparent 48%),
-    linear-gradient(270deg, var(--color-bg) 0%, transparent 12%),
-    linear-gradient(180deg, var(--color-bg) 0%, transparent 14%),
-    linear-gradient(0deg, var(--color-bg) 0%, transparent 18%);
+    linear-gradient(90deg, var(--color-bg) 0%, transparent 46%),
+    linear-gradient(270deg, var(--color-bg) 0%, transparent 10%),
+    linear-gradient(180deg, var(--color-bg) 0%, transparent 16%),
+    linear-gradient(0deg, var(--color-bg) 0%, transparent 20%);
 }
 
 /* Whole-sculpture soft float — obvious vertical breath */
@@ -356,10 +340,9 @@ html[lang="ar"] .hero-accent {
 
 .hero-spiral-glow {
   background:
-    radial-gradient(ellipse 42% 40% at 78% 46%, rgba(232, 196, 160, 0.2) 0%, transparent 70%),
-    radial-gradient(ellipse 34% 34% at 84% 42%, rgba(214, 150, 168, 0.16) 0%, transparent 72%),
-    radial-gradient(ellipse 30% 28% at 76% 62%, rgba(176, 140, 214, 0.18) 0%, transparent 70%),
-    radial-gradient(ellipse 26% 24% at 88% 70%, rgba(196, 208, 220, 0.1) 0%, transparent 68%);
+    radial-gradient(ellipse 40% 38% at 80% 48%, rgba(255, 106, 61, 0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 34% 32% at 86% 44%, rgba(224, 86, 197, 0.16) 0%, transparent 72%),
+    radial-gradient(ellipse 30% 26% at 78% 76%, rgba(46, 207, 196, 0.2) 0%, transparent 68%);
   mix-blend-mode: screen;
   animation: hero-spiral-glow 3.6s ease-in-out infinite;
   will-change: opacity, transform;
@@ -378,10 +361,10 @@ html[lang="ar"] .hero-accent {
 .hero-floor-glow {
   background: radial-gradient(
     ellipse 68% 55% at 78% 100%,
-    rgba(232, 196, 160, 0.16) 0%,
-    rgba(214, 150, 168, 0.12) 30%,
-    rgba(176, 140, 214, 0.1) 52%,
-    rgba(196, 208, 220, 0.06) 68%,
+    rgba(46, 207, 196, 0.22) 0%,
+    rgba(26, 168, 184, 0.14) 32%,
+    rgba(224, 86, 197, 0.1) 52%,
+    rgba(255, 106, 61, 0.06) 68%,
     transparent 80%
   );
   animation: hero-floor-glow 3.6s ease-in-out infinite;
@@ -403,8 +386,8 @@ html[lang="ar"] .hero-accent {
 }
 
 .hero-dust {
-  opacity: 0.5;
-  box-shadow: 0 0 7px rgba(232, 196, 160, 0.5);
+  opacity: 0.55;
+  box-shadow: 0 0 6px rgba(255, 200, 160, 0.55);
   animation-name: hero-dust-drift;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
@@ -508,10 +491,8 @@ html[lang="ar"] .hero-accent {
   .hero-sculpture-float,
   .hero-spiral-glow,
   .hero-floor-glow,
-  .hero-dust,
-  .hero-spiral-bloom {
+  .hero-dust {
     animation: none !important;
-    filter: none !important;
   }
 
   .hero-zone {
