@@ -1,31 +1,29 @@
 "use client";
 
-import Image from "next/image";
+import dynamic from "next/dynamic";
 import { useRef } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
 import BidiBlock from "@/components/ui/BidiBlock";
 import HeroHeadline from "@/components/home/HeroHeadline";
-import HeroConstellation from "@/components/home/HeroConstellation";
 import AmbientToggle from "@/components/home/AmbientToggle";
 import { useRibbonFx } from "@/hooks/useRibbonFx";
 import { useTimeAccent } from "@/hooks/useTimeAccent";
 import { useMagnetic } from "@/hooks/useMagnetic";
 import { useCrosshair } from "@/hooks/useCrosshair";
 
+const HeroSpiral = dynamic(() => import("@/components/home/HeroSpiral"), {
+  ssr: false,
+  loading: () => null,
+});
+
 const DUST = [
-  { left: "58%", top: "28%", size: 2.4, delay: "0s", dur: "9s" },
-  { left: "72%", top: "36%", size: 2, delay: "1.4s", dur: "11s" },
-  { left: "81%", top: "48%", size: 2.8, delay: "0.6s", dur: "10s" },
-  { left: "64%", top: "58%", size: 1.8, delay: "2.2s", dur: "12s" },
-  { left: "88%", top: "32%", size: 2.2, delay: "3s", dur: "8.5s" },
-  { left: "76%", top: "68%", size: 2.1, delay: "1.1s", dur: "13s" },
-  { left: "54%", top: "42%", size: 1.6, delay: "2.8s", dur: "9.5s" },
-  { left: "92%", top: "55%", size: 2.5, delay: "0.3s", dur: "10.5s" },
-  { left: "68%", top: "22%", size: 2, delay: "4s", dur: "11.5s" },
-  { left: "85%", top: "72%", size: 1.9, delay: "1.8s", dur: "12.5s" },
-  { left: "60%", top: "50%", size: 1.7, delay: "2.4s", dur: "10.8s" },
-  { left: "78%", top: "40%", size: 2.3, delay: "0.9s", dur: "9.8s" },
+  { left: "62%", top: "30%", size: 2.8, delay: "0s", dur: "8s" },
+  { left: "74%", top: "38%", size: 2.4, delay: "1.2s", dur: "9.5s" },
+  { left: "84%", top: "50%", size: 3.2, delay: "0.5s", dur: "8.5s" },
+  { left: "68%", top: "60%", size: 2.2, delay: "2s", dur: "10s" },
+  { left: "90%", top: "34%", size: 2.6, delay: "2.6s", dur: "7.5s" },
+  { left: "78%", top: "70%", size: 2.5, delay: "1s", dur: "11s" },
 ] as const;
 
 function MagneticCta({ label }: { label: string }) {
@@ -54,92 +52,67 @@ export default function Hero() {
       ref={zoneRef}
       className="hero-zone relative flex min-h-[calc(100svh-44px)] flex-col overflow-hidden"
     >
-      {/* Custom crosshair cursor (desktop) */}
       <div ref={crosshairRef} className="hero-crosshair" aria-hidden="true" />
 
-      {/* Ambient dark grid */}
       <div className="blueprint-grid pointer-events-none absolute inset-0 opacity-[0.35]" />
 
-      {/* Soft floor glow under ribbon */}
+      {/* Soft floor glow under sculpture */}
       <div
-        className="pointer-events-none absolute inset-x-[28%] bottom-0 z-[1] h-[32%] opacity-90"
+        className="hero-floor-glow pointer-events-none absolute inset-x-[22%] bottom-0 z-[1] h-[38%]"
         aria-hidden="true"
-        style={{
-          background:
-            "radial-gradient(ellipse 75% 60% at 70% 100%, rgba(255,106,61,0.16) 0%, rgba(139,92,246,0.14) 40%, transparent 72%)",
-        }}
       />
 
-      {/* Full-bleed dark ribbon art — feathered into page bg */}
+      {/* Full-bleed spiral art — feathered into page bg */}
       <div
         ref={artRef}
         className="pointer-events-auto absolute inset-0 z-0 overflow-hidden"
-        style={{ perspective: "1400px" }}
         aria-hidden="true"
       >
         <div
-          className="hero-ribbon-stage absolute inset-0 will-change-transform"
+          className="absolute inset-0 will-change-transform"
           style={{
-            transform: `translate3d(0, ${fx.scrollY}px, 0) rotateX(${fx.tiltX}deg) rotateY(${fx.tiltY}deg)`,
+            transform: `translate3d(0, ${fx.scrollY}px, 0)`,
             transition: fx.spotActive ? "none" : "transform 0.7s ease-out",
           }}
         >
-          {/* Continuous orbit / float — independent of pointer parallax */}
-          <div className="hero-ribbon-orbit absolute inset-0">
-            <div className="hero-ribbon-mask absolute inset-0">
-              <Image
-                src="/images/hero-concrete-ribbon-dark.png"
-                alt=""
-                fill
-                priority
-                sizes="100vw"
-                className="object-contain object-right object-bottom"
-              />
+          <div className="hero-sculpture-float absolute inset-0">
+            {/* Soft ambient halo around the spiral — clearly visible */}
+            <div className="hero-spiral-glow pointer-events-none absolute inset-0" />
+
+            <div className="hero-spiral-mask absolute inset-0">
+              <HeroSpiral />
             </div>
 
-            {/* Breathing glow along orange→purple edge */}
-            <div className="hero-ribbon-breathe pointer-events-none absolute inset-0" />
-
-            {/* Cursor spotlight — soft local illumination */}
+            {/* Cursor spotlight — obvious local illumination */}
             <div
-              className="pointer-events-none absolute inset-0 transition-opacity duration-500"
+              className="pointer-events-none absolute inset-0 transition-opacity duration-400"
               style={{
-                opacity: fx.spotActive ? 1 : 0.62,
-                background: `radial-gradient(circle 42vmin at ${fx.spotX}% ${fx.spotY}%, rgba(255,180,140,0.36) 0%, rgba(168,85,247,0.18) 32%, transparent 68%)`,
+                opacity: fx.spotActive ? 1 : 0.7,
+                background: `radial-gradient(circle 48vmin at ${fx.spotX}% ${fx.spotY}%, rgba(255,190,150,0.48) 0%, rgba(168,85,247,0.28) 34%, transparent 70%)`,
                 mixBlendMode: "soft-light",
-              }}
-            />
-
-            {/* Glass refraction / specular highlight */}
-            <div
-              className="hero-ribbon-specular pointer-events-none absolute inset-0"
-              style={{
-                opacity: fx.spotActive ? 1 : 0.48,
-                background: `radial-gradient(ellipse 24vmin 16vmin at ${fx.specularX}% ${fx.specularY}%, rgba(255,255,255,0.34) 0%, rgba(255,200,180,0.16) 35%, transparent 70%)`,
               }}
             />
           </div>
         </div>
 
-        {/* Edge fade overlays — match --color-bg so the photo frame disappears */}
+        {/* Edge fade — match --color-bg so WebGL frame dissolves */}
         <div
           className="pointer-events-none absolute inset-0 z-[2]"
           style={{
             background: `
-              linear-gradient(90deg, var(--color-bg) 0%, transparent 38%),
-              linear-gradient(270deg, var(--color-bg) 0%, transparent 12%),
-              linear-gradient(180deg, var(--color-bg) 0%, transparent 18%),
-              linear-gradient(0deg, var(--color-bg) 0%, transparent 22%)
+              linear-gradient(90deg, var(--color-bg) 0%, transparent 40%),
+              linear-gradient(270deg, var(--color-bg) 0%, transparent 10%),
+              linear-gradient(180deg, var(--color-bg) 0%, transparent 16%),
+              linear-gradient(0deg, var(--color-bg) 0%, transparent 20%)
             `,
           }}
         />
 
-        {/* Floating dust motes near the ribbon */}
         <div className="pointer-events-none absolute inset-0 z-[3] hidden sm:block">
           {DUST.map((d, i) => (
             <span
               key={i}
-              className="hero-dust absolute rounded-full bg-white/50"
+              className="hero-dust absolute rounded-full bg-white/60"
               style={{
                 left: d.left,
                 top: d.top,
@@ -151,8 +124,6 @@ export default function Hero() {
             />
           ))}
         </div>
-
-        <HeroConstellation />
       </div>
 
       {/* Copy — structural LTR column */}
@@ -182,7 +153,6 @@ export default function Hero() {
           </BidiBlock>
         </div>
 
-        {/* Scroll hint */}
         <div className="chrome-ltr relative z-10 mx-[var(--page-pad)] flex items-center justify-end gap-3 border-t border-white/10 py-3.5">
           <span className="label-mono text-[10px] tracking-[0.22em] text-muted/70">
             {t("scrollHint")}
