@@ -10,6 +10,8 @@ type SpiralParams = {
   width: number;
   thickness: number;
   segments: number;
+  /** Radial samples around the solid stadium cross-section. */
+  profile: number;
 };
 
 const SPIRAL: SpiralParams = {
@@ -17,9 +19,10 @@ const SPIRAL: SpiralParams = {
   radius: 1.28,
   height: 4.35,
   width: 0.92,
-  thickness: 0.155,
-  // Dense enough for smooth curves without looking faceted while spinning
-  segments: 420,
+  // Enough thickness to read as a solid bar, not a paper sheet
+  thickness: 0.2,
+  segments: 380,
+  profile: 20,
 };
 
 /** Helix frame: center + orthonormal basis (tangent, binormal, normal). */
@@ -45,34 +48,48 @@ function frameAt(t: number, p: SpiralParams) {
 }
 
 /**
- * Brand ribbon / rim palette: teal → magenta → violet → rose along the helix.
- * Soft cinematic stops — no strobing rainbow.
+ * Luxury brand ribbon: rose-gold → magenta → orchid → deep violet.
+ * Matches site CTA coral→magenta→violet without pastel cyan wash.
  */
 function brandGradient(t: number, out: THREE.Color) {
-  const teal = new THREE.Color("#2ee6d8");
-  const cyan = new THREE.Color("#3ab4ff");
-  const magenta = new THREE.Color("#e056c5");
-  const violet = new THREE.Color("#9b6cff");
-  const rose = new THREE.Color("#ff7a9a");
+  const roseGold = new THREE.Color("#c86a52");
+  const magenta = new THREE.Color("#d63a8a");
+  const orchid = new THREE.Color("#a855c8");
+  const deepViolet = new THREE.Color("#5b35c4");
 
-  if (t < 0.22) {
-    const k = t / 0.22;
-    return out.copy(teal).lerp(cyan, k * 0.65);
+  if (t < 0.28) {
+    return out.copy(roseGold).lerp(magenta, t / 0.28);
   }
-  if (t < 0.48) {
-    const k = (t - 0.22) / 0.26;
-    return out.copy(cyan).lerp(magenta, 0.15 + k * 0.85);
+  if (t < 0.58) {
+    return out.copy(magenta).lerp(orchid, (t - 0.28) / 0.3);
   }
-  if (t < 0.72) {
-    const k = (t - 0.48) / 0.24;
-    return out.copy(magenta).lerp(violet, k);
-  }
-  return out.copy(violet).lerp(rose, (t - 0.72) / 0.28);
+  return out.copy(orchid).lerp(deepViolet, (t - 0.58) / 0.42);
 }
 
 /**
- * Opaque helical slab — width × thickness rectangle swept along helix.
- * Vertex colors carry the full iridescent brand gradient across the body.
+ * Closed stadium (flattened capsule) profile in the binormal×normal plane.
+ * Filled volume when swept — reads as one solid ribbon, not dual shells.
+ */
+function stadiumProfile(hw: number, ht: number, samples: number): [number, number][] {
+  const r = Math.min(ht, hw * 0.42);
+  const flat = Math.max(0, hw - r);
+  const half = Math.max(4, Math.ceil(samples / 2));
+  const pts: [number, number][] = [];
+
+  for (let i = 0; i <= half; i++) {
+    const a = -Math.PI / 2 + (i / half) * Math.PI;
+    pts.push([flat + Math.cos(a) * r, Math.sin(a) * r]);
+  }
+  for (let i = 0; i <= half; i++) {
+    const a = Math.PI / 2 + (i / half) * Math.PI;
+    pts.push([-flat + Math.cos(a) * r, Math.sin(a) * r]);
+  }
+  return pts;
+}
+
+/**
+ * Single solid helical ribbon — stadium cross-section with capped ends.
+ * Vertex colors carry the luxury brand gradient; no separate rim tubes.
  */
 function buildRibbonGeometry(p: SpiralParams) {
   const positions: number[] = [];
@@ -80,55 +97,76 @@ function buildRibbonGeometry(p: SpiralParams) {
   const uvs: number[] = [];
   const indices: number[] = [];
   const tint = new THREE.Color();
-  const across = new THREE.Color();
+  const face = new THREE.Color();
+  const obsidian = new THREE.Color("#1a1520");
+  const rimLift = new THREE.Color("#f0c4b0");
 
   const hw = p.width * 0.5;
   const ht = p.thickness * 0.5;
-  const corners: [number, number][] = [
-    [-hw, -ht],
-    [hw, -ht],
-    [hw, ht],
-    [-hw, ht],
-  ];
-  // Subtle width wash — cooler inner edge, warmer outer — without killing hue
-  const coolWash = new THREE.Color("#a8fff4");
-  const warmWash = new THREE.Color("#ffb8e8");
+  const profile = stadiumProfile(hw, ht, p.profile);
+  const ring = profile.length;
 
   for (let i = 0; i <= p.segments; i++) {
     const t = i / p.segments;
     const { center, binormal, normal } = frameAt(t, p);
     brandGradient(t, tint);
 
-    for (let c = 0; c < 4; c++) {
-      const [u, v] = corners[c];
+    for (let c = 0; c < ring; c++) {
+      const [u, v] = profile[c];
       const pos = center
         .clone()
         .addScaledVector(binormal, u)
         .addScaledVector(normal, v);
       positions.push(pos.x, pos.y, pos.z);
 
-      const k = (u / hw + 1) * 0.5;
-      across.copy(coolWash).lerp(warmWash, k);
-      const face = tint.clone().lerp(across, 0.18);
-      // Soft face lift so top planes read brighter under studio light
-      const faceLift = v >= 0 ? 1.08 : 0.88;
-      colors.push(face.r * faceLift, face.g * faceLift, face.b * faceLift);
-      uvs.push(t * p.turns, c < 2 ? 0 : 1);
+      // Obsidian body with rich brand wash; outer rim slightly warmer
+      const across = (u / hw + 1) * 0.5;
+      const edge = Math.pow(Math.abs(u) / hw, 1.35);
+      face.copy(obsidian).lerp(tint, 0.62 + across * 0.18);
+      face.lerp(rimLift, edge * 0.12);
+      const lift = 0.9 + Math.max(0, v / ht) * 0.14;
+      colors.push(face.r * lift, face.g * lift, face.b * lift);
+      uvs.push(t * p.turns, c / ring);
     }
 
     if (i < p.segments) {
-      const a = i * 4;
-      const b = a + 4;
-      for (let e = 0; e < 4; e++) {
-        const e1 = (e + 1) % 4;
+      const a = i * ring;
+      const b = a + ring;
+      for (let e = 0; e < ring; e++) {
+        const e1 = (e + 1) % ring;
         indices.push(a + e, a + e1, b + e, a + e1, b + e1, b + e);
       }
     }
   }
 
-  const last = p.segments * 4;
-  indices.push(0, 1, 2, 0, 2, 3);
-  indices.push(last + 0, last + 2, last + 1, last + 0, last + 3, last + 2);
+  // Solid end caps (fan from ring centroid) so the volume never reads hollow
+  const startCenter = positions.length / 3;
+  {
+    const { center } = frameAt(0, p);
+    brandGradient(0, tint);
+    face.copy(obsidian).lerp(tint, 0.7);
+    positions.push(center.x, center.y, center.z);
+    colors.push(face.r, face.g, face.b);
+    uvs.push(0, 0.5);
+    for (let e = 0; e < ring; e++) {
+      const e1 = (e + 1) % ring;
+      indices.push(startCenter, e1, e);
+    }
+  }
+  const endCenter = positions.length / 3;
+  {
+    const { center } = frameAt(1, p);
+    brandGradient(1, tint);
+    face.copy(obsidian).lerp(tint, 0.7);
+    positions.push(center.x, center.y, center.z);
+    colors.push(face.r, face.g, face.b);
+    uvs.push(p.turns, 0.5);
+    const base = p.segments * ring;
+    for (let e = 0; e < ring; e++) {
+      const e1 = (e + 1) % ring;
+      indices.push(endCenter, base + e, base + e1);
+    }
+  }
 
   const geo = new THREE.BufferGeometry();
   geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
@@ -139,104 +177,49 @@ function buildRibbonGeometry(p: SpiralParams) {
   return geo;
 }
 
-/** Path along outer/inner top rim of the slab. */
-function rimPath(p: SpiralParams, side: 1 | -1, lift = 0.003): THREE.Vector3[] {
-  const pts: THREE.Vector3[] = [];
-  const hw = p.width * 0.5;
-  const ht = p.thickness * 0.5;
-  for (let i = 0; i <= p.segments; i++) {
-    const t = i / p.segments;
-    const { center, binormal, normal } = frameAt(t, p);
-    pts.push(
-      center
-        .clone()
-        .addScaledVector(binormal, side * hw)
-        .addScaledVector(normal, ht + lift),
-    );
-  }
-  return pts;
-}
-
 /**
- * Opaque emissive rim tube — physical material, no flat MeshBasic slabs.
- * Vertex colors follow the same brand gradient as the ribbon body.
- */
-function buildRimTube(
-  p: SpiralParams,
-  side: 1 | -1,
-  tubeRadius: number,
-  colorScale = 1,
-  lift = 0.003,
-) {
-  const pts = rimPath(p, side, lift);
-  const curve = new THREE.CatmullRomCurve3(pts, false, "catmullrom", 0.35);
-  const tubular = p.segments;
-  // Higher radial count → smooth round tubes, no faceted strips
-  const radial = 12;
-  const geo = new THREE.TubeGeometry(curve, tubular, tubeRadius, radial, false);
-
-  const col = new THREE.Color();
-  const colors = new Float32Array(geo.attributes.position.count * 3);
-  for (let i = 0; i <= tubular; i++) {
-    const t = i / tubular;
-    brandGradient(t, col);
-    col.multiplyScalar(colorScale);
-    for (let j = 0; j <= radial; j++) {
-      const idx = i * (radial + 1) + j;
-      colors[idx * 3] = col.r;
-      colors[idx * 3 + 1] = col.g;
-      colors[idx * 3 + 2] = col.b;
-    }
-  }
-  geo.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
-  geo.computeVertexNormals();
-  return geo;
-}
-
-/**
- * Contrast-rich studio env — colored reflections for iridescent metal.
+ * Contrast-rich studio env — warm magenta / violet specular windows.
  */
 function makeStudioEnv(renderer: THREE.WebGLRenderer) {
   const pmrem = new THREE.PMREMGenerator(renderer);
   const envScene = new THREE.Scene();
-  envScene.add(new THREE.HemisphereLight(0xfff2e8, 0x121820, 0.9));
+  envScene.add(new THREE.HemisphereLight(0xfff0e8, 0x121018, 0.85));
 
-  const key = new THREE.DirectionalLight(0xfff4ea, 2.2);
+  const key = new THREE.DirectionalLight(0xfff2ea, 2.0);
   key.position.set(4.2, 5.8, 2.8);
   envScene.add(key);
 
-  const hot = new THREE.DirectionalLight(0xffffff, 1.6);
+  const hot = new THREE.DirectionalLight(0xffffff, 1.45);
   hot.position.set(-1.2, 3.5, 4.5);
   envScene.add(hot);
 
-  const cool = new THREE.DirectionalLight(0xb8d0f0, 1.2);
+  const cool = new THREE.DirectionalLight(0xc8b8e8, 0.95);
   cool.position.set(-3.2, 1.4, 2.6);
   envScene.add(cool);
 
-  const magenta = new THREE.DirectionalLight(0xff7ab8, 1.05);
+  const magenta = new THREE.DirectionalLight(0xff6ab0, 1.15);
   magenta.position.set(1.4, 0.6, -3.4);
   envScene.add(magenta);
 
-  const teal = new THREE.PointLight(0x2ecfc4, 1.35, 14, 2);
-  teal.position.set(0, -2.2, 1.8);
-  envScene.add(teal);
+  const rose = new THREE.PointLight(0xe07050, 1.1, 14, 2);
+  rose.position.set(0, -2.2, 1.8);
+  envScene.add(rose);
 
-  const violet = new THREE.PointLight(0xb06cff, 1.0, 12, 2);
+  const violet = new THREE.PointLight(0x8b5cf6, 1.15, 12, 2);
   violet.position.set(2.5, 2.0, -2.0);
   envScene.add(violet);
 
-  // Specular “windows” in the PMREM for living clearcoat highlights
   const sparkGeo = new THREE.SphereGeometry(0.35, 16, 12);
-  const sparkMat = new THREE.MeshBasicMaterial({ color: 0xfff8f0 });
+  const sparkMat = new THREE.MeshBasicMaterial({ color: 0xfff4ec });
   const sparkA = new THREE.Mesh(sparkGeo, sparkMat);
   sparkA.position.set(5.5, 6.2, 4.2);
   envScene.add(sparkA);
   const sparkB = new THREE.Mesh(sparkGeo, sparkMat.clone());
-  (sparkB.material as THREE.MeshBasicMaterial).color.set(0xe8f0ff);
+  (sparkB.material as THREE.MeshBasicMaterial).color.set(0xf0e0ff);
   sparkB.position.set(-4.8, 3.8, 5.5);
   envScene.add(sparkB);
   const sparkC = new THREE.Mesh(sparkGeo, sparkMat.clone());
-  (sparkC.material as THREE.MeshBasicMaterial).color.set(0xffc8e8);
+  (sparkC.material as THREE.MeshBasicMaterial).color.set(0xffc0d8);
   sparkC.position.set(2.2, 1.5, -5.8);
   envScene.add(sparkC);
 
@@ -263,12 +246,11 @@ function tintEmissiveByVertexColor(material: THREE.MeshPhysicalMaterial) {
 #endif`,
     );
   };
-  // Force recompile if material was already compiled
   material.needsUpdate = true;
 }
 
 /**
- * Dedicated WebGL spiral — luminous iridescent body + lit rim tubes.
+ * Dedicated WebGL spiral — single solid iridescent ribbon.
  * Resource-aware: capped DPR, soft shadows, pauses off-screen / reduced-motion.
  */
 export default function HeroSpiral() {
@@ -298,18 +280,16 @@ export default function HeroSpiral() {
     }
 
     const scene = new THREE.Scene();
-    // Slightly wider near plane margin so spinning edges stay in frustum
     const camera = new THREE.PerspectiveCamera(36, 1, 0.2, 60);
     camera.position.set(3.85, 0.45, 5.55);
     camera.lookAt(1.55, -0.08, 0);
 
-    // Higher DPR for cleaner rim edges (AA + denser sampling)
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     renderer.setPixelRatio(dpr);
     renderer.setClearColor(0x000000, 0);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.22;
+    renderer.toneMappingExposure = 1.18;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mount.appendChild(renderer.domElement);
@@ -331,27 +311,25 @@ export default function HeroSpiral() {
     scene.add(group);
 
     const ribbonGeo = buildRibbonGeometry(SPIRAL);
-    // White base so vertex brand gradient drives albedo fully.
-    // Iridescence + clearcoat + sheen = premium cinematic metal (no custom anisotropy).
     const ribbonMat = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color("#ffffff"),
-      roughness: 0.28,
-      metalness: 0.62,
-      clearcoat: 1,
-      clearcoatRoughness: 0.14,
-      ior: 1.5,
-      sheen: 0.7,
-      sheenRoughness: 0.32,
-      sheenColor: new THREE.Color("#e8b0ff"),
-      iridescence: 0.85,
-      iridescenceIOR: 1.6,
-      iridescenceThicknessRange: [140, 480],
+      roughness: 0.32,
+      metalness: 0.72,
+      clearcoat: 0.95,
+      clearcoatRoughness: 0.18,
+      ior: 1.48,
+      sheen: 0.55,
+      sheenRoughness: 0.38,
+      sheenColor: new THREE.Color("#c080e8"),
+      iridescence: 0.55,
+      iridescenceIOR: 1.45,
+      iridescenceThicknessRange: [180, 420],
       flatShading: false,
       vertexColors: true,
       emissive: new THREE.Color("#ffffff"),
-      emissiveIntensity: 0.28,
+      emissiveIntensity: 0.22,
       envMap,
-      envMapIntensity: 1.65,
+      envMapIntensity: 1.45,
       side: THREE.FrontSide,
     });
     tintEmissiveByVertexColor(ribbonMat);
@@ -359,33 +337,6 @@ export default function HeroSpiral() {
     ribbon.castShadow = true;
     ribbon.receiveShadow = true;
     group.add(ribbon);
-
-    const rimMat = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color("#ffffff"),
-      roughness: 0.14,
-      metalness: 0.55,
-      clearcoat: 0.85,
-      clearcoatRoughness: 0.08,
-      sheen: 0.45,
-      sheenRoughness: 0.25,
-      sheenColor: new THREE.Color("#ffc0ee"),
-      iridescence: 0.55,
-      iridescenceIOR: 1.5,
-      iridescenceThicknessRange: [100, 360],
-      vertexColors: true,
-      emissive: new THREE.Color("#ffffff"),
-      emissiveIntensity: 0.55,
-      envMap,
-      envMapIntensity: 1.15,
-      toneMapped: true,
-      side: THREE.FrontSide,
-    });
-    tintEmissiveByVertexColor(rimMat);
-    const rimOuterGeo = buildRimTube(SPIRAL, 1, 0.015, 1.15, 0.004);
-    const rimInnerGeo = buildRimTube(SPIRAL, -1, 0.012, 1.05, 0.004);
-    const rimOuter = new THREE.Mesh(rimOuterGeo, rimMat);
-    const rimInner = new THREE.Mesh(rimInnerGeo, rimMat);
-    group.add(rimOuter, rimInner);
 
     const floorY = -SPIRAL.height * 0.48;
     const floorGeo = new THREE.CircleGeometry(3.6, 64);
@@ -407,7 +358,6 @@ export default function HeroSpiral() {
     floor.receiveShadow = true;
     scene.add(floor);
 
-    // Opaque contact shadow catcher — real soft shadow without alpha shreds
     const shadowCatcherGeo = new THREE.CircleGeometry(2.8, 48);
     const shadowCatcherMat = new THREE.ShadowMaterial({
       opacity: 0.4,
@@ -420,9 +370,9 @@ export default function HeroSpiral() {
 
     const glowGeo = new THREE.CircleGeometry(2.35, 40);
     const glowMat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color("#1fc4c0"),
+      color: new THREE.Color("#8b5cf6"),
       transparent: true,
-      opacity: 0.26,
+      opacity: 0.18,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
@@ -433,9 +383,9 @@ export default function HeroSpiral() {
 
     const warmGlowGeo = new THREE.CircleGeometry(1.6, 32);
     const warmGlowMat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color("#c44aa8"),
+      color: new THREE.Color("#e83a8a"),
       transparent: true,
-      opacity: 0.14,
+      opacity: 0.16,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
@@ -444,13 +394,13 @@ export default function HeroSpiral() {
     warmGlow.position.set(1.75, floorY + 0.012, -0.1);
     scene.add(warmGlow);
 
-    const hemi = new THREE.HemisphereLight(0xf4efe8, 0x2a3545, 0.62);
+    const hemi = new THREE.HemisphereLight(0xf4efe8, 0x2a2035, 0.58);
     scene.add(hemi);
 
-    const ambient = new THREE.AmbientLight(0xc8c4d8, 0.32);
+    const ambient = new THREE.AmbientLight(0xc8c0d4, 0.3);
     scene.add(ambient);
 
-    const key = new THREE.DirectionalLight(0xfff4ea, 1.85);
+    const key = new THREE.DirectionalLight(0xfff4ea, 1.75);
     key.position.set(4.2, 5.5, 3.8);
     key.castShadow = true;
     key.shadow.mapSize.set(1024, 1024);
@@ -465,32 +415,31 @@ export default function HeroSpiral() {
     key.shadow.radius = 4;
     scene.add(key);
 
-    const fill = new THREE.DirectionalLight(0xd8e4f2, 0.65);
+    const fill = new THREE.DirectionalLight(0xe0d4f0, 0.55);
     fill.position.set(camera.position.x - 0.4, 1.6, camera.position.z + 0.6);
     scene.add(fill);
 
-    const sideFill = new THREE.DirectionalLight(0xb8c4d8, 0.45);
+    const sideFill = new THREE.DirectionalLight(0xb8a8d0, 0.4);
     sideFill.position.set(-3.5, 1.8, 2.2);
     scene.add(sideFill);
 
-    const rimLight = new THREE.DirectionalLight(0xff8ab8, 0.85);
+    const rimLight = new THREE.DirectionalLight(0xff7ab8, 0.9);
     rimLight.position.set(1.5, 1.2, -4);
     scene.add(rimLight);
 
-    const bounce = new THREE.PointLight(0x2ecfc4, 1.15, 8, 2);
+    const bounce = new THREE.PointLight(0xb06cff, 0.95, 8, 2);
     bounce.position.set(1.7, floorY + 0.4, 1.2);
     scene.add(bounce);
 
-    const warmBounce = new THREE.PointLight(0xff9a6b, 0.75, 7, 2);
+    const warmBounce = new THREE.PointLight(0xe07050, 0.8, 7, 2);
     warmBounce.position.set(2.0, 0.6, -1.2);
     scene.add(warmBounce);
 
-    // Soft orbiting accents — living speculars, not strobing
-    const wander = new THREE.PointLight(0xffe8d8, 1.35, 9, 2);
+    const wander = new THREE.PointLight(0xffe8d8, 1.2, 9, 2);
     wander.position.set(3.2, 2.4, 2.8);
     scene.add(wander);
 
-    const wanderCool = new THREE.PointLight(0xc8dcff, 0.9, 8, 2);
+    const wanderCool = new THREE.PointLight(0xd0b8ff, 0.85, 8, 2);
     wanderCool.position.set(0.4, 1.2, 3.5);
     scene.add(wanderCool);
 
@@ -543,7 +492,6 @@ export default function HeroSpiral() {
       last = now;
       clock.t += dt;
 
-      // Gentle helix turn — keep base tilt, slight breath on X/Y
       group.rotation.y = clock.t * 0.22;
       group.rotation.x = baseTiltX + Math.sin(clock.t * 0.4) * 0.025;
       group.rotation.z = baseTiltZ;
@@ -562,7 +510,7 @@ export default function HeroSpiral() {
         Math.sin(b) * 2.4,
       );
 
-      glowMat.opacity = 0.2 + Math.sin(clock.t * 0.85) * 0.05;
+      glowMat.opacity = 0.14 + Math.sin(clock.t * 0.85) * 0.04;
 
       renderer.render(scene, camera);
       raf = requestAnimationFrame(tick);
@@ -577,9 +525,6 @@ export default function HeroSpiral() {
       document.removeEventListener("visibilitychange", onVisibility);
       ribbonGeo.dispose();
       ribbonMat.dispose();
-      rimOuterGeo.dispose();
-      rimInnerGeo.dispose();
-      rimMat.dispose();
       floorGeo.dispose();
       floorMat.dispose();
       shadowCatcherGeo.dispose();
