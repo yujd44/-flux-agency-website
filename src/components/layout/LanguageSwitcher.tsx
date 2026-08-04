@@ -11,16 +11,16 @@ export default function LanguageSwitcher({ className }: { className?: string }) 
   const router = useRouter();
 
   return (
-    <div className={clsx("chrome-ltr flex items-center gap-2.5", className)}>
+    <div className={clsx("chrome-ltr flex items-center gap-2", className)}>
       {locales.map((code, i) => (
-        <div key={code} className="flex items-center gap-2.5">
+        <div key={code} className="flex items-center gap-2">
           {i > 0 && <span className="h-3 w-px bg-border-strong" aria-hidden="true" />}
           <button
             type="button"
             onClick={() => router.replace(pathname, { locale: code, scroll: false })}
             aria-current={locale === code}
             className={clsx(
-              "text-[12px] font-medium tracking-[0.08em] transition-colors duration-200",
+              "label-mono tracking-[0.18em] transition-colors duration-200",
               locale === code ? "text-text" : "text-muted hover:text-text",
             )}
           >

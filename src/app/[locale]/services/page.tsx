@@ -10,7 +10,7 @@ export async function generateMetadata({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "services.hero" });
-  return { title: `${t("title")} — Flux Agency` };
+  return { title: `${t("title")} — METHODEA` };
 }
 
 export default async function ServicesPage({

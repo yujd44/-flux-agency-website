@@ -1,9 +1,21 @@
-import { IBM_Plex_Sans, IBM_Plex_Sans_Hebrew, IBM_Plex_Sans_Arabic } from "next/font/google";
+import {
+  Geist,
+  Geist_Mono,
+  IBM_Plex_Sans_Hebrew,
+  IBM_Plex_Sans_Arabic,
+} from "next/font/google";
 
-export const fontLatin = IBM_Plex_Sans({
+export const fontLatin = Geist({
   variable: "--font-latin",
   subsets: ["latin", "cyrillic"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+});
+
+export const fontMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin", "cyrillic"],
+  weight: ["400", "500"],
   display: "swap",
 });
 

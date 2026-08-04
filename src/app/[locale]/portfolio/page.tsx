@@ -11,7 +11,7 @@ export async function generateMetadata({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "portfolio.hero" });
-  return { title: `${t("title")} — Flux Agency` };
+  return { title: `${t("title")} — METHODEA` };
 }
 
 export default async function PortfolioPage({

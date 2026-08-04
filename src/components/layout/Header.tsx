@@ -2,18 +2,16 @@
 
 import { useState } from "react";
 import clsx from "clsx";
-import { Menu } from "lucide-react";
+import { ArrowRight, LayoutGrid, Menu } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import LanguageSwitcher from "./LanguageSwitcher";
 import MobileMenu from "./MobileMenu";
-import LogoMark from "@/components/icons/LogoMark";
-import StarOfDavid from "@/components/icons/StarOfDavid";
-import ThemeToggle from "@/components/ui/ThemeToggle";
+import MethodaLogo from "@/components/brand/MethodaLogo";
 
-const navKeys = ["home", "services", "portfolio", "about", "contact"] as const;
+/** Center nav — routes kept; labels styled as mono caps via i18n. */
+const navKeys = ["services", "portfolio", "about", "contact"] as const;
 const navHrefs: Record<(typeof navKeys)[number], string> = {
-  home: "/",
   services: "/services",
   portfolio: "/portfolio",
   about: "/about",
@@ -27,14 +25,11 @@ export default function Header() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-bg/70 backdrop-blur-md">
-        <div className="chrome-ltr mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 py-5 sm:px-8 lg:px-12">
-          <Link href="/" className="flex items-center gap-3 shrink-0">
-            <LogoMark size={42} className="shrink-0" />
-            <span className="text-[17px] font-medium tracking-tight text-text">Flux Agency</span>
-          </Link>
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-border/80 bg-bg/85 backdrop-blur-[2px]">
+        <div className="chrome-ltr mx-auto flex w-full max-w-[1600px] items-center justify-between px-6 py-5 sm:px-8 lg:px-16 xl:px-20">
+          <MethodaLogo size={26} />
 
-          <nav className="hidden items-center gap-9 lg:flex">
+          <nav className="hidden items-center gap-10 xl:gap-12 lg:flex">
             {navKeys.map((key) => {
               const href = navHrefs[key];
               const active = pathname === href;
@@ -43,7 +38,7 @@ export default function Header() {
                   key={key}
                   href={href}
                   className={clsx(
-                    "text-content text-[13px] font-medium uppercase tracking-[0.1em] transition-colors duration-200",
+                    "label-mono text-content transition-colors duration-200",
                     active ? "text-text" : "text-muted hover:text-text",
                   )}
                 >
@@ -53,24 +48,31 @@ export default function Header() {
             })}
           </nav>
 
-          <div className="hidden items-center gap-5 lg:flex">
+          <div className="hidden items-center gap-4 lg:flex">
+            <Link
+              href="/contact"
+              className="chrome-ltr inline-flex h-[44px] items-center gap-2.5 border border-border-strong px-4 text-[11px] font-normal tracking-[0.22em] uppercase text-text transition-colors hover:border-accent-secondary"
+              style={{ fontFamily: "var(--font-geist-mono), ui-monospace, monospace" }}
+            >
+              <LayoutGrid className="h-3.5 w-3.5 opacity-70" strokeWidth={1.5} />
+              <span>{t("letsTalk")}</span>
+              <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
+            </Link>
             <LanguageSwitcher />
-            <ThemeToggle />
-            <StarOfDavid className="h-5 w-5 shrink-0 text-accent" />
           </div>
 
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
             aria-label={t("menu")}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-text lg:hidden"
+            className="flex h-10 w-10 items-center justify-center border border-border text-text lg:hidden"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-5 w-5" strokeWidth={1.5} />
           </button>
         </div>
       </header>
       <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
-      <div className="h-[83px]" aria-hidden="true" />
+      <div className="h-[78px]" aria-hidden="true" />
     </>
   );
 }

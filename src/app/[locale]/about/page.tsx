@@ -12,7 +12,7 @@ export async function generateMetadata({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "about.hero" });
-  return { title: `${t("title")} — Flux Agency` };
+  return { title: `${t("title")} — METHODEA` };
 }
 
 const statKeys = ["0", "1", "2", "3"] as const;

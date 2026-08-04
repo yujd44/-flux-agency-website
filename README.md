@@ -1,6 +1,6 @@
-# Flux Agency — Marketing Website
+# METHODEA — Marketing Website
 
-A production-quality, multi-page, multi-language marketing site for **Flux Agency**, a premium IT & digital solutions studio. Built with Next.js (App Router), TypeScript, Tailwind CSS, next-intl and Framer Motion.
+A production-quality, multi-page, multi-language marketing site for **METHODEA**, an architecture studio for technology. Built with Next.js (App Router), TypeScript, Tailwind CSS, next-intl and Framer Motion.
 
 ## Stack
 
@@ -73,9 +73,9 @@ public/images/            AI-generated hero, services-category and portfolio ima
 
 ## Design system
 
-- Background `#070B12`, surface `#0C1220`, border `rgba(255,255,255,0.08)`, text `#F5F7FA`, muted `#8A94A6`, accent `#2563EB`.
+- Background `#F7F3EE`, surface `#EFE8DE`, text `#161616`, muted `#555555`, accent `#B89C7A` (warm sand). Light architectural theme only in Phase 1.
 - Editorial, minimal-luxury aesthetic — huge negative space, thin geometric lines, no gradients/glossy effects.
-- Fonts: IBM Plex Sans (Latin/Cyrillic), IBM Plex Sans Hebrew, IBM Plex Sans Arabic — a matched type family across all four locales.
+- Fonts: Geist + Geist Mono (Latin/Cyrillic), IBM Plex Sans Hebrew, IBM Plex Sans Arabic — a matched type family across all four locales.
 
 ## Services Explorer
 
@@ -91,8 +91,8 @@ All hero, services-category and portfolio thumbnails are AI-generated (`public/i
 
 ## Known simplifications / open questions for the client
 
-- **Contact details** (email, phone, address, hours) are placeholders (`hello@fluxagency.com`, Rothschild Blvd, etc.) — swap in real details.
+- **Contact details** (email, phone, address, hours) are placeholders (`hello@methodea.com`, Rothschild Blvd, etc.) — swap in real details.
 - **Contact form** is front-end only (simulated submit with a success state); wire it up to an email/CRM endpoint before launch.
 - **Portfolio case studies** (9 entries) use invented client names/descriptions consistent with the agency's positioning — replace with real case studies, metrics and (optionally) real screenshots once available.
-- **Logo** is a simple geometric wordmark (accent dot + "Flux Agency"); swap in a real logo asset if the client has one.
+- **Logo** is a simple geometric wordmark (accent dot + "METHODEA"); swap in a real logo asset if the client has one.
 - The Services Explorer's card-to-card "connecting lines" are represented via a shared 1px grid seam (cards sit in a bordered grid over a blueprint pattern + watermark) rather than literal per-card connector lines, to keep the interaction robust across breakpoints — happy to art-direct a literal wired-diagram version if the client wants it more literal.
