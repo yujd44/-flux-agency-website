@@ -356,14 +356,19 @@ export default function HeroSpiral() {
     const envMap = makeStudioEnv(renderer);
     scene.environment = envMap;
 
+    // Outer pivot: fixed placement + static lean. Inner: Y-spin only.
+    // Separating tilt from spin avoids Euler coupling that reads as a lift.
     const group = new THREE.Group();
-    group.position.set(1.58, -0.05, 0);
-    // Mild forward lean so the corkscrew reads with depth (like the ref)
-    const baseTiltX = -0.22;
-    const baseTiltZ = 0.1;
+    const baseY = -0.05;
+    group.position.set(1.58, baseY, 0);
+    const baseTiltX = -0.28;
+    const baseTiltZ = 0.14;
     group.rotation.x = baseTiltX;
     group.rotation.z = baseTiltZ;
     scene.add(group);
+
+    const spin = new THREE.Group();
+    group.add(spin);
 
     const ribbonGeo = buildRibbonGeometry(SPIRAL);
     const ribbonMat = new THREE.MeshPhysicalMaterial({
@@ -392,7 +397,7 @@ export default function HeroSpiral() {
     const ribbon = new THREE.Mesh(ribbonGeo, ribbonMat);
     ribbon.castShadow = true;
     ribbon.receiveShadow = true;
-    group.add(ribbon);
+    spin.add(ribbon);
 
     // Soft mirrored ribbon under the floor plane
     const reflectionMat = ribbonMat.clone();
@@ -412,12 +417,13 @@ export default function HeroSpiral() {
     reflection.castShadow = false;
     reflection.receiveShadow = false;
     reflection.renderOrder = -1;
-    group.add(reflection);
+    spin.add(reflection);
 
     // Floor Y — ribbon rests at y = -height/2 (minus half thickness)
     const floorLocalY = -SPIRAL.height * 0.5 - SPIRAL.thickness * 0.35;
     const floorY = group.position.y + floorLocalY;
 
+    // Floor stays world-fixed (circles); only the ribbon spins under studio lights
     const floorPivot = new THREE.Group();
     floorPivot.position.set(1.58, 0, 0);
     scene.add(floorPivot);
@@ -595,11 +601,10 @@ export default function HeroSpiral() {
       last = now;
       clock.t += dt;
 
-      // Slow elegant Y-axis rotation — lights world-fixed → highlights travel
-      const ease = clock.t * 0.04;
-      group.rotation.y = ease;
-      floorPivot.rotation.y = ease;
-      // Locked tilt — no bob so floor contact stays solid
+      // Elegant Y-spin (~28s/turn) — matches earlier working spirals (0.22)
+      // Static lean on outer group; no position.y drift / breathing
+      spin.rotation.y = clock.t * 0.22;
+      group.position.y = baseY;
       group.rotation.x = baseTiltX;
       group.rotation.z = baseTiltZ;
 
