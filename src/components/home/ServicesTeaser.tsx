@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslations } from "next-intl";
+import clsx from "clsx";
 import Container from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import SectionHeading from "@/components/ui/SectionHeading";
@@ -29,11 +30,9 @@ export default function ServicesTeaser() {
   const tc = useTranslations("services.categories");
   const [active, setActive] = useState<CategoryKey>("digitalProducts");
 
-  const others = categories.filter((key) => key !== active);
-
   return (
-    <section className="border-t border-border py-24 lg:py-32">
-      <Container>
+    <section className="section-atmosphere border-t border-border py-24 lg:py-32">
+      <Container className="relative z-10">
         <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
           <SectionHeading
             eyebrow={t("eyebrow")}
@@ -54,7 +53,7 @@ export default function ServicesTeaser() {
         >
           <Link
             href="/services"
-            className="group flex min-h-[280px] flex-col bg-bg p-8 transition-colors duration-300 hover:bg-surface/70 sm:min-h-[320px] sm:p-10 lg:min-h-[380px] lg:p-12"
+            className="group flex min-h-[280px] flex-col bg-bg/90 p-8 transition-colors duration-300 hover:bg-surface/70 sm:min-h-[320px] sm:p-10 lg:min-h-[380px] lg:p-12"
           >
             <AnimatePresence mode="wait">
               <motion.div
@@ -87,32 +86,61 @@ export default function ServicesTeaser() {
             </AnimatePresence>
           </Link>
 
-          <div className="flex flex-col gap-px bg-border">
-            {others.map((key) => (
-              <Link
-                key={key}
-                href="/services"
-                onMouseEnter={() => setActive(key)}
-                onFocus={() => setActive(key)}
-                onClick={(event) => {
-                  if (!hasFineHover()) {
-                    event.preventDefault();
-                    setActive(key);
-                  }
-                }}
-                className="group flex flex-1 flex-col justify-center gap-3 bg-bg px-6 py-6 transition-colors duration-300 hover:bg-surface/70 focus-visible:bg-surface/70 focus-visible:outline-none sm:px-8 sm:py-7"
-              >
-                <span className="label-mono text-muted transition-colors duration-300 group-hover:text-text/70">
-                  {tc(`${key}.number`)}
-                </span>
-                <span className="text-content text-lg font-medium tracking-tight text-text sm:text-xl">
-                  {tc(`${key}.title`)}
-                </span>
-                <span className="text-content line-clamp-2 text-sm leading-[1.6] text-muted">
-                  {tc(`${key}.description`)}
-                </span>
-              </Link>
-            ))}
+          <div className="flex flex-col gap-px bg-border" role="list">
+            {categories.map((key) => {
+              const isActive = key === active;
+
+              return (
+                <Link
+                  key={key}
+                  href="/services"
+                  role="listitem"
+                  aria-current={isActive ? "true" : undefined}
+                  onMouseEnter={() => {
+                    if (hasFineHover()) setActive(key);
+                  }}
+                  onFocus={() => setActive(key)}
+                  onClick={(event) => {
+                    if (!hasFineHover() && active !== key) {
+                      event.preventDefault();
+                      setActive(key);
+                    }
+                  }}
+                  className={clsx(
+                    "group flex flex-1 flex-col justify-center gap-2 px-6 py-5 transition-colors duration-300 focus-visible:outline-none sm:px-8 sm:py-6",
+                    isActive
+                      ? "bg-surface/90"
+                      : "bg-bg/90 hover:bg-surface/60 focus-visible:bg-surface/60",
+                  )}
+                >
+                  <div className="chrome-ltr flex items-center gap-3">
+                    <span
+                      className={clsx(
+                        "eng-marker transition-opacity duration-300",
+                        isActive ? "opacity-100" : "opacity-0 group-hover:opacity-60",
+                      )}
+                      aria-hidden="true"
+                    />
+                    <span
+                      className={clsx(
+                        "label-mono transition-colors duration-300",
+                        isActive ? "text-text/80" : "text-muted group-hover:text-text/70",
+                      )}
+                    >
+                      {tc(`${key}.number`)}
+                    </span>
+                  </div>
+                  <span
+                    className={clsx(
+                      "text-content text-lg font-medium tracking-tight transition-colors duration-300 sm:text-xl",
+                      isActive ? "text-text" : "text-text/75 group-hover:text-text",
+                    )}
+                  >
+                    {tc(`${key}.title`)}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </motion.div>
       </Container>
