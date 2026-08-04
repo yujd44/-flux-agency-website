@@ -8,29 +8,33 @@ import BidiBlock from "@/components/ui/BidiBlock";
 import { Link } from "@/i18n/navigation";
 
 /**
- * Pillar labels — mock: vertical rail + short ticks; DEVELOPMENT marked.
- * One stepped G-shape leader runs from the rail into the sculpture.
+ * Pillar labels — mock: vertical rail + colored square markers.
  */
-const PILLARS: { label: string; y: number; accent?: boolean }[] = [
-  { label: "STRATEGY", y: 18 },
-  { label: "ARCHITECTURE", y: 30 },
-  { label: "DEVELOPMENT", y: 42, accent: true },
-  { label: "AUTOMATION", y: 54 },
-  { label: "SUPPORT", y: 66 },
+const PILLARS: { label: string; y: number; color: string }[] = [
+  { label: "STRATEGY", y: 18, color: "#ff6a3d" },
+  { label: "ARCHITECTURE", y: 30, color: "#e83a8a" },
+  { label: "DEVELOPMENT", y: 42, color: "#a855f7" },
+  { label: "AUTOMATION", y: 54, color: "#3b82f6" },
+  { label: "SUPPORT", y: 66, color: "#2dd4bf" },
 ];
+
+const TRUSTED = ["Solvix", "Nexora", "Akira Systems", "Lumen", "Dayone"] as const;
 
 const MAX_TILT = 0.28;
 /** Vertical rail through the pillar list (viewBox %). */
-const GUIDE_X = 54;
+const GUIDE_X = 52;
 const GUIDE_Y1 = 14;
 const GUIDE_Y2 = 70;
-/** Stepped G-shape: rail → down → into ribbon surface. */
-const G = { fromY: 42, midY: 58, endX: 72, endY: 58 };
 
 export default function Hero() {
   const t = useTranslations("home.hero");
   const artRef = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+
+  const pillarParts = t("pillars")
+    .split(/[·•]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
 
   useEffect(() => {
     const el = artRef.current;
@@ -62,21 +66,31 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative flex min-h-[calc(100svh-64px-(var(--frame-inset)*2))] flex-col overflow-hidden">
-      {/* Ambient paper grid — nearly invisible */}
-      <div className="blueprint-grid pointer-events-none absolute inset-0 opacity-[0.18]" />
+    <section className="relative flex min-h-[calc(100svh-72px)] flex-col overflow-hidden">
+      {/* Ambient dark grid */}
+      <div className="blueprint-grid pointer-events-none absolute inset-0 opacity-[0.35]" />
 
-      {/* Dot grid behind pillar labels (as on mock) */}
+      {/* Soft cyan floor glow under ribbon */}
+      <div
+        className="pointer-events-none absolute inset-x-[35%] bottom-0 z-[1] h-[28%] opacity-70"
+        aria-hidden="true"
+        style={{
+          background:
+            "radial-gradient(ellipse 70% 55% at 70% 100%, rgba(56,189,248,0.22) 0%, transparent 70%)",
+        }}
+      />
+
+      {/* Dot grid behind pillar labels */}
       <div
         className="pointer-events-none absolute z-[1] hidden lg:block"
         aria-hidden="true"
         style={{
           top: "10%",
-          left: "42%",
+          left: "40%",
           width: "20%",
           height: "55%",
           backgroundImage:
-            "radial-gradient(rgba(80,70,60,0.16) 0.55px, transparent 0.65px)",
+            "radial-gradient(rgba(160,200,240,0.14) 0.55px, transparent 0.65px)",
           backgroundSize: "12px 12px",
           maskImage:
             "linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
@@ -87,11 +101,7 @@ export default function Hero() {
         }}
       />
 
-      {/*
-        Transparent cutout on page cream — no panel/box behind the figure.
-        Full-bleed art layer so the ribbon passes under the bottom divider
-        (bar sits above via z-index; figure is not cropped to a framed column).
-      */}
+      {/* Full-bleed dark ribbon art */}
       <div
         ref={artRef}
         className="pointer-events-auto absolute inset-0 z-0 overflow-hidden"
@@ -105,7 +115,7 @@ export default function Hero() {
           }}
         >
           <Image
-            src="/images/hero-concrete-ribbon.png"
+            src="/images/hero-concrete-ribbon-dark.png"
             alt=""
             fill
             priority
@@ -116,7 +126,7 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Engineering annotations — rail + ticks + one stepped G */}
+      {/* Pillar annotations — colored squares on vertical axis */}
       <div
         className="pointer-events-none absolute inset-0 z-20 hidden lg:block"
         aria-hidden="true"
@@ -127,29 +137,8 @@ export default function Hero() {
             y1={GUIDE_Y1}
             x2={GUIDE_X}
             y2={GUIDE_Y2}
-            stroke="rgba(80,70,60,0.32)"
+            stroke="rgba(255,255,255,0.18)"
             strokeWidth="1"
-            vectorEffect="non-scaling-stroke"
-          />
-          {PILLARS.map((p) => (
-            <line
-              key={p.label}
-              x1={GUIDE_X - 7}
-              y1={p.y}
-              x2={GUIDE_X}
-              y2={p.y}
-              stroke="rgba(80,70,60,0.38)"
-              strokeWidth="1"
-              vectorEffect="non-scaling-stroke"
-            />
-          ))}
-          {/* Stepped G: junction → down the rail → horizontal into sculpture */}
-          <polyline
-            points={`${GUIDE_X},${G.fromY} ${GUIDE_X},${G.midY} ${G.endX},${G.endY}`}
-            fill="none"
-            stroke="rgba(80,70,60,0.36)"
-            strokeWidth="1"
-            strokeDasharray="2.2 3.2"
             vectorEffect="non-scaling-stroke"
           />
         </svg>
@@ -158,45 +147,36 @@ export default function Hero() {
           <div key={p.label}>
             <Link
               href="/services"
-              className="label-mono pointer-events-auto absolute text-[9px] tracking-[0.22em] text-muted/65 transition-colors hover:text-text"
+              className="label-mono pointer-events-auto absolute text-[9px] tracking-[0.22em] text-muted/75 transition-colors hover:text-text"
               style={{
                 top: `${p.y}%`,
-                right: `${100 - GUIDE_X + 0.8}%`,
+                right: `${100 - GUIDE_X + 1.2}%`,
                 transform: "translateY(-50%)",
               }}
             >
               {p.label}
             </Link>
-            {p.accent && (
-              <span
-                className="absolute h-[3px] w-[3px] bg-accent"
-                style={{
-                  top: `${p.y}%`,
-                  left: `${GUIDE_X + 1.2}%`,
-                  transform: "translate(-50%, -50%)",
-                }}
-              />
-            )}
+            <span
+              className="absolute h-[5px] w-[5px]"
+              style={{
+                top: `${p.y}%`,
+                left: `${GUIDE_X}%`,
+                transform: "translate(-50%, -50%)",
+                background: p.color,
+                boxShadow: `0 0 10px ${p.color}66`,
+              }}
+            />
           </div>
         ))}
-        {/* Marker at end of G on the ribbon */}
-        <span
-          className="absolute h-[3px] w-[3px] bg-accent"
-          style={{
-            top: `${G.endY}%`,
-            left: `${G.endX}%`,
-            transform: "translate(-50%, -50%)",
-          }}
-        />
       </div>
 
-      {/* Copy — structural LTR column (text LEFT); BidiBlock only flips text dir/align */}
+      {/* Copy — structural LTR column */}
       <div className="chrome-ltr relative z-10 mx-auto flex w-full max-w-[var(--page-max)] flex-1 flex-col">
-        <div className="relative flex flex-1 flex-col justify-center px-[var(--page-pad)] pt-16 pb-14 sm:pt-[10vh] lg:pt-[11vh] lg:pb-16">
+        <div className="relative flex flex-1 flex-col justify-center px-[var(--page-pad)] pt-10 pb-10 sm:pt-[8vh] lg:pt-[9vh] lg:pb-12">
           <BidiBlock className="w-full max-w-[min(100%,28rem)] sm:max-w-[30rem] lg:max-w-[34rem]">
             <div className="animate-fade-up mb-7 inline-flex items-center gap-3 lg:mb-9">
-              <span className="eng-marker opacity-80" aria-hidden="true" />
-              <span className="label-mono text-[10px] tracking-[0.32em] text-muted/80">
+              <span className="h-px w-3 bg-muted/70" aria-hidden="true" />
+              <span className="label-mono text-[10px] tracking-[0.32em] text-muted/85">
                 {t("eyebrow")}
               </span>
             </div>
@@ -220,24 +200,43 @@ export default function Hero() {
               </Button>
             </div>
           </BidiBlock>
+
+          {/* Trusted by — present on the dark mock */}
+          <div className="animate-fade-up mt-14 max-w-xl lg:mt-16">
+            <div className="label-mono mb-4 text-[9px] tracking-[0.28em] text-muted/55">
+              {t("trustedBy")}
+            </div>
+            <div className="chrome-ltr flex flex-wrap items-center gap-x-7 gap-y-3 text-[11px] font-medium tracking-[0.16em] text-text/40 uppercase">
+              {TRUSTED.map((name) => (
+                <span key={name}>{name}</span>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Bottom bar — thin rule over the figure (figure continues underneath) */}
-        <div className="chrome-ltr relative z-10 mx-[var(--page-pad)] flex items-center justify-between gap-4 border-t border-[rgba(80,70,60,0.14)] bg-transparent py-3.5">
+        {/* Bottom status bar */}
+        <div className="chrome-ltr relative z-10 mx-[var(--page-pad)] flex items-center justify-between gap-4 border-t border-white/10 bg-transparent py-3.5">
           <div className="flex min-w-0 items-center gap-3">
             <span
               className="relative inline-flex h-4 w-4 shrink-0 items-center justify-center"
               aria-hidden="true"
             >
-              <span className="absolute inset-0 rounded-full border border-border-strong/80" />
-              <span className="absolute inset-[3px] rounded-full border border-border-strong/55" />
-              <span className="absolute inset-[6px] rounded-full bg-accent/85" />
+              <span className="absolute inset-0 rounded-full border border-white/35" />
+              <span className="absolute inset-[3px] rounded-full border border-white/25" />
+              <span className="absolute inset-[6px] rounded-full bg-accent shadow-[0_0_8px_rgba(255,106,61,0.7)]" />
             </span>
             <Link
               href="/services"
-              className="label-mono truncate text-[10px] tracking-[0.22em] text-muted/70 transition-colors hover:text-text"
+              className="label-mono flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[10px] tracking-[0.18em] text-muted/80 transition-colors hover:text-text"
             >
-              {t("pillars")}
+              {pillarParts.map((part, i) => (
+                <span key={part} className="inline-flex items-center gap-2">
+                  {i > 0 && (
+                    <span className="inline-block h-[4px] w-[4px] shrink-0 bg-accent" aria-hidden="true" />
+                  )}
+                  <span className="truncate">{part}</span>
+                </span>
+              ))}
             </Link>
           </div>
           <div className="hidden shrink-0 items-center gap-3 sm:flex">
@@ -245,10 +244,8 @@ export default function Hero() {
               {t("scrollHint")}
             </span>
             <span className="relative inline-flex h-7 w-px items-end" aria-hidden="true">
-              <span className="absolute inset-x-0 top-0 bottom-1 bg-[rgba(80,70,60,0.35)]" />
-              <span
-                className="absolute bottom-0 left-1/2 h-0 w-0 -translate-x-1/2 border-x-[3px] border-t-[4px] border-x-transparent border-t-[rgba(80,70,60,0.45)]"
-              />
+              <span className="absolute inset-x-0 top-0 bottom-1 bg-white/35" />
+              <span className="absolute bottom-0 left-1/2 h-0 w-0 -translate-x-1/2 border-x-[3px] border-t-[4px] border-x-transparent border-t-white/45" />
             </span>
           </div>
         </div>

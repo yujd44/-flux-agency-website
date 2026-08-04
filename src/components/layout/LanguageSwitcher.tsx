@@ -46,7 +46,7 @@ export default function LanguageSwitcher({ className }: { className?: string }) 
         aria-controls={listId}
         aria-label={t("language")}
         onClick={() => setOpen((v) => !v)}
-        className="label-mono inline-flex items-center gap-1.5 tracking-[0.18em] text-text transition-colors duration-200 hover:text-accent-secondary"
+        className="label-mono inline-flex items-center gap-1.5 tracking-[0.18em] text-text transition-colors duration-200 hover:text-accent"
       >
         <span>{localeShortLabels[locale]}</span>
         <ChevronDown
@@ -61,7 +61,7 @@ export default function LanguageSwitcher({ className }: { className?: string }) 
           id={listId}
           role="listbox"
           aria-label={t("language")}
-          className="absolute top-full right-0 z-50 mt-2 min-w-[4.5rem] border border-border-strong/80 bg-bg py-1 shadow-[0_8px_24px_rgba(80,70,60,0.08)]"
+          className="absolute top-full right-0 z-50 mt-2 min-w-[4.5rem] border border-border-strong/80 bg-surface py-1 shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
         >
           {locales.map((code) => (
             <li key={code} role="option" aria-selected={locale === code}>

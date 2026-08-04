@@ -1,26 +1,29 @@
 @import "tailwindcss";
 
-/* METHODEA — light architectural theme (default). */
+/* METHODEA — dark premium theme (client mock). */
 :root {
-  --color-bg: #f7f3ee;
-  --color-surface: #efe8de;
-  --color-border: rgba(80, 70, 60, 0.1);
-  --color-border-strong: rgba(80, 70, 60, 0.18);
-  --color-text: #161616;
-  --color-muted: #555555;
-  --color-accent: #a68a78;
-  --color-accent-secondary: #8d735d;
-  --color-accent-soft: rgba(184, 156, 122, 0.16);
-  --color-button: #111111;
-  --color-button-hover: #232323;
-  --color-on-button: #f7f3ee;
-  --grid-line: rgba(80, 70, 60, 0.035);
+  --color-bg: #05070a;
+  --color-surface: #0c1016;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.16);
+  --color-text: #f4f5f7;
+  --color-muted: #9aa3b2;
+  --color-accent: #ff6a3d;
+  --color-accent-secondary: #c084fc;
+  --color-accent-soft: rgba(255, 106, 61, 0.14);
+  --color-button: #ff6a3d;
+  --color-button-hover: #ff855c;
+  --color-on-button: #ffffff;
+  --color-gradient-start: #ff6a3d;
+  --color-gradient-mid: #e83a8a;
+  --color-gradient-end: #8b5cf6;
+  --grid-line: rgba(140, 180, 220, 0.045);
   --logo-mark-stroke: transparent;
   --page-max: 1600px;
   --content-max: 1440px;
   --page-pad: 1.5rem;
-  --frame-inset: 10px;
-  --frame-border: rgba(80, 70, 60, 0.16);
+  --frame-inset: 0px;
+  --frame-border: transparent;
 }
 
 @theme inline {
@@ -55,10 +58,10 @@ body {
   font-size: 1.25rem;
   line-height: 1.7;
   padding: var(--frame-inset);
-  /* Sparse paper grain + tiny dots */
+  /* Dark grain + sparse cool dots */
   background-image:
-    radial-gradient(rgba(80, 70, 60, 0.045) 0.6px, transparent 0.7px),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.3 0 0 0 0 0.22 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    radial-gradient(rgba(160, 200, 240, 0.045) 0.55px, transparent 0.65px),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.85 0 0 0 0 0.88 0 0 0 0 0.95 0 0 0 0.035 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 22px 22px, 180px 180px;
   background-attachment: fixed;
 }
@@ -66,11 +69,11 @@ body {
 .page-frame {
   position: relative;
   display: flex;
-  min-height: calc(100svh - (var(--frame-inset) * 2));
+  min-height: 100svh;
   flex: 1;
   flex-direction: column;
-  border: 1px solid var(--frame-border);
-  background-color: var(--color-bg);
+  border: none;
+  background-color: transparent;
 }
 
 html[lang="he"] body {
@@ -87,7 +90,7 @@ html[lang="ar"] body {
 
 ::selection {
   background: var(--color-accent);
-  color: #161616;
+  color: #05070a;
 }
 
 /* Chrome elements (nav, buttons, controls) always keep physical LTR
@@ -125,10 +128,10 @@ html[lang="ar"] body {
   animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Engineering grid — nearly imperceptible hairlines + intersection dots */
+/* Engineering grid — faint cool dots on dark */
 .blueprint-grid {
   background-image:
-    radial-gradient(rgba(80, 70, 60, 0.055) 0.55px, transparent 0.65px),
+    radial-gradient(rgba(140, 190, 240, 0.07) 0.55px, transparent 0.65px),
     linear-gradient(var(--grid-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 72px 72px, 72px 72px, 72px 72px;
@@ -166,9 +169,17 @@ html[lang="ar"] .hero-headline {
   font-family: var(--font-ar), var(--font-headline), system-ui, sans-serif;
 }
 
-/* Headline accent — refined serif italic, muted tan (mock) */
+/* Headline accent — italic serif with coral→magenta→violet gradient */
 .hero-accent {
-  color: var(--color-accent);
+  background-image: linear-gradient(
+    100deg,
+    var(--color-gradient-start) 0%,
+    var(--color-gradient-mid) 48%,
+    var(--color-gradient-end) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
   font-family: var(--font-accent), var(--font-headline), Georgia, serif;
   font-weight: 500;
   font-style: italic;
@@ -185,7 +196,7 @@ html[lang="ar"] .hero-accent {
   font-style: italic;
 }
 
-/* Primary button base (architectural, no glow/gradient) */
+/* Primary CTA — coral → violet gradient */
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -193,21 +204,25 @@ html[lang="ar"] .hero-accent {
   gap: 0.625rem;
   height: 52px;
   padding: 0 1.5rem;
-  border-radius: 0;
-  background: var(--color-button);
+  border-radius: 2px;
+  background: linear-gradient(
+    95deg,
+    var(--color-gradient-start) 0%,
+    var(--color-gradient-mid) 52%,
+    var(--color-gradient-end) 100%
+  );
   color: var(--color-on-button);
-  border: 1px solid var(--color-button);
+  border: 1px solid transparent;
   font-family: var(--font-geist-mono), ui-monospace, monospace;
   font-size: 12px;
   font-weight: 400;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition: filter 0.2s ease, opacity 0.2s ease;
 }
 
 .btn-primary:hover {
-  background: var(--color-button-hover);
-  border-color: var(--color-button-hover);
+  filter: brightness(1.08);
 }
 
 .btn-outline {
@@ -215,23 +230,23 @@ html[lang="ar"] .hero-accent {
   align-items: center;
   justify-content: center;
   gap: 0.625rem;
-  height: 52px;
-  padding: 0 1.25rem;
-  border-radius: 0;
+  height: 38px;
+  padding: 0 1rem;
+  border-radius: 2px;
   background: transparent;
   color: var(--color-text);
-  border: 1px solid var(--color-border-strong);
+  border: 1px solid rgba(255, 255, 255, 0.55);
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 400;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  transition: border-color 0.2s ease, color 0.2s ease;
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
 }
 
 .btn-outline:hover {
-  border-color: var(--color-accent-secondary);
-  color: var(--color-accent-secondary);
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .btn-ghost {
@@ -247,13 +262,13 @@ html[lang="ar"] .hero-accent {
   text-decoration: underline;
   text-underline-offset: 7px;
   text-decoration-thickness: 1px;
-  text-decoration-color: rgba(22, 22, 22, 0.55);
+  text-decoration-color: rgba(244, 245, 247, 0.55);
   transition: color 0.2s ease, text-decoration-color 0.2s ease;
 }
 
 .btn-ghost:hover {
-  color: var(--color-accent-secondary);
-  text-decoration-color: var(--color-accent-secondary);
+  color: #ffffff;
+  text-decoration-color: #ffffff;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -267,7 +282,6 @@ html[lang="ar"] .hero-accent {
 @media (min-width: 1024px) {
   :root {
     --page-pad: 5rem;
-    --frame-inset: 14px;
   }
 }
 

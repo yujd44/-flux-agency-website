@@ -10,9 +10,11 @@ type Props = {
   href?: "/" | string;
 };
 
+/** Orange → magenta → violet per bar (avoids colliding SVG gradient IDs). */
+const BAR_COLORS = ["#ff6a3d", "#f04e5f", "#e83a8a", "#a855f7"] as const;
+
 /**
- * METHODEA lockup: four vertical bars of increasing height + wordmark.
- * Matches the Phase 1 mock — simple SVG, no external logo asset.
+ * METHODEA lockup: four vertical bars with orange→magenta gradient + white wordmark.
  */
 export default function MethodaLogo({
   className,
@@ -34,10 +36,10 @@ export default function MethodaLogo({
         aria-hidden="true"
         className="shrink-0"
       >
-        <rect x="1" y="20" width="4" height="12" fill="currentColor" />
-        <rect x="8.5" y="13" width="4" height="19" fill="currentColor" />
-        <rect x="16" y="7" width="4" height="25" fill="currentColor" />
-        <rect x="23.5" y="1" width="4" height="31" fill="currentColor" />
+        <rect x="1" y="20" width="4" height="12" fill={BAR_COLORS[0]} />
+        <rect x="8.5" y="13" width="4" height="19" fill={BAR_COLORS[1]} />
+        <rect x="16" y="7" width="4" height="25" fill={BAR_COLORS[2]} />
+        <rect x="23.5" y="1" width="4" height="31" fill={BAR_COLORS[3]} />
       </svg>
       {showWordmark && (
         <span
