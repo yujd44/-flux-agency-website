@@ -87,9 +87,9 @@ export default function Hero() {
       />
 
       {/*
-        Client asset: landscape cream + ribbon on the right.
-        Never object-cover / negative bleed — that zooms into texture.
-        contain + right/bottom + air around the box = full silhouette at gallery scale.
+        Transparent cutout on page cream — no panel/box behind the figure.
+        Full-bleed art layer so the ribbon passes under the bottom divider
+        (bar sits above via z-index; figure is not cropped to a framed column).
       */}
       <div
         ref={artRef}
@@ -98,7 +98,7 @@ export default function Hero() {
         aria-hidden="true"
       >
         <div
-          className="absolute top-[9%] right-0 bottom-[7%] left-[4%] transition-transform duration-500 ease-out will-change-transform sm:top-[10%] sm:bottom-[8%] sm:left-[8%] lg:top-[11%] lg:bottom-[9%] lg:left-[12%]"
+          className="absolute inset-0 transition-transform duration-500 ease-out will-change-transform"
           style={{
             transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
           }}
@@ -108,8 +108,9 @@ export default function Hero() {
             alt=""
             fill
             priority
-            sizes="(max-width: 1024px) 100vw, 75vw"
+            sizes="100vw"
             className="object-contain object-right object-bottom"
+            style={{ background: "transparent" }}
           />
         </div>
       </div>
@@ -219,8 +220,8 @@ export default function Hero() {
           </BidiBlock>
         </div>
 
-        {/* Bottom bar — radar mark + long scroll cue (no TRUSTED BY) */}
-        <div className="chrome-ltr relative z-10 mx-[var(--page-pad)] flex items-center justify-between gap-4 border-t border-[rgba(80,70,60,0.14)] py-3.5">
+        {/* Bottom bar — thin rule over the figure (figure continues underneath) */}
+        <div className="chrome-ltr relative z-10 mx-[var(--page-pad)] flex items-center justify-between gap-4 border-t border-[rgba(80,70,60,0.14)] bg-transparent py-3.5">
           <div className="flex min-w-0 items-center gap-3">
             <span
               className="relative inline-flex h-4 w-4 shrink-0 items-center justify-center"
