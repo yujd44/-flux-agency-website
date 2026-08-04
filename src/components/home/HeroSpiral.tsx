@@ -44,19 +44,34 @@ function frameAt(t: number, p: SpiralParams) {
   return { center, tangent, binormal, normal };
 }
 
-/** Neon rim color: teal (bottom) → purple → orange (top). */
+/**
+ * Rim palette matched to reference:
+ * cool teal/cyan at the base → magenta/pink mid → warm orange-magenta on upper edges.
+ */
 function rimColor(t: number, out: THREE.Color) {
-  const teal = new THREE.Color("#2ec4b6");
-  const purple = new THREE.Color("#a855f7");
-  const orange = new THREE.Color("#ff6a3d");
-  if (t < 0.45) {
-    return out.copy(teal).lerp(purple, t / 0.45);
+  const cyan = new THREE.Color("#2ecfc4");
+  const teal = new THREE.Color("#1aa8b8");
+  const magenta = new THREE.Color("#e056c5");
+  const pink = new THREE.Color("#ff6b9d");
+  const orange = new THREE.Color("#ff7a4a");
+
+  if (t < 0.28) {
+    const k = t / 0.28;
+    return out.copy(cyan).lerp(teal, k * 0.55);
   }
-  return out.copy(purple).lerp(orange, (t - 0.45) / 0.55);
+  if (t < 0.55) {
+    const k = (t - 0.28) / 0.27;
+    return out.copy(teal).lerp(magenta, 0.35 + k * 0.65);
+  }
+  if (t < 0.78) {
+    const k = (t - 0.55) / 0.23;
+    return out.copy(magenta).lerp(pink, k);
+  }
+  return out.copy(pink).lerp(orange, (t - 0.78) / 0.22);
 }
 
 /**
- * Thick helical slab — concrete body (no face gradient).
+ * Thick helical slab — matte concrete body (no face gradient).
  * Cross-section: width × thickness rectangle swept along helix.
  */
 function buildRibbonGeometry(p: SpiralParams) {
@@ -166,18 +181,74 @@ function buildRimGeometry(p: SpiralParams, side: 1 | -1, rimHalf = 0.028) {
   return geo;
 }
 
+/** Soft wider halo behind the hard rim — glow bleed onto concrete. */
+function buildRimHaloGeometry(p: SpiralParams, side: 1 | -1) {
+  const positions: number[] = [];
+  const colors: number[] = [];
+  const indices: number[] = [];
+  const col = new THREE.Color();
+  const hw = p.width * 0.5;
+  const ht = p.thickness * 0.5;
+  const rimHalf = 0.055;
+
+  for (let i = 0; i <= p.segments; i++) {
+    const t = i / p.segments;
+    const { center, tangent, binormal, normal } = frameAt(t, p);
+    const base = center
+      .clone()
+      .addScaledVector(binormal, side * (hw - 0.02))
+      .addScaledVector(normal, ht + 0.001);
+
+    const a = base
+      .clone()
+      .addScaledVector(tangent, rimHalf)
+      .addScaledVector(binormal, side * 0.03)
+      .addScaledVector(normal, 0.012);
+    const b = base
+      .clone()
+      .addScaledVector(tangent, -rimHalf)
+      .addScaledVector(binormal, side * -0.05)
+      .addScaledVector(normal, -0.02);
+
+    positions.push(a.x, a.y, a.z, b.x, b.y, b.z);
+    rimColor(t, col);
+    // Dimmer halo so it reads as soft bleed, not a second hard edge
+    colors.push(
+      col.r * 0.55,
+      col.g * 0.5,
+      col.b * 0.6,
+      col.r * 0.12,
+      col.g * 0.14,
+      col.b * 0.18,
+    );
+
+    if (i < p.segments) {
+      const i0 = i * 2;
+      indices.push(i0, i0 + 1, i0 + 2, i0 + 1, i0 + 3, i0 + 2);
+    }
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geo.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+  geo.setIndex(indices);
+  geo.computeVertexNormals();
+  return geo;
+}
+
 /** Tiny procedural concrete grain — albedo + roughness variation. */
 function makeConcreteMaps(size = 128) {
   const data = new Uint8Array(size * size * 4);
   const rough = new Uint8Array(size * size);
   for (let i = 0; i < size * size; i++) {
     const n = Math.random();
-    const g = 92 + Math.floor(n * 38); // cool gray
+    // Light-medium concrete gray with subtle cool cast
+    const g = 148 + Math.floor(n * 42);
     data[i * 4] = g;
-    data[i * 4 + 1] = g + 2;
-    data[i * 4 + 2] = g + 6;
+    data[i * 4 + 1] = g + 1;
+    data[i * 4 + 2] = g + 4;
     data[i * 4 + 3] = 255;
-    rough[i] = 160 + Math.floor(n * 70);
+    rough[i] = 200 + Math.floor(n * 50);
   }
   const map = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
   map.wrapS = map.wrapT = THREE.RepeatWrapping;
@@ -192,7 +263,7 @@ function makeConcreteMaps(size = 128) {
 }
 
 /**
- * Dedicated WebGL spiral — concrete slab + neon rim, studio lit.
+ * Dedicated WebGL spiral — matte concrete slab + neon rim, soft studio lit.
  * Resource-aware: capped DPR, soft shadows, pauses off-screen / reduced-motion.
  */
 export default function HeroSpiral() {
@@ -223,16 +294,16 @@ export default function HeroSpiral() {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 50);
-    // Right-half sculpture framing — leave left clear for copy
-    camera.position.set(3.55, 0.55, 5.4);
-    camera.lookAt(1.05, -0.05, 0);
+    // Frame further right — leave left clear for copy
+    camera.position.set(3.85, 0.45, 5.55);
+    camera.lookAt(1.55, -0.08, 0);
 
     const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     renderer.setPixelRatio(dpr);
     renderer.setClearColor(0x000000, 0);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
+    renderer.toneMappingExposure = 0.92;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mount.appendChild(renderer.domElement);
@@ -243,9 +314,12 @@ export default function HeroSpiral() {
     });
 
     const group = new THREE.Group();
-    group.position.set(1.15, -0.15, 0);
-    group.rotation.x = -0.22;
-    group.rotation.z = 0.08;
+    // Sit on the right; slight lean away from vertical (reference tilt)
+    group.position.set(1.62, -0.22, 0);
+    const baseTiltX = -0.34;
+    const baseTiltZ = 0.2;
+    group.rotation.x = baseTiltX;
+    group.rotation.z = baseTiltZ;
     scene.add(group);
 
     const { map, roughnessMap } = makeConcreteMaps(128);
@@ -254,13 +328,13 @@ export default function HeroSpiral() {
 
     const ribbonGeo = buildRibbonGeometry(SPIRAL);
     const ribbonMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color("#7a8088"),
+      color: new THREE.Color("#b0b5bc"),
       map,
       roughnessMap,
-      roughness: 0.92,
-      metalness: 0.04,
+      roughness: 0.97,
+      metalness: 0,
       flatShading: false,
-      envMapIntensity: 0.35,
+      envMapIntensity: 0,
     });
     const ribbon = new THREE.Mesh(ribbonGeo, ribbonMat);
     ribbon.castShadow = true;
@@ -270,52 +344,78 @@ export default function HeroSpiral() {
     const rimMat = new THREE.MeshBasicMaterial({
       vertexColors: true,
       transparent: true,
-      opacity: 0.92,
+      opacity: 0.95,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const haloMat = new THREE.MeshBasicMaterial({
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.42,
       side: THREE.DoubleSide,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
     const rimOuterGeo = buildRimGeometry(SPIRAL, 1);
     const rimInnerGeo = buildRimGeometry(SPIRAL, -1, 0.022);
+    const haloOuterGeo = buildRimHaloGeometry(SPIRAL, 1);
+    const haloInnerGeo = buildRimHaloGeometry(SPIRAL, -1);
     const rimOuter = new THREE.Mesh(rimOuterGeo, rimMat);
     const rimInner = new THREE.Mesh(rimInnerGeo, rimMat);
-    group.add(rimOuter, rimInner);
+    const haloOuter = new THREE.Mesh(haloOuterGeo, haloMat);
+    const haloInner = new THREE.Mesh(haloInnerGeo, haloMat);
+    group.add(haloOuter, haloInner, rimOuter, rimInner);
 
-    // Dark reflective floor + soft contact shadow catcher
+    // Dark soft floor + contact shadow catcher (low metalness — no glossy pool)
     const floorY = -SPIRAL.height * 0.48;
     const floorGeo = new THREE.CircleGeometry(3.6, 48);
     const floorMat = new THREE.MeshStandardMaterial({
       color: new THREE.Color("#0a0b0e"),
-      metalness: 0.72,
-      roughness: 0.28,
+      metalness: 0.18,
+      roughness: 0.72,
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.48,
     });
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
-    floor.position.set(1.15, floorY, 0.2);
+    floor.position.set(1.62, floorY, 0.2);
     floor.receiveShadow = true;
     scene.add(floor);
 
-    // Soft ground glow disc (fake AO / neon bounce on floor)
-    const glowGeo = new THREE.CircleGeometry(2.2, 32);
+    // Cool teal/cyan ground glow under the base (reference)
+    const glowGeo = new THREE.CircleGeometry(2.35, 32);
     const glowMat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color("#3d2a6b"),
+      color: new THREE.Color("#1fc4c0"),
       transparent: true,
-      opacity: 0.22,
+      opacity: 0.28,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
     const glow = new THREE.Mesh(glowGeo, glowMat);
     glow.rotation.x = -Math.PI / 2;
-    glow.position.set(1.2, floorY + 0.01, 0.15);
+    glow.position.set(1.65, floorY + 0.01, 0.15);
     scene.add(glow);
 
-    // Studio lights
-    const ambient = new THREE.AmbientLight(0x6a7380, 0.28);
+    // Soft magenta bloom disc slightly above floor for warm bounce
+    const warmGlowGeo = new THREE.CircleGeometry(1.6, 28);
+    const warmGlowMat = new THREE.MeshBasicMaterial({
+      color: new THREE.Color("#c44aa8"),
+      transparent: true,
+      opacity: 0.12,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const warmGlow = new THREE.Mesh(warmGlowGeo, warmGlowMat);
+    warmGlow.rotation.x = -Math.PI / 2;
+    warmGlow.position.set(1.75, floorY + 0.015, -0.1);
+    scene.add(warmGlow);
+
+    // Soft studio lights — matte concrete, avoid hard specular spikes
+    const ambient = new THREE.AmbientLight(0x8a929c, 0.42);
     scene.add(ambient);
 
-    const key = new THREE.DirectionalLight(0xffe2cc, 1.55);
+    const key = new THREE.DirectionalLight(0xffe8d8, 0.85);
     key.position.set(4.2, 5.5, 3.8);
     key.castShadow = true;
     key.shadow.mapSize.set(1024, 1024);
@@ -329,18 +429,22 @@ export default function HeroSpiral() {
     key.shadow.normalBias = 0.02;
     scene.add(key);
 
-    const fill = new THREE.DirectionalLight(0x9bb4ff, 0.45);
+    const fill = new THREE.DirectionalLight(0xb8c4d8, 0.55);
     fill.position.set(-3.5, 1.8, 2.2);
     scene.add(fill);
 
-    const rimLight = new THREE.DirectionalLight(0xff8a5c, 0.55);
+    const rimLight = new THREE.DirectionalLight(0xff8ab8, 0.4);
     rimLight.position.set(1.5, 1.2, -4);
     scene.add(rimLight);
 
-    // Cool bounce from below (reads as floor reflection)
-    const bounce = new THREE.PointLight(0x2ec4b6, 0.55, 8, 2);
-    bounce.position.set(1.4, floorY + 0.4, 1.2);
+    // Cool bounce from below (reads as floor teal reflection)
+    const bounce = new THREE.PointLight(0x2ecfc4, 0.7, 8, 2);
+    bounce.position.set(1.7, floorY + 0.4, 1.2);
     scene.add(bounce);
+
+    const warmBounce = new THREE.PointLight(0xff6b9d, 0.35, 7, 2);
+    warmBounce.position.set(2.0, 0.6, -1.2);
+    scene.add(warmBounce);
 
     let visible = true;
     let raf = 0;
@@ -391,13 +495,15 @@ export default function HeroSpiral() {
       last = now;
       clock.t += dt;
 
-      // Continuous helix turn — primary Y so spiral reads as spinning
-      group.rotation.y = clock.t * 0.28;
-      group.rotation.x = -0.22 + Math.sin(clock.t * 0.45) * 0.035;
-      group.position.y = -0.15 + Math.sin(clock.t * 0.55) * 0.05;
+      // Gentle helix turn — keep base tilt, breathe slightly on X
+      group.rotation.y = clock.t * 0.26;
+      group.rotation.x = baseTiltX + Math.sin(clock.t * 0.4) * 0.03;
+      group.rotation.z = baseTiltZ;
+      group.position.y = -0.22 + Math.sin(clock.t * 0.5) * 0.04;
 
-      rimMat.opacity = 0.78 + Math.sin(clock.t * 1.1) * 0.12;
-      glowMat.opacity = 0.16 + Math.sin(clock.t * 0.9) * 0.06;
+      rimMat.opacity = 0.88 + Math.sin(clock.t * 1.05) * 0.08;
+      haloMat.opacity = 0.36 + Math.sin(clock.t * 0.85) * 0.08;
+      glowMat.opacity = 0.22 + Math.sin(clock.t * 0.85) * 0.06;
 
       renderer.render(scene, camera);
       raf = requestAnimationFrame(tick);
@@ -414,11 +520,16 @@ export default function HeroSpiral() {
       ribbonMat.dispose();
       rimOuterGeo.dispose();
       rimInnerGeo.dispose();
+      haloOuterGeo.dispose();
+      haloInnerGeo.dispose();
       rimMat.dispose();
+      haloMat.dispose();
       floorGeo.dispose();
       floorMat.dispose();
       glowGeo.dispose();
       glowMat.dispose();
+      warmGlowGeo.dispose();
+      warmGlowMat.dispose();
       map.dispose();
       roughnessMap.dispose();
       renderer.dispose();

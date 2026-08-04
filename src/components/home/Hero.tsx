@@ -58,7 +58,7 @@ export default function Hero() {
 
       {/* Soft floor glow under sculpture */}
       <div
-        className="hero-floor-glow pointer-events-none absolute inset-x-[22%] bottom-0 z-[1] h-[38%]"
+        className="hero-floor-glow pointer-events-none absolute inset-x-[18%] bottom-0 z-[1] h-[38%] translate-x-[8%]"
         aria-hidden="true"
       />
 

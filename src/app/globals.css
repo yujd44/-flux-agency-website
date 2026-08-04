@@ -283,10 +283,10 @@ html[lang="ar"] .hero-accent {
 .hero-spiral-mask,
 .hero-ribbon-mask {
   -webkit-mask-image:
-    linear-gradient(90deg, transparent 0%, black 42%, black 92%, transparent 100%),
+    linear-gradient(90deg, transparent 0%, black 48%, black 94%, transparent 100%),
     linear-gradient(180deg, transparent 0%, black 10%, black 88%, transparent 100%);
   mask-image:
-    linear-gradient(90deg, transparent 0%, black 42%, black 92%, transparent 100%),
+    linear-gradient(90deg, transparent 0%, black 48%, black 94%, transparent 100%),
     linear-gradient(180deg, transparent 0%, black 10%, black 88%, transparent 100%);
   -webkit-mask-composite: source-in;
   mask-composite: intersect;
@@ -297,13 +297,13 @@ html[lang="ar"] .hero-accent {
 }
 
 .hero-spiral-stage {
-  transform: translate3d(14%, 3%, 0) scale(1.12);
-  transform-origin: 78% 52%;
+  transform: translate3d(20%, 2%, 0) scale(1.08);
+  transform-origin: 82% 52%;
 }
 
 .hero-edge-fade {
   background:
-    linear-gradient(90deg, var(--color-bg) 0%, transparent 40%),
+    linear-gradient(90deg, var(--color-bg) 0%, transparent 46%),
     linear-gradient(270deg, var(--color-bg) 0%, transparent 10%),
     linear-gradient(180deg, var(--color-bg) 0%, transparent 16%),
     linear-gradient(0deg, var(--color-bg) 0%, transparent 20%);
@@ -340,9 +340,9 @@ html[lang="ar"] .hero-accent {
 
 .hero-spiral-glow {
   background:
-    radial-gradient(ellipse 42% 40% at 74% 52%, rgba(255, 106, 61, 0.22) 0%, transparent 70%),
-    radial-gradient(ellipse 36% 34% at 82% 48%, rgba(139, 92, 246, 0.2) 0%, transparent 72%),
-    radial-gradient(ellipse 28% 24% at 70% 72%, rgba(46, 196, 182, 0.16) 0%, transparent 68%);
+    radial-gradient(ellipse 40% 38% at 80% 48%, rgba(255, 106, 61, 0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 34% 32% at 86% 44%, rgba(224, 86, 197, 0.16) 0%, transparent 72%),
+    radial-gradient(ellipse 30% 26% at 78% 76%, rgba(46, 207, 196, 0.2) 0%, transparent 68%);
   mix-blend-mode: screen;
   animation: hero-spiral-glow 3.6s ease-in-out infinite;
   will-change: opacity, transform;
@@ -360,11 +360,12 @@ html[lang="ar"] .hero-accent {
 
 .hero-floor-glow {
   background: radial-gradient(
-    ellipse 70% 55% at 72% 100%,
-    rgba(46, 196, 182, 0.18) 0%,
-    rgba(139, 92, 246, 0.16) 38%,
-    rgba(255, 106, 61, 0.1) 58%,
-    transparent 76%
+    ellipse 68% 55% at 78% 100%,
+    rgba(46, 207, 196, 0.22) 0%,
+    rgba(26, 168, 184, 0.14) 32%,
+    rgba(224, 86, 197, 0.1) 52%,
+    rgba(255, 106, 61, 0.06) 68%,
+    transparent 80%
   );
   animation: hero-floor-glow 3.6s ease-in-out infinite;
 }
