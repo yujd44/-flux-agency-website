@@ -1,12 +1,28 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
+import { useRef } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
 import BidiBlock from "@/components/ui/BidiBlock";
 import HeroHeadline from "@/components/home/HeroHeadline";
+import { useRibbonFx } from "@/hooks/useRibbonFx";
 import { useTimeAccent } from "@/hooks/useTimeAccent";
 import { useMagnetic } from "@/hooks/useMagnetic";
+
+const HeroSpiral = dynamic(() => import("@/components/home/HeroSpiral"), {
+  ssr: false,
+  loading: () => null,
+});
+
+const DUST = [
+  { left: "62%", top: "30%", size: 1.6, delay: "0s", dur: "14s" },
+  { left: "74%", top: "38%", size: 1.4, delay: "2.2s", dur: "16s" },
+  { left: "84%", top: "50%", size: 1.8, delay: "1s", dur: "15s" },
+  { left: "68%", top: "60%", size: 1.3, delay: "3.5s", dur: "17s" },
+  { left: "90%", top: "34%", size: 1.5, delay: "4s", dur: "13s" },
+  { left: "78%", top: "70%", size: 1.4, delay: "1.8s", dur: "18s" },
+] as const;
 
 function MagneticCta({ label }: { label: string }) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -22,49 +38,76 @@ function MagneticCta({ label }: { label: string }) {
 
 export default function Hero() {
   const t = useTranslations("home.hero");
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const zoneRef = useRef<HTMLElement>(null);
+  const artRef = useRef<HTMLDivElement>(null);
+  const fx = useRibbonFx(artRef);
   useTimeAccent();
 
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => {
-      if (mq.matches) {
-        video.pause();
-        video.removeAttribute("autoplay");
-      } else {
-        void video.play().catch(() => {
-          /* autoplay may be blocked — poster remains */
-        });
-      }
-    };
-
-    sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
-  }, []);
-
   return (
-    <section className="hero-zone relative flex min-h-[calc(100svh-44px)] flex-col overflow-hidden">
-      {/* Full-viewport cinematic background */}
-      <div className="pointer-events-none absolute inset-0 z-0" aria-hidden="true">
-        <video
-          ref={videoRef}
-          className="hero-bg-video absolute inset-0 h-full w-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          poster="/videos/hero-atmosphere-poster.jpg"
-        >
-          <source src="/videos/hero-atmosphere.mp4" type="video/mp4" />
-        </video>
+    <section
+      ref={zoneRef}
+      className="hero-zone relative flex min-h-[calc(100svh-44px)] flex-col overflow-hidden"
+    >
+      <div className="blueprint-grid pointer-events-none absolute inset-0 opacity-[0.35]" />
 
-        {/* Legibility scrim — left/copy side + soft global veil, video stays visible */}
-        <div className="hero-video-scrim absolute inset-0" />
+      {/* Soft floor glow under sculpture */}
+      <div
+        className="hero-floor-glow pointer-events-none absolute inset-x-[18%] bottom-0 z-[1] h-[38%] translate-x-[8%]"
+        aria-hidden="true"
+      />
+
+      {/* Full-bleed spiral art — feathered into page bg */}
+      <div
+        ref={artRef}
+        className="pointer-events-auto absolute inset-0 z-0 overflow-hidden"
+        aria-hidden="true"
+      >
+        <div
+          className="absolute inset-0 will-change-transform"
+          style={{
+            transform: `translate3d(0, ${fx.scrollY}px, 0)`,
+            transition: fx.spotActive ? "none" : "transform 0.7s ease-out",
+          }}
+        >
+          <div className="hero-sculpture-float absolute inset-0">
+            {/* Soft ambient halo around the spiral — clearly visible */}
+            <div className="hero-spiral-glow pointer-events-none absolute inset-0" />
+
+            <div className="hero-spiral-mask absolute inset-0">
+              <HeroSpiral />
+            </div>
+
+            {/* Cursor spotlight — restrained studio accent */}
+            <div
+              className="pointer-events-none absolute inset-0 transition-opacity duration-400"
+              style={{
+                opacity: fx.spotActive ? 0.55 : 0.18,
+                background: `radial-gradient(circle 42vmin at ${fx.spotX}% ${fx.spotY}%, rgba(200,160,255,0.14) 0%, rgba(140,70,160,0.08) 36%, transparent 68%)`,
+                mixBlendMode: "soft-light",
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Edge fade — match --color-bg so WebGL frame dissolves */}
+        <div className="hero-edge-fade pointer-events-none absolute inset-0 z-[2]" />
+
+        <div className="pointer-events-none absolute inset-0 z-[3] hidden sm:block">
+          {DUST.map((d, i) => (
+            <span
+              key={i}
+              className="hero-dust absolute rounded-full bg-white/60"
+              style={{
+                left: d.left,
+                top: d.top,
+                width: d.size,
+                height: d.size,
+                animationDelay: d.delay,
+                animationDuration: d.dur,
+              }}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Copy — structural LTR column */}
@@ -72,8 +115,8 @@ export default function Hero() {
         <div className="relative flex flex-1 flex-col justify-center px-[var(--page-pad)] pt-8 pb-10 sm:pt-[7vh] lg:pt-[8vh] lg:pb-12">
           <BidiBlock className="w-full max-w-[min(100%,28rem)] sm:max-w-[30rem] lg:max-w-[34rem]">
             <div className="animate-fade-up mb-7 inline-flex items-center gap-3 lg:mb-9">
-              <span className="h-px w-3 bg-white/55" aria-hidden="true" />
-              <span className="label-mono text-[10px] tracking-[0.32em] text-white/70">
+              <span className="h-px w-3 bg-muted/70" aria-hidden="true" />
+              <span className="label-mono text-[10px] tracking-[0.32em] text-muted/85">
                 {t("eyebrow")}
               </span>
             </div>
@@ -84,7 +127,7 @@ export default function Hero() {
               after={t("titleAfter")}
             />
 
-            <p className="animate-fade-up mt-6 max-w-[22rem] text-[0.95rem] font-light leading-[1.8] text-white/72 sm:mt-7 sm:max-w-[24rem] sm:text-[1rem] lg:mt-8 lg:max-w-[26rem]">
+            <p className="animate-fade-up mt-6 max-w-[22rem] text-[0.95rem] font-light leading-[1.8] text-muted sm:mt-7 sm:max-w-[24rem] sm:text-[1rem] lg:mt-8 lg:max-w-[26rem]">
               {t("subtitle")}
             </p>
 
@@ -94,13 +137,13 @@ export default function Hero() {
           </BidiBlock>
         </div>
 
-        <div className="chrome-ltr relative z-10 mx-[var(--page-pad)] flex items-center justify-end gap-3 border-t border-white/15 py-3.5">
-          <span className="label-mono text-[10px] tracking-[0.22em] text-white/55">
+        <div className="chrome-ltr relative z-10 mx-[var(--page-pad)] flex items-center justify-end gap-3 border-t border-white/10 py-3.5">
+          <span className="label-mono text-[10px] tracking-[0.22em] text-muted/70">
             {t("scrollHint")}
           </span>
           <span className="relative inline-flex h-7 w-px items-end" aria-hidden="true">
-            <span className="absolute inset-x-0 top-0 bottom-1 bg-white/40" />
-            <span className="absolute bottom-0 left-1/2 h-0 w-0 -translate-x-1/2 border-x-[3px] border-t-[4px] border-x-transparent border-t-white/50" />
+            <span className="absolute inset-x-0 top-0 bottom-1 bg-white/35" />
+            <span className="absolute bottom-0 left-1/2 h-0 w-0 -translate-x-1/2 border-x-[3px] border-t-[4px] border-x-transparent border-t-white/45" />
           </span>
         </div>
       </div>
