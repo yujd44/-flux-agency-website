@@ -283,11 +283,11 @@ html[lang="ar"] .hero-accent {
 .hero-spiral-mask,
 .hero-ribbon-mask {
   -webkit-mask-image:
-    linear-gradient(90deg, transparent 0%, black 32%, black 90%, transparent 100%),
-    linear-gradient(180deg, transparent 0%, black 14%, black 84%, transparent 100%);
+    linear-gradient(90deg, transparent 0%, black 42%, black 92%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, black 10%, black 88%, transparent 100%);
   mask-image:
-    linear-gradient(90deg, transparent 0%, black 32%, black 90%, transparent 100%),
-    linear-gradient(180deg, transparent 0%, black 14%, black 84%, transparent 100%);
+    linear-gradient(90deg, transparent 0%, black 42%, black 92%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, black 10%, black 88%, transparent 100%);
   -webkit-mask-composite: source-in;
   mask-composite: intersect;
   -webkit-mask-repeat: no-repeat;
@@ -297,8 +297,8 @@ html[lang="ar"] .hero-accent {
 }
 
 .hero-spiral-stage {
-  transform: translate3d(8%, 2%, 0) scale(1.08);
-  transform-origin: 70% 55%;
+  transform: translate3d(14%, 3%, 0) scale(1.12);
+  transform-origin: 78% 52%;
 }
 
 .hero-edge-fade {
@@ -340,9 +340,9 @@ html[lang="ar"] .hero-accent {
 
 .hero-spiral-glow {
   background:
-    radial-gradient(ellipse 52% 46% at 70% 52%, rgba(255, 106, 61, 0.55) 0%, transparent 68%),
-    radial-gradient(ellipse 44% 40% at 80% 48%, rgba(139, 92, 246, 0.48) 0%, transparent 70%),
-    radial-gradient(ellipse 30% 26% at 74% 44%, rgba(255, 160, 90, 0.35) 0%, transparent 62%);
+    radial-gradient(ellipse 42% 40% at 74% 52%, rgba(255, 106, 61, 0.22) 0%, transparent 70%),
+    radial-gradient(ellipse 36% 34% at 82% 48%, rgba(139, 92, 246, 0.2) 0%, transparent 72%),
+    radial-gradient(ellipse 28% 24% at 70% 72%, rgba(46, 196, 182, 0.16) 0%, transparent 68%);
   mix-blend-mode: screen;
   animation: hero-spiral-glow 3.6s ease-in-out infinite;
   will-change: opacity, transform;
@@ -360,10 +360,11 @@ html[lang="ar"] .hero-accent {
 
 .hero-floor-glow {
   background: radial-gradient(
-    ellipse 75% 60% at 70% 100%,
-    rgba(255, 106, 61, 0.28) 0%,
-    rgba(139, 92, 246, 0.22) 42%,
-    transparent 74%
+    ellipse 70% 55% at 72% 100%,
+    rgba(46, 196, 182, 0.18) 0%,
+    rgba(139, 92, 246, 0.16) 38%,
+    rgba(255, 106, 61, 0.1) 58%,
+    transparent 76%
   );
   animation: hero-floor-glow 3.6s ease-in-out infinite;
 }

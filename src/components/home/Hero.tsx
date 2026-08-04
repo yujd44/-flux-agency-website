@@ -87,8 +87,8 @@ export default function Hero() {
             <div
               className="pointer-events-none absolute inset-0 transition-opacity duration-400"
               style={{
-                opacity: fx.spotActive ? 1 : 0.7,
-                background: `radial-gradient(circle 48vmin at ${fx.spotX}% ${fx.spotY}%, rgba(255,190,150,0.48) 0%, rgba(168,85,247,0.28) 34%, transparent 70%)`,
+                opacity: fx.spotActive ? 0.85 : 0.35,
+                background: `radial-gradient(circle 42vmin at ${fx.spotX}% ${fx.spotY}%, rgba(255,190,150,0.28) 0%, rgba(168,85,247,0.14) 36%, transparent 68%)`,
                 mixBlendMode: "soft-light",
               }}
             />
