@@ -41,7 +41,7 @@ export default function MethodaLogo({
       </svg>
       {showWordmark && (
         <span
-          className="text-[15px] font-medium tracking-[0.22em] text-text uppercase sm:text-[16px]"
+          className="text-[13px] font-normal tracking-[0.28em] text-text uppercase sm:text-[14px]"
           style={{ fontFamily: "var(--font-latin), system-ui, sans-serif" }}
         >
           METHODEA

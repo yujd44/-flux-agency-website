@@ -8,7 +8,7 @@ import {
 export const fontLatin = Geist({
   variable: "--font-latin",
   subsets: ["latin", "cyrillic"],
-  weight: ["400", "500", "600"],
+  weight: ["300", "400", "500", "600"],
   display: "swap",
 });
 

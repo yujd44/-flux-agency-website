@@ -25,11 +25,11 @@ export default function Header() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-border/80 bg-bg/85 backdrop-blur-[2px]">
-        <div className="chrome-ltr mx-auto flex w-full max-w-[var(--page-max)] items-center justify-between px-[var(--page-pad)] py-4">
-          <MethodaLogo size={26} />
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-bg/70 backdrop-blur-[1.5px]">
+        <div className="chrome-ltr mx-auto flex w-full max-w-[var(--page-max)] items-center justify-between px-[var(--page-pad)] py-5">
+          <MethodaLogo size={22} />
 
-          <nav className="hidden items-center gap-10 xl:gap-12 lg:flex">
+          <nav className="hidden items-center gap-11 xl:gap-14 lg:flex">
             {navKeys.map((key) => {
               const href = navHrefs[key];
               const active = pathname === href;
@@ -38,8 +38,8 @@ export default function Header() {
                   key={key}
                   href={href}
                   className={clsx(
-                    "label-mono text-content transition-colors duration-200",
-                    active ? "text-text" : "text-muted hover:text-text",
+                    "label-mono text-content text-[10px] font-normal tracking-[0.3em] transition-colors duration-200",
+                    active ? "text-text" : "text-muted/75 hover:text-text",
                   )}
                 >
                   {t(key)}
@@ -48,31 +48,31 @@ export default function Header() {
             })}
           </nav>
 
-          <div className="hidden items-center gap-4 lg:flex">
+          <div className="hidden items-center gap-5 lg:flex">
             <Link
               href="/contact"
-              className="chrome-ltr inline-flex h-[44px] items-center gap-2.5 border border-border-strong px-4 text-[11px] font-normal tracking-[0.22em] uppercase text-text transition-colors hover:border-accent-secondary"
+              className="chrome-ltr inline-flex h-[38px] items-center gap-2 border border-border-strong/80 px-3.5 text-[10px] font-normal tracking-[0.28em] uppercase text-text/90 transition-colors hover:border-accent-secondary"
               style={{ fontFamily: "var(--font-geist-mono), ui-monospace, monospace" }}
             >
-              <LayoutGrid className="h-3.5 w-3.5 opacity-70" strokeWidth={1.5} />
+              <LayoutGrid className="h-3 w-3 opacity-60" strokeWidth={1.25} />
               <span>{t("letsTalk")}</span>
-              <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
+              <ArrowRight className="h-3 w-3" strokeWidth={1.25} />
             </Link>
-            <LanguageSwitcher />
+            <LanguageSwitcher className="[&_button]:text-[10px] [&_button]:tracking-[0.26em]" />
           </div>
 
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
             aria-label={t("menu")}
-            className="flex h-10 w-10 items-center justify-center border border-border text-text lg:hidden"
+            className="flex h-9 w-9 items-center justify-center border border-border text-text lg:hidden"
           >
-            <Menu className="h-5 w-5" strokeWidth={1.5} />
+            <Menu className="h-4 w-4" strokeWidth={1.25} />
           </button>
         </div>
       </header>
       <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
-      <div className="h-[70px]" aria-hidden="true" />
+      <div className="h-[64px]" aria-hidden="true" />
     </>
   );
 }

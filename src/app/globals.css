@@ -14,7 +14,7 @@
   --color-button: #111111;
   --color-button-hover: #232323;
   --color-on-button: #f7f3ee;
-  --grid-line: rgba(80, 70, 60, 0.08);
+  --grid-line: rgba(80, 70, 60, 0.035);
   --logo-mark-stroke: transparent;
   --page-max: 1600px;
   --content-max: 1440px;
@@ -112,12 +112,13 @@ html[lang="ar"] body {
   animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Engineering grid — thin 1px lines */
+/* Engineering grid — nearly imperceptible hairlines + intersection dots */
 .blueprint-grid {
   background-image:
+    radial-gradient(rgba(80, 70, 60, 0.055) 0.55px, transparent 0.65px),
     linear-gradient(var(--grid-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: 64px 64px;
+  background-size: 72px 72px, 72px 72px, 72px 72px;
 }
 
 .eng-line-h {
@@ -132,18 +133,17 @@ html[lang="ar"] body {
 
 .eng-marker {
   display: inline-block;
-  width: 4px;
-  height: 4px;
+  width: 3px;
+  height: 3px;
   flex-shrink: 0;
   background: var(--color-accent);
 }
 
-/* Headline accent — warm sand, slight italic serif (mock "intelligent") */
+/* Headline accent — warm sand, same face, not a loud separate object */
 .hero-accent {
   color: var(--color-accent);
-  font-family: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, serif;
-  font-style: italic;
-  font-weight: 400;
+  font-weight: 300;
+  font-style: normal;
 }
 
 /* Primary button base (architectural, no glow/gradient) */
