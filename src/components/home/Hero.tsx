@@ -7,16 +7,18 @@ import { ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import BidiBlock from "@/components/ui/BidiBlock";
 
-/** Percent coords relative to the hero section — leaders terminate ON the upper-right ribbon. */
+/** Percent coords relative to the hero section — leaders span full sculpture height. */
 const PILLARS = [
-  { label: "STRATEGY", y: 16, endX: 70, endY: 18 },
-  { label: "ARCHITECTURE", y: 26, endX: 66, endY: 26 },
-  { label: "DEVELOPMENT", y: 36, endX: 74, endY: 32 },
-  { label: "AUTOMATION", y: 46, endX: 68, endY: 40 },
-  { label: "SUPPORT", y: 56, endX: 76, endY: 46 },
+  { label: "STRATEGY", y: 12, endX: 72, endY: 10 },
+  { label: "ARCHITECTURE", y: 28, endX: 68, endY: 27 },
+  { label: "DEVELOPMENT", y: 44, endX: 74, endY: 44 },
+  { label: "AUTOMATION", y: 60, endX: 69, endY: 61 },
+  { label: "SUPPORT", y: 76, endX: 75, endY: 78 },
 ] as const;
 const MAX_TILT = 0.35;
 const GUIDE_X = 54;
+const GUIDE_Y1 = 8;
+const GUIDE_Y2 = 82;
 
 export default function Hero() {
   const t = useTranslations("home.hero");
@@ -57,7 +59,7 @@ export default function Hero() {
       {/* Step 5 — grid almost invisible */}
       <div className="blueprint-grid pointer-events-none absolute inset-0 opacity-[0.22]" />
 
-      {/* Upper-right sculpture — knot sits above free lower field (no TRUSTED BY) */}
+      {/* Full-height sculpture — transparent PNG bleeds top / right / bottom into cream */}
       <div
         ref={artRef}
         className="pointer-events-auto absolute inset-0 z-0"
@@ -65,7 +67,7 @@ export default function Hero() {
         aria-hidden="true"
       >
         <div
-          className="absolute top-[2%] right-[-2%] h-[58%] w-[58%] transition-transform duration-500 ease-out will-change-transform sm:top-[1%] sm:right-[-1%] sm:h-[56%] sm:w-[54%] lg:top-0 lg:right-0 lg:h-[54%] lg:w-[50%] xl:w-[48%]"
+          className="absolute -top-[10%] right-[-14%] bottom-[6%] w-[68%] transition-transform duration-500 ease-out will-change-transform sm:-top-[12%] sm:right-[-12%] sm:bottom-[5%] sm:w-[62%] lg:-top-[14%] lg:right-[-10%] lg:bottom-[4%] lg:w-[56%] xl:w-[52%]"
           style={{
             transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
           }}
@@ -75,13 +77,32 @@ export default function Hero() {
             alt=""
             fill
             priority
-            sizes="(max-width: 1024px) 60vw, 48vw"
-            className="object-contain object-right-top"
+            sizes="(max-width: 1024px) 70vw, 56vw"
+            className="object-cover object-[20%_center]"
+            style={{
+              WebkitMaskImage:
+                "linear-gradient(to right, transparent 0%, black 10%, black 100%)",
+              maskImage:
+                "linear-gradient(to right, transparent 0%, black 10%, black 100%)",
+            }}
+          />
+          {/* Depth wash on the sculpture only — not a rectangular card shadow */}
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse 50% 42% at 90% 94%, rgba(18,14,10,0.32) 0%, transparent 68%)",
+              mixBlendMode: "multiply",
+              WebkitMaskImage:
+                "linear-gradient(to right, transparent 0%, black 10%, black 100%)",
+              maskImage:
+                "linear-gradient(to right, transparent 0%, black 10%, black 100%)",
+            }}
           />
         </div>
 
         {/* Soft blend into page bg on the left only */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-[48%] bg-gradient-to-r from-bg from-40% via-bg/80 to-transparent sm:w-[40%] lg:w-[38%]" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-[48%] bg-gradient-to-r from-bg from-40% via-bg/80 to-transparent sm:w-[40%] lg:w-[36%]" />
       </div>
 
       {/* Engineering annotations — section-scoped so leaders land on the ribbon */}
@@ -92,9 +113,9 @@ export default function Hero() {
         <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
           <line
             x1={GUIDE_X}
-            y1="12"
+            y1={GUIDE_Y1}
             x2={GUIDE_X}
-            y2="60"
+            y2={GUIDE_Y2}
             stroke="rgba(80,70,60,0.3)"
             strokeWidth="1"
             strokeDasharray="3 3"
