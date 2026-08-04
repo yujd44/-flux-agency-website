@@ -7,29 +7,29 @@ import { Button } from "@/components/ui/Button";
 import BidiBlock from "@/components/ui/BidiBlock";
 import { Link } from "@/i18n/navigation";
 
-/**
- * Pillar labels — mock: vertical rail + colored square markers.
- */
-const PILLARS: { label: string; y: number; color: string }[] = [
-  { label: "STRATEGY", y: 18, color: "#ff6a3d" },
-  { label: "ARCHITECTURE", y: 30, color: "#e83a8a" },
-  { label: "DEVELOPMENT", y: 42, color: "#a855f7" },
-  { label: "AUTOMATION", y: 54, color: "#3b82f6" },
-  { label: "SUPPORT", y: 66, color: "#2dd4bf" },
-];
-
 const TRUSTED = ["Solvix", "Nexora", "Akira Systems", "Lumen", "Dayone"] as const;
 
-const MAX_TILT = 0.28;
-/** Vertical rail through the pillar list (viewBox %). */
-const GUIDE_X = 52;
-const GUIDE_Y1 = 14;
-const GUIDE_Y2 = 70;
+/** Soft parallax tilt — keep tiny so it stays premium, not toy-like. */
+const MAX_TILT = 0.7;
+
+const DUST = [
+  { left: "58%", top: "28%", size: 1.5, delay: "0s", dur: "9s" },
+  { left: "72%", top: "36%", size: 1.2, delay: "1.4s", dur: "11s" },
+  { left: "81%", top: "48%", size: 1.8, delay: "0.6s", dur: "10s" },
+  { left: "64%", top: "58%", size: 1.1, delay: "2.2s", dur: "12s" },
+  { left: "88%", top: "32%", size: 1.4, delay: "3s", dur: "8.5s" },
+  { left: "76%", top: "68%", size: 1.3, delay: "1.1s", dur: "13s" },
+  { left: "54%", top: "42%", size: 1, delay: "2.8s", dur: "9.5s" },
+  { left: "92%", top: "55%", size: 1.6, delay: "0.3s", dur: "10.5s" },
+  { left: "68%", top: "22%", size: 1.2, delay: "4s", dur: "11.5s" },
+  { left: "85%", top: "72%", size: 1.1, delay: "1.8s", dur: "12.5s" },
+] as const;
 
 export default function Hero() {
   const t = useTranslations("home.hero");
   const artRef = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [spot, setSpot] = useState({ x: 72, y: 48, active: false });
 
   const pillarParts = t("pillars")
     .split(/[·•]/)
@@ -43,30 +43,51 @@ export default function Hero() {
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReduced) return;
 
+    let raf = 0;
+    let nextTilt = { x: 0, y: 0 };
+    let nextSpot = { x: 72, y: 48, active: false };
+
+    function flush() {
+      raf = 0;
+      setTilt(nextTilt);
+      setSpot(nextSpot);
+    }
+
     function onMove(e: MouseEvent) {
       const rect = el!.getBoundingClientRect();
-      const px = (e.clientX - rect.left) / rect.width - 0.5;
-      const py = (e.clientY - rect.top) / rect.height - 0.5;
-      setTilt({
+      const nx = (e.clientX - rect.left) / rect.width;
+      const ny = (e.clientY - rect.top) / rect.height;
+      const px = nx - 0.5;
+      const py = ny - 0.5;
+      nextTilt = {
         x: -(py * MAX_TILT * 2),
         y: px * MAX_TILT * 2,
-      });
+      };
+      nextSpot = {
+        x: Math.min(100, Math.max(0, nx * 100)),
+        y: Math.min(100, Math.max(0, ny * 100)),
+        active: true,
+      };
+      if (!raf) raf = requestAnimationFrame(flush);
     }
 
     function onLeave() {
-      setTilt({ x: 0, y: 0 });
+      nextTilt = { x: 0, y: 0 };
+      nextSpot = { ...nextSpot, active: false };
+      if (!raf) raf = requestAnimationFrame(flush);
     }
 
-    el.addEventListener("mousemove", onMove);
+    el.addEventListener("mousemove", onMove, { passive: true });
     el.addEventListener("mouseleave", onLeave);
     return () => {
       el.removeEventListener("mousemove", onMove);
       el.removeEventListener("mouseleave", onLeave);
+      if (raf) cancelAnimationFrame(raf);
     };
   }, []);
 
   return (
-    <section className="relative flex min-h-[calc(100svh-72px)] flex-col overflow-hidden">
+    <section className="relative flex min-h-[calc(100svh-52px)] flex-col overflow-hidden">
       {/* Ambient dark grid */}
       <div className="blueprint-grid pointer-events-none absolute inset-0 opacity-[0.35]" />
 
@@ -76,32 +97,11 @@ export default function Hero() {
         aria-hidden="true"
         style={{
           background:
-            "radial-gradient(ellipse 70% 55% at 70% 100%, rgba(56,189,248,0.22) 0%, transparent 70%)",
+            "radial-gradient(ellipse 70% 55% at 70% 100%, rgba(56,189,248,0.18) 0%, transparent 70%)",
         }}
       />
 
-      {/* Dot grid behind pillar labels */}
-      <div
-        className="pointer-events-none absolute z-[1] hidden lg:block"
-        aria-hidden="true"
-        style={{
-          top: "10%",
-          left: "40%",
-          width: "20%",
-          height: "55%",
-          backgroundImage:
-            "radial-gradient(rgba(160,200,240,0.14) 0.55px, transparent 0.65px)",
-          backgroundSize: "12px 12px",
-          maskImage:
-            "linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
-          WebkitMaskImage:
-            "linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
-          maskComposite: "intersect",
-          WebkitMaskComposite: "source-in",
-        }}
-      />
-
-      {/* Full-bleed dark ribbon art */}
+      {/* Full-bleed dark ribbon art — feathered into page bg */}
       <div
         ref={artRef}
         className="pointer-events-auto absolute inset-0 z-0 overflow-hidden"
@@ -109,70 +109,71 @@ export default function Hero() {
         aria-hidden="true"
       >
         <div
-          className="absolute inset-0 transition-transform duration-500 ease-out will-change-transform"
+          className="hero-ribbon-stage absolute inset-0 transition-transform duration-700 ease-out will-change-transform"
           style={{
             transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
           }}
         >
-          <Image
-            src="/images/hero-concrete-ribbon-dark.png"
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            className="object-contain object-right object-bottom"
-            style={{ background: "transparent" }}
-          />
-        </div>
-      </div>
-
-      {/* Pillar annotations — colored squares on vertical axis */}
-      <div
-        className="pointer-events-none absolute inset-0 z-20 hidden lg:block"
-        aria-hidden="true"
-      >
-        <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <line
-            x1={GUIDE_X}
-            y1={GUIDE_Y1}
-            x2={GUIDE_X}
-            y2={GUIDE_Y2}
-            stroke="rgba(255,255,255,0.18)"
-            strokeWidth="1"
-            vectorEffect="non-scaling-stroke"
-          />
-        </svg>
-
-        {PILLARS.map((p) => (
-          <div key={p.label}>
-            <Link
-              href="/services"
-              className="label-mono pointer-events-auto absolute text-[9px] tracking-[0.22em] text-muted/75 transition-colors hover:text-text"
-              style={{
-                top: `${p.y}%`,
-                right: `${100 - GUIDE_X + 1.2}%`,
-                transform: "translateY(-50%)",
-              }}
-            >
-              {p.label}
-            </Link>
-            <span
-              className="absolute h-[5px] w-[5px]"
-              style={{
-                top: `${p.y}%`,
-                left: `${GUIDE_X}%`,
-                transform: "translate(-50%, -50%)",
-                background: p.color,
-                boxShadow: `0 0 10px ${p.color}66`,
-              }}
+          <div className="hero-ribbon-mask absolute inset-0">
+            <Image
+              src="/images/hero-concrete-ribbon-dark.png"
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="object-contain object-right object-bottom"
             />
           </div>
-        ))}
+
+          {/* Breathing glow along orange→purple edge */}
+          <div className="hero-ribbon-breathe pointer-events-none absolute inset-0" />
+
+          {/* Cursor spotlight — soft local illumination */}
+          <div
+            className="pointer-events-none absolute inset-0 transition-opacity duration-500"
+            style={{
+              opacity: spot.active ? 1 : 0.35,
+              background: `radial-gradient(circle 28vmin at ${spot.x}% ${spot.y}%, rgba(255,180,140,0.16) 0%, rgba(168,85,247,0.08) 28%, transparent 62%)`,
+              mixBlendMode: "soft-light",
+            }}
+          />
+        </div>
+
+        {/* Edge fade overlays — match --color-bg so the photo frame disappears */}
+        <div
+          className="pointer-events-none absolute inset-0 z-[2]"
+          style={{
+            background: `
+              linear-gradient(90deg, var(--color-bg) 0%, transparent 38%),
+              linear-gradient(270deg, var(--color-bg) 0%, transparent 12%),
+              linear-gradient(180deg, var(--color-bg) 0%, transparent 18%),
+              linear-gradient(0deg, var(--color-bg) 0%, transparent 22%)
+            `,
+          }}
+        />
+
+        {/* Floating dust motes near the ribbon */}
+        <div className="pointer-events-none absolute inset-0 z-[3] hidden sm:block">
+          {DUST.map((d, i) => (
+            <span
+              key={i}
+              className="hero-dust absolute rounded-full bg-white/50"
+              style={{
+                left: d.left,
+                top: d.top,
+                width: d.size,
+                height: d.size,
+                animationDelay: d.delay,
+                animationDuration: d.dur,
+              }}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Copy — structural LTR column */}
       <div className="chrome-ltr relative z-10 mx-auto flex w-full max-w-[var(--page-max)] flex-1 flex-col">
-        <div className="relative flex flex-1 flex-col justify-center px-[var(--page-pad)] pt-10 pb-10 sm:pt-[8vh] lg:pt-[9vh] lg:pb-12">
+        <div className="relative flex flex-1 flex-col justify-center px-[var(--page-pad)] pt-8 pb-10 sm:pt-[7vh] lg:pt-[8vh] lg:pb-12">
           <BidiBlock className="w-full max-w-[min(100%,28rem)] sm:max-w-[30rem] lg:max-w-[34rem]">
             <div className="animate-fade-up mb-7 inline-flex items-center gap-3 lg:mb-9">
               <span className="h-px w-3 bg-muted/70" aria-hidden="true" />
@@ -191,12 +192,9 @@ export default function Hero() {
               {t("subtitle")}
             </p>
 
-            <div className="animate-fade-up chrome-ltr mt-9 flex flex-wrap items-center gap-x-10 gap-y-4 sm:mt-11">
-              <Button href="/services" variant="primary">
+            <div className="animate-fade-up chrome-ltr mt-9 sm:mt-11">
+              <Button href="/services" variant="primary" className="hero-cta-magnetic">
                 {t("cta")}
-              </Button>
-              <Button href="/about#approach" variant="ghost" showArrow={false}>
-                {t("ctaSecondary")}
               </Button>
             </div>
           </BidiBlock>
