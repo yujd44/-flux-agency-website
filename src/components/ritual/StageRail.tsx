@@ -15,7 +15,7 @@ const STAGES: { id: StageId; Icon: typeof Lightbulb }[] = [
 
 type Props = {
   active: StageId;
-  onSelect: (id: StageId) => void;
+  onSelect: (id: StageId | "works") => void;
 };
 
 export default function StageRail({ active, onSelect }: Props) {

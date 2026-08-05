@@ -6,7 +6,9 @@ import NebulaCanvas from "../NebulaCanvas";
 
 type Status = "idle" | "submitting" | "success";
 
-export default function FutureStage() {
+type Props = { active?: boolean };
+
+export default function FutureStage({ active = true }: Props) {
   const t = useTranslations("ritual.future");
   const [status, setStatus] = useState<Status>("idle");
   const [values, setValues] = useState({ name: "", email: "", message: "" });
@@ -22,7 +24,7 @@ export default function FutureStage() {
   return (
     <section id="future" className="ritual-stage relative overflow-hidden">
       <div className="absolute inset-0 opacity-55">
-        <NebulaCanvas mode="soft" density={0.65} />
+        <NebulaCanvas mode="soft" density={0.65} active={active} />
       </div>
 
       <div

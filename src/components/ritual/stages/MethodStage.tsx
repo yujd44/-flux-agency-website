@@ -13,14 +13,16 @@ const PHASES = [
   { id: "optimization", Icon: CloudUpload },
 ] as const;
 
-export default function MethodStage() {
+type Props = { active?: boolean };
+
+export default function MethodStage({ active = true }: Props) {
   const t = useTranslations("ritual.method");
-  const [active, setActive] = useState<(typeof PHASES)[number]["id"]>("analysis");
+  const [phase, setPhase] = useState<(typeof PHASES)[number]["id"]>("analysis");
 
   return (
     <section id="method" className="ritual-stage relative overflow-hidden">
       <div className="absolute inset-0 opacity-70">
-        <NebulaCanvas mode="structure" density={0.85} />
+        <NebulaCanvas mode="structure" density={0.85} active={active} />
       </div>
 
       <div className="relative z-10 mx-auto flex w-full max-w-[1200px] flex-1 flex-col justify-center gap-10 lg:gap-14">
@@ -35,13 +37,13 @@ export default function MethodStage() {
 
         <div className="chrome-ltr grid gap-4 md:grid-cols-3">
           {PHASES.map(({ id, Icon }) => {
-            const isActive = active === id;
+            const isActive = phase === id;
             return (
               <button
                 key={id}
                 type="button"
-                onClick={() => setActive(id)}
-                onMouseEnter={() => setActive(id)}
+                onClick={() => setPhase(id)}
+                onMouseEnter={() => setPhase(id)}
                 className={clsx(
                   "ritual-glass ritual-glass-hover rounded-2xl p-5 text-start sm:p-6",
                   isActive && "border-[rgba(77,243,255,0.35)] shadow-[0_0_28px_rgba(77,243,255,0.12)]",

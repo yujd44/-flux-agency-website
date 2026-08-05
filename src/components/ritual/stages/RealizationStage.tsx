@@ -9,7 +9,9 @@ import { serviceCategories, categoryIcons, serviceIcons } from "@/lib/services-d
 import { portfolioCases } from "@/lib/portfolio-data";
 import NebulaCanvas from "../NebulaCanvas";
 
-export default function RealizationStage() {
+type Props = { active?: boolean };
+
+export default function RealizationStage({ active = true }: Props) {
   const t = useTranslations("ritual.realization");
   const ts = useTranslations("services");
   const tp = useTranslations("portfolio.cases");
@@ -18,7 +20,7 @@ export default function RealizationStage() {
   return (
     <section id="realization" className="ritual-stage relative !justify-start overflow-hidden py-24 sm:py-28">
       <div className="absolute inset-0 opacity-45">
-        <NebulaCanvas mode="soft" density={0.7} />
+        <NebulaCanvas mode="soft" density={0.7} active={active} />
       </div>
 
       <div className="relative z-10 mx-auto flex w-full max-w-[1280px] flex-col gap-12 lg:gap-16">

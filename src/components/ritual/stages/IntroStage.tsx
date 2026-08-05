@@ -3,13 +3,15 @@
 import { useTranslations } from "next-intl";
 import NebulaCanvas from "../NebulaCanvas";
 
-export default function IntroStage() {
+type Props = { active?: boolean };
+
+export default function IntroStage({ active = true }: Props) {
   const t = useTranslations("ritual.intro");
 
   return (
     <section id="intro" className="ritual-stage relative items-center justify-center overflow-hidden">
       <div className="absolute inset-0">
-        <NebulaCanvas mode="nebula" density={1} />
+        <NebulaCanvas mode="nebula" density={1} active={active} />
       </div>
 
       <div className="relative z-10 flex flex-col items-center px-4 text-center">

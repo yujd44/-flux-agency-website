@@ -8,15 +8,16 @@
   --ritual-text: #f4f7fb;
   --ritual-muted: rgba(210, 220, 235, 0.72);
   --ritual-glow: 0 0 40px rgba(77, 243, 255, 0.22);
+  --ritual-ease: cubic-bezier(0.16, 1, 0.3, 1);
 
   background: var(--bg-deep);
   color: var(--ritual-text);
   position: relative;
-  height: 100svh;
-  overflow-x: hidden;
-  overflow-y: auto;
-  scroll-snap-type: y proximity;
-  scroll-behavior: smooth;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: pan-y;
 }
 
 .ritual-root::before {
@@ -31,12 +32,52 @@
     radial-gradient(ellipse 40% 35% at 15% 80%, rgba(77, 243, 255, 0.04) 0%, transparent 70%);
 }
 
+.ritual-stage-host {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.ritual-stage-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(0.985) translateY(10px);
+  filter: blur(10px);
+  transition:
+    opacity 0.9s var(--ritual-ease),
+    transform 0.9s var(--ritual-ease),
+    filter 0.9s var(--ritual-ease),
+    visibility 0s linear 0.9s;
+  will-change: opacity, transform, filter;
+}
+
+.ritual-stage-panel.is-active {
+  z-index: 2;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: scale(1) translateY(0);
+  filter: blur(0);
+  transition:
+    opacity 0.9s var(--ritual-ease),
+    transform 0.9s var(--ritual-ease),
+    filter 0.9s var(--ritual-ease),
+    visibility 0s linear 0s;
+}
+
 .ritual-stage {
   position: relative;
   z-index: 1;
-  min-height: 100svh;
-  scroll-snap-align: start;
-  scroll-snap-stop: normal;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -156,8 +197,11 @@ html[lang="ar"] .ritual-headline {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ritual-root {
-    scroll-behavior: auto;
+  .ritual-stage-panel,
+  .ritual-stage-panel.is-active {
+    transition-duration: 0.01ms !important;
+    filter: none !important;
+    transform: none !important;
   }
 
   .ritual-scroll-hint,

@@ -18,6 +18,8 @@ type Props = {
   mode?: Mode;
   className?: string;
   density?: number;
+  /** When false, RAF loop idles — keep only the active stage animating. */
+  active?: boolean;
 };
 
 /**
@@ -28,8 +30,12 @@ export default function NebulaCanvas({
   mode = "nebula",
   className = "",
   density = 1,
+  active = true,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const activeRef = useRef(active);
+  const kickRef = useRef<(() => void) | null>(null);
+  activeRef.current = active;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -101,14 +107,13 @@ export default function NebulaCanvas({
 
     function frame() {
       if (!ctx || !running) return;
-      if (!visible) {
-        raf = requestAnimationFrame(frame);
+      if (!visible || !activeRef.current) {
+        raf = 0;
         return;
       }
 
       ctx.clearRect(0, 0, w, h);
 
-      // soft nebula bloom
       const g = ctx.createRadialGradient(w * 0.5, h * 0.48, 0, w * 0.5, h * 0.48, Math.min(w, h) * 0.42);
       g.addColorStop(0, "rgba(77, 243, 255, 0.07)");
       g.addColorStop(0.45, "rgba(138, 92, 246, 0.05)");
@@ -116,7 +121,6 @@ export default function NebulaCanvas({
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, w, h);
 
-      // sparse constellation links (structure mode only, few)
       if (mode === "structure") {
         ctx.strokeStyle = "rgba(200, 220, 255, 0.08)";
         ctx.lineWidth = 0.6;
@@ -138,7 +142,6 @@ export default function NebulaCanvas({
         if (!reduceMotion) {
           p.x += p.vx;
           p.y += p.vy;
-          // gentle pull to center
           const cx = w * 0.5;
           const cy = h * 0.48;
           p.vx += (cx - p.x) * 0.000015;
@@ -163,9 +166,17 @@ export default function NebulaCanvas({
       raf = requestAnimationFrame(frame);
     }
 
+    const kick = () => {
+      if (!running || raf) return;
+      if (!visible || !activeRef.current) return;
+      raf = requestAnimationFrame(frame);
+    };
+    kickRef.current = kick;
+
     const io = new IntersectionObserver(
       ([entry]) => {
         visible = entry.isIntersecting;
+        if (visible) kick();
       },
       { threshold: 0.05 },
     );
@@ -173,21 +184,28 @@ export default function NebulaCanvas({
 
     const onVis = () => {
       running = document.visibilityState === "visible";
+      if (running) kick();
     };
     document.addEventListener("visibilitychange", onVis);
 
     resize();
     window.addEventListener("resize", resize, { passive: true });
-    raf = requestAnimationFrame(frame);
+    kick();
 
     return () => {
       running = false;
       cancelAnimationFrame(raf);
+      raf = 0;
+      kickRef.current = null;
       io.disconnect();
       document.removeEventListener("visibilitychange", onVis);
       window.removeEventListener("resize", resize);
     };
   }, [mode, density]);
+
+  useEffect(() => {
+    if (active) kickRef.current?.();
+  }, [active]);
 
   return (
     <canvas
