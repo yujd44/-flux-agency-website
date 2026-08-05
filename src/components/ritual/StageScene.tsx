@@ -775,6 +775,8 @@ export default function StageScene({ stage }: Props) {
       collider: Collider;
     };
     const orbs: OrbItem[] = [];
+    // Distinct size ladder — clear XS→XL variety (not a narrow random band).
+    const ORB_SIZES = [0.07, 0.11, 0.16, 0.22, 0.3, 0.4, 0.13, 0.34];
     for (let i = 0; i < ORB_COUNT; i++) {
       const shape = ORB_SHAPES[i % ORB_SHAPES.length];
       const tint = i % 3 === 0 ? GREEN : i % 2 === 0 ? CYAN : PURPLE;
@@ -811,7 +813,7 @@ export default function StageScene({ stage }: Props) {
         -0.6 - Math.random() * 1.8,
       );
       pivot.position.copy(base);
-      const s = 0.15 + Math.random() * 0.22;
+      const s = ORB_SIZES[i % ORB_SIZES.length];
       const baseScale = scaleForShape(shape, s);
       mesh.scale.copy(baseScale);
       pivot.add(mesh);
@@ -890,20 +892,20 @@ export default function StageScene({ stage }: Props) {
       kind: "hub" | "glass" | "metal" | "accent";
       shape: FigureShape;
     }[] = [
-      { p: new THREE.Vector3(0, 0, 0), s: 0.3, kind: "hub", shape: "icosa" },
-      { p: new THREE.Vector3(0.85, 0.55, 0.2), s: 0.17, kind: "glass", shape: "octa" },
-      { p: new THREE.Vector3(1.1, -0.35, -0.15), s: 0.15, kind: "metal", shape: "hex" },
-      { p: new THREE.Vector3(0.35, -0.75, 0.35), s: 0.13, kind: "accent", shape: "torus" },
-      { p: new THREE.Vector3(-0.55, 0.65, -0.25), s: 0.14, kind: "glass", shape: "slab" },
-      { p: new THREE.Vector3(-0.9, -0.2, 0.3), s: 0.16, kind: "metal", shape: "box" },
-      { p: new THREE.Vector3(0.15, 0.95, -0.4), s: 0.12, kind: "glass", shape: "icosa" },
-      { p: new THREE.Vector3(1.45, 0.15, 0.45), s: 0.11, kind: "metal", shape: "octa" },
-      { p: new THREE.Vector3(-0.25, -0.55, -0.5), s: 0.13, kind: "glass", shape: "torus" },
-      { p: new THREE.Vector3(0.65, 0.15, -0.65), s: 0.11, kind: "accent", shape: "hex" },
-      { p: new THREE.Vector3(-1.15, 0.35, 0.1), s: 0.12, kind: "metal", shape: "icosa" },
-      { p: new THREE.Vector3(0.4, -0.15, 0.7), s: 0.1, kind: "glass", shape: "box" },
-      { p: new THREE.Vector3(0.95, 0.85, -0.3), s: 0.09, kind: "metal", shape: "sphere" },
-      { p: new THREE.Vector3(-0.7, -0.7, 0.15), s: 0.1, kind: "glass", shape: "octa" },
+      { p: new THREE.Vector3(0, 0, 0), s: 0.42, kind: "hub", shape: "icosa" },
+      { p: new THREE.Vector3(0.85, 0.55, 0.2), s: 0.26, kind: "glass", shape: "octa" },
+      { p: new THREE.Vector3(1.1, -0.35, -0.15), s: 0.18, kind: "metal", shape: "hex" },
+      { p: new THREE.Vector3(0.35, -0.75, 0.35), s: 0.11, kind: "accent", shape: "torus" },
+      { p: new THREE.Vector3(-0.55, 0.65, -0.25), s: 0.32, kind: "glass", shape: "slab" },
+      { p: new THREE.Vector3(-0.9, -0.2, 0.3), s: 0.2, kind: "metal", shape: "box" },
+      { p: new THREE.Vector3(0.15, 0.95, -0.4), s: 0.08, kind: "glass", shape: "icosa" },
+      { p: new THREE.Vector3(1.45, 0.15, 0.45), s: 0.15, kind: "metal", shape: "octa" },
+      { p: new THREE.Vector3(-0.25, -0.55, -0.5), s: 0.24, kind: "glass", shape: "torus" },
+      { p: new THREE.Vector3(0.65, 0.15, -0.65), s: 0.1, kind: "accent", shape: "hex" },
+      { p: new THREE.Vector3(-1.15, 0.35, 0.1), s: 0.28, kind: "metal", shape: "icosa" },
+      { p: new THREE.Vector3(0.4, -0.15, 0.7), s: 0.06, kind: "glass", shape: "box" },
+      { p: new THREE.Vector3(0.95, 0.85, -0.3), s: 0.14, kind: "metal", shape: "sphere" },
+      { p: new THREE.Vector3(-0.7, -0.7, 0.15), s: 0.36, kind: "glass", shape: "octa" },
     ];
 
     nodeDefs.forEach((def, i) => {
@@ -1377,13 +1379,13 @@ export default function StageScene({ stage }: Props) {
     }
 
     const panelDefs = [
-      { p: new THREE.Vector3(-2.35, 1.05, 0.85), w: 0.95, h: 0.58, t: 0.07, hex: false, c: CYAN },
-      { p: new THREE.Vector3(-2.05, -0.95, 0.45), w: 0.72, h: 0.72, t: 0.06, hex: true, c: PURPLE },
-      { p: new THREE.Vector3(2.15, 1.2, 0.25), w: 0.78, h: 0.48, t: 0.065, hex: false, c: CYAN },
-      { p: new THREE.Vector3(2.3, -0.72, 0.65), w: 0.58, h: 0.58, t: 0.055, hex: true, c: CYAN },
-      { p: new THREE.Vector3(-1.55, 0.15, 1.25), w: 0.52, h: 0.36, t: 0.05, hex: false, c: PURPLE },
-      { p: new THREE.Vector3(1.65, 0.32, 1.05), w: 0.44, h: 0.44, t: 0.05, hex: true, c: GREEN },
-      { p: new THREE.Vector3(-0.2, -1.35, 0.9), w: 0.7, h: 0.4, t: 0.06, hex: false, c: CYAN },
+      { p: new THREE.Vector3(-2.35, 1.05, 0.85), w: 1.25, h: 0.72, t: 0.08, hex: false, c: CYAN },
+      { p: new THREE.Vector3(-2.05, -0.95, 0.45), w: 0.85, h: 0.85, t: 0.065, hex: true, c: PURPLE },
+      { p: new THREE.Vector3(2.15, 1.2, 0.25), w: 0.7, h: 0.42, t: 0.06, hex: false, c: CYAN },
+      { p: new THREE.Vector3(2.3, -0.72, 0.65), w: 0.48, h: 0.48, t: 0.05, hex: true, c: CYAN },
+      { p: new THREE.Vector3(-1.55, 0.15, 1.25), w: 0.38, h: 0.26, t: 0.04, hex: false, c: PURPLE },
+      { p: new THREE.Vector3(1.65, 0.32, 1.05), w: 1.05, h: 1.05, t: 0.07, hex: true, c: GREEN },
+      { p: new THREE.Vector3(-0.2, -1.35, 0.9), w: 0.9, h: 0.5, t: 0.055, hex: false, c: CYAN },
     ];
 
     panelDefs.forEach((def, i) => {
@@ -1786,12 +1788,12 @@ export default function StageScene({ stage }: Props) {
     };
     const accents: AccentItem[] = [];
     const accentDefs: { p: THREE.Vector3; s: number; c: THREE.Color; shape: FigureShape }[] = [
-      { p: new THREE.Vector3(-2.1, 1.15, 0.4), s: 0.28, c: CYAN, shape: "octa" },
-      { p: new THREE.Vector3(2.0, 0.95, 0.15), s: 0.22, c: PURPLE, shape: "torus" },
-      { p: new THREE.Vector3(-1.7, -1.1, 0.55), s: 0.2, c: CYAN, shape: "icosa" },
-      { p: new THREE.Vector3(1.85, -0.85, 0.7), s: 0.24, c: PURPLE, shape: "hex" },
-      { p: new THREE.Vector3(0.15, 1.55, -0.2), s: 0.16, c: CYAN, shape: "slab" },
-      { p: new THREE.Vector3(-0.35, -1.45, 0.3), s: 0.18, c: GREEN, shape: "box" },
+      { p: new THREE.Vector3(-2.1, 1.15, 0.4), s: 0.4, c: CYAN, shape: "octa" },
+      { p: new THREE.Vector3(2.0, 0.95, 0.15), s: 0.18, c: PURPLE, shape: "torus" },
+      { p: new THREE.Vector3(-1.7, -1.1, 0.55), s: 0.3, c: CYAN, shape: "icosa" },
+      { p: new THREE.Vector3(1.85, -0.85, 0.7), s: 0.12, c: PURPLE, shape: "hex" },
+      { p: new THREE.Vector3(0.15, 1.55, -0.2), s: 0.48, c: CYAN, shape: "slab" },
+      { p: new THREE.Vector3(-0.35, -1.45, 0.3), s: 0.22, c: GREEN, shape: "box" },
     ];
 
     accentDefs.forEach((def, i) => {
