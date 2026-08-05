@@ -26,6 +26,8 @@ type StageVisual = {
   hubGlow: number;
   particleLink: number;
   tintMix: number; // 0 cyan → 1 purple
+  corridor: number; // Future pillar hall
+  wireArch: number; // Realization wireframe cube
 };
 
 const VISUALS: Record<StageId, StageVisual> = {
@@ -40,6 +42,8 @@ const VISUALS: Record<StageId, StageVisual> = {
     hubGlow: 0.25,
     particleLink: 0.35,
     tintMix: 0.35,
+    corridor: 0,
+    wireArch: 0,
   },
   method: {
     nebulaOpacity: 0.72,
@@ -52,30 +56,36 @@ const VISUALS: Record<StageId, StageVisual> = {
     hubGlow: 0.85,
     particleLink: 0.75,
     tintMix: 0.55,
+    corridor: 0,
+    wireArch: 0,
   },
   realization: {
-    nebulaOpacity: 0.55,
-    nebulaSpread: 1.25,
-    networkOpacity: 0.95,
-    networkScale: 1.08,
-    networkSide: 0.85,
-    panelsOpacity: 1,
-    panelsSpread: 1.1,
-    hubGlow: 1,
-    particleLink: 0.9,
-    tintMix: 0.4,
+    nebulaOpacity: 0.92,
+    nebulaSpread: 1.4,
+    networkOpacity: 0.1,
+    networkScale: 0.55,
+    networkSide: 0.15,
+    panelsOpacity: 0.22,
+    panelsSpread: 1.05,
+    hubGlow: 0.35,
+    particleLink: 0.55,
+    tintMix: 0.42,
+    corridor: 0,
+    wireArch: 1,
   },
   future: {
-    nebulaOpacity: 0.55,
-    nebulaSpread: 1.3,
-    networkOpacity: 0.28,
-    networkScale: 0.72,
+    nebulaOpacity: 0.28,
+    nebulaSpread: 0.95,
+    networkOpacity: 0.04,
+    networkScale: 0.45,
     networkSide: 0,
-    panelsOpacity: 0.55,
-    panelsSpread: 1.2,
-    hubGlow: 0.45,
-    particleLink: 0.2,
-    tintMix: 0.7,
+    panelsOpacity: 0.06,
+    panelsSpread: 1,
+    hubGlow: 0.2,
+    particleLink: 0.08,
+    tintMix: 0.5,
+    corridor: 1,
+    wireArch: 0,
   },
 };
 
@@ -156,7 +166,38 @@ function lerpVisual(a: StageVisual, b: StageVisual, t: number): StageVisual {
     hubGlow: k("hubGlow"),
     particleLink: k("particleLink"),
     tintMix: k("tintMix"),
+    corridor: k("corridor"),
+    wireArch: k("wireArch"),
   };
+}
+
+/** Hollow rectangular monolith — extruded frame, Y-up, base at y=0. */
+function makeHollowPillarGeometry(w: number, d: number, h: number, wall: number) {
+  const hw = w * 0.5;
+  const hd = d * 0.5;
+  const iw = Math.max(0.02, hw - wall);
+  const id = Math.max(0.02, hd - wall);
+  const shape = new THREE.Shape();
+  shape.moveTo(-hw, -hd);
+  shape.lineTo(hw, -hd);
+  shape.lineTo(hw, hd);
+  shape.lineTo(-hw, hd);
+  shape.closePath();
+  const hole = new THREE.Path();
+  hole.moveTo(-iw, -id);
+  hole.lineTo(-iw, id);
+  hole.lineTo(iw, id);
+  hole.lineTo(iw, -id);
+  hole.closePath();
+  shape.holes.push(hole);
+  const geo = new THREE.ExtrudeGeometry(shape, {
+    depth: h,
+    bevelEnabled: false,
+    curveSegments: 1,
+  });
+  geo.rotateX(-Math.PI / 2);
+  geo.translate(0, h * 0.5, 0);
+  return geo;
 }
 
 function easeOutCubic(t: number) {
@@ -1043,6 +1084,412 @@ export default function StageScene({ stage }: Props) {
     wash.scale.set(7.5, 5.5, 1);
     root.add(wash);
 
+    // --- 4) Future: pillar corridor + fiber trails + central beam ---
+    const corridor = new THREE.Group();
+    corridor.visible = false;
+    root.add(corridor);
+
+    const pillarMetalMat = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color("#9aa6bc"),
+      emissive: new THREE.Color("#1a2848"),
+      emissiveIntensity: 0.12,
+      roughness: 0.38,
+      metalness: 0.92,
+      clearcoat: 0.55,
+      clearcoatRoughness: 0.28,
+      envMap,
+      envMapIntensity: 1.65,
+    });
+    materials.push(pillarMetalMat);
+    pillarMetalMat.userData.baseEmissive = pillarMetalMat.emissiveIntensity;
+
+    const pillarConcreteMat = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color("#6e788c"),
+      emissive: new THREE.Color("#121828"),
+      emissiveIntensity: 0.08,
+      roughness: 0.55,
+      metalness: 0.72,
+      clearcoat: 0.35,
+      clearcoatRoughness: 0.4,
+      envMap,
+      envMapIntensity: 1.25,
+    });
+    materials.push(pillarConcreteMat);
+    pillarConcreteMat.userData.baseEmissive = pillarConcreteMat.emissiveIntensity;
+
+    const solidPillarGeo = new THREE.BoxGeometry(0.42, 3.4, 0.38);
+    solidPillarGeo.translate(0, 1.7, 0);
+    const hollowPillarGeo = makeHollowPillarGeometry(0.48, 0.42, 3.55, 0.085);
+    disposables.push(solidPillarGeo, hollowPillarGeo);
+
+    type PillarItem = {
+      group: THREE.Group;
+      mesh: THREE.Mesh;
+      mat: THREE.MeshPhysicalMaterial;
+      shadowMat: THREE.MeshBasicMaterial;
+      base: THREE.Vector3;
+      phase: number;
+      idleAmp: number;
+    };
+    const pillars: PillarItem[] = [];
+    const PILLAR_ROWS = 6;
+
+    for (let row = 0; row < PILLAR_ROWS; row++) {
+      const z = -0.35 - row * 1.28;
+      const heightScale = 0.92 + row * 0.06;
+      for (const side of [-1, 1] as const) {
+        const x = side * (1.05 + row * 0.12);
+        const hollow = (row + (side > 0 ? 1 : 0)) % 2 === 0;
+        const mat = hollow ? pillarMetalMat : pillarConcreteMat;
+        const geo = hollow ? hollowPillarGeo : solidPillarGeo;
+        const group = new THREE.Group();
+        group.position.set(x, -1.55, z);
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.scale.set(1, heightScale, 1);
+        group.add(mesh);
+        const shadowMat = makeContactShadow(group, 0.55, 0.02);
+        corridor.add(group);
+        const id = `pillar-${row}-${side > 0 ? "r" : "l"}`;
+        registerHover(id, group, [mesh], [mat]);
+        pillars.push({
+          group,
+          mesh,
+          mat,
+          shadowMat,
+          base: group.position.clone(),
+          phase: row * 0.7 + (side > 0 ? 1.2 : 0),
+          idleAmp: 0.012 + row * 0.002,
+        });
+      }
+    }
+
+    // Fiber-optic trails weaving between pillars (shared tube geo via curves)
+    type CorridorFiber = {
+      mesh: THREE.Mesh;
+      mat: THREE.MeshPhysicalMaterial;
+      glow: THREE.Mesh;
+      glowMat: THREE.MeshBasicMaterial;
+      phase: number;
+      pulse: number;
+    };
+    const corridorFibers: CorridorFiber[] = [];
+    const FIBER_TRAILS = 16;
+
+    for (let i = 0; i < FIBER_TRAILS; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const yBase = -0.85 + (i % 5) * 0.42;
+      const pts: THREE.Vector3[] = [];
+      for (let s = 0; s < 7; s++) {
+        const z = 0.4 - s * 1.15;
+        const weave = Math.sin(s * 0.95 + i * 0.55) * 0.35;
+        const x = side * (0.55 + s * 0.08) + weave * (side > 0 ? -0.55 : 0.55);
+        const y = yBase + Math.sin(s * 0.7 + i) * 0.18 + s * 0.04;
+        pts.push(new THREE.Vector3(x, y, z));
+      }
+      const curve = new THREE.CatmullRomCurve3(pts);
+      const tubeGeo = new THREE.TubeGeometry(curve, 28, 0.012, 4, false);
+      const glowGeo = new THREE.TubeGeometry(curve, 28, 0.032, 4, false);
+      disposables.push(tubeGeo, glowGeo);
+
+      const tint = i % 3 === 0 ? PURPLE : CYAN;
+      const mat = new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color("#e8f8ff"),
+        emissive: tint,
+        emissiveIntensity: 0.85,
+        roughness: 0.18,
+        metalness: 0.55,
+        clearcoat: 0.8,
+        clearcoatRoughness: 0.15,
+        transparent: true,
+        opacity: 0.9,
+        envMap,
+        envMapIntensity: 1.1,
+      });
+      materials.push(mat);
+      mat.userData.baseOpacity = mat.opacity;
+      mat.userData.baseEmissive = mat.emissiveIntensity;
+
+      const mesh = new THREE.Mesh(tubeGeo, mat);
+      corridor.add(mesh);
+
+      const glowMat = new THREE.MeshBasicMaterial({
+        color: tint,
+        transparent: true,
+        opacity: 0.14,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      });
+      materials.push(glowMat);
+      glowMat.userData.baseOpacity = glowMat.opacity;
+      const glow = new THREE.Mesh(glowGeo, glowMat);
+      corridor.add(glow);
+
+      corridorFibers.push({
+        mesh,
+        mat,
+        glow,
+        glowMat,
+        phase: i * 0.4,
+        pulse: 0.55 + (i % 4) * 0.12,
+      });
+    }
+
+    // Central vertical beam + rising particles
+    const beamGroup = new THREE.Group();
+    beamGroup.position.set(0, -0.2, -7.2);
+    corridor.add(beamGroup);
+
+    const beamGeo = new THREE.CylinderGeometry(0.045, 0.09, 6.5, 10, 1, true);
+    disposables.push(beamGeo);
+    const beamMat = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color("#c8f8ff"),
+      emissive: CYAN,
+      emissiveIntensity: 1.8,
+      roughness: 0.12,
+      metalness: 0.2,
+      transparent: true,
+      opacity: 0.55,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      envMap,
+      envMapIntensity: 0.6,
+    });
+    materials.push(beamMat);
+    const beamCore = new THREE.Mesh(beamGeo, beamMat);
+    beamCore.position.y = 1.6;
+    beamGroup.add(beamCore);
+
+    const beamGlow = new THREE.Sprite(
+      new THREE.SpriteMaterial({
+        map: glowTex ?? undefined,
+        color: CYAN,
+        transparent: true,
+        opacity: 0.45,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      }),
+    );
+    materials.push(beamGlow.material);
+    beamGlow.scale.set(2.4, 5.8, 1);
+    beamGlow.position.y = 1.8;
+    beamGroup.add(beamGlow);
+
+    const beamPurple = new THREE.Sprite(
+      new THREE.SpriteMaterial({
+        map: glowTex ?? undefined,
+        color: PURPLE,
+        transparent: true,
+        opacity: 0.22,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      }),
+    );
+    materials.push(beamPurple.material);
+    beamPurple.scale.set(3.2, 4.2, 1);
+    beamPurple.position.set(0.15, 1.2, 0.2);
+    beamGroup.add(beamPurple);
+
+    const BEAM_PARTICLES = 48;
+    const beamPos = new Float32Array(BEAM_PARTICLES * 3);
+    const beamCol = new Float32Array(BEAM_PARTICLES * 3);
+    const beamBaseY = new Float32Array(BEAM_PARTICLES);
+    for (let i = 0; i < BEAM_PARTICLES; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = Math.random() * 0.22;
+      beamPos[i * 3] = Math.cos(a) * r;
+      beamPos[i * 3 + 1] = Math.random() * 5.5;
+      beamPos[i * 3 + 2] = Math.sin(a) * r;
+      beamBaseY[i] = beamPos[i * 3 + 1];
+      const c = i % 3 === 0 ? PURPLE : CYAN;
+      beamCol[i * 3] = c.r;
+      beamCol[i * 3 + 1] = c.g;
+      beamCol[i * 3 + 2] = c.b;
+    }
+    const beamPtsGeo = new THREE.BufferGeometry();
+    beamPtsGeo.setAttribute("position", new THREE.BufferAttribute(beamPos, 3));
+    beamPtsGeo.setAttribute("color", new THREE.BufferAttribute(beamCol, 3));
+    disposables.push(beamPtsGeo);
+    const beamPtsMat = new THREE.PointsMaterial({
+      size: 0.055,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.85,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      sizeAttenuation: true,
+      map: glowTex ?? undefined,
+    });
+    materials.push(beamPtsMat);
+    const beamPts = new THREE.Points(beamPtsGeo, beamPtsMat);
+    beamGroup.add(beamPts);
+
+    const beamLight = new THREE.PointLight(0x70f0ff, 0, 14, 2);
+    beamLight.position.set(0, 1.5, -7.0);
+    scene.add(beamLight);
+    const beamFill = new THREE.PointLight(0x9060ff, 0, 10, 2);
+    beamFill.position.set(0.4, 0.6, -5.5);
+    scene.add(beamFill);
+
+    // Floor contact strip for perspective ground plane feel
+    const floorMat = new THREE.MeshBasicMaterial({
+      color: 0x04060f,
+      transparent: true,
+      opacity: 0.55,
+      depthWrite: false,
+    });
+    materials.push(floorMat);
+    const floorGeo = new THREE.PlaneGeometry(8, 12);
+    disposables.push(floorGeo);
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.set(0, -1.58, -4.2);
+    corridor.add(floor);
+
+    // --- 5) Realization: large wireframe cube + floating accents ---
+    const wireArch = new THREE.Group();
+    wireArch.visible = false;
+    root.add(wireArch);
+
+    const archPivot = new THREE.Group();
+    archPivot.position.set(-0.15, 0.05, -0.85);
+    wireArch.add(archPivot);
+
+    const archFaceMat = new THREE.MeshPhysicalMaterial({
+      color: GLASS_TINT,
+      emissive: CYAN,
+      emissiveIntensity: 0.06,
+      roughness: 0.12,
+      metalness: 0.55,
+      clearcoat: 1,
+      clearcoatRoughness: 0.1,
+      transparent: true,
+      opacity: 0.12,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      envMap,
+      envMapIntensity: 1.4,
+    });
+    materials.push(archFaceMat);
+    archFaceMat.userData.baseOpacity = archFaceMat.opacity;
+    archFaceMat.userData.baseEmissive = archFaceMat.emissiveIntensity;
+
+    const archEdgeMat = new THREE.LineBasicMaterial({
+      color: 0xb8e8ff,
+      transparent: true,
+      opacity: 0.72,
+      depthWrite: false,
+    });
+    materials.push(archEdgeMat);
+    archEdgeMat.userData.baseOpacity = archEdgeMat.opacity;
+
+    const archSize = 2.65;
+    const archCube = new THREE.Mesh(boxGeo, archFaceMat);
+    archCube.scale.setScalar(archSize);
+    archPivot.add(archCube);
+    const archEdges = new THREE.LineSegments(edgesGeo, archEdgeMat);
+    archEdges.scale.setScalar(archSize * 1.001);
+    archPivot.add(archEdges);
+    registerHover("arch-cube", archPivot, [archCube], [archFaceMat]);
+
+    const innerFaceMat = archFaceMat.clone();
+    innerFaceMat.opacity = 0.08;
+    innerFaceMat.emissive = PURPLE.clone();
+    materials.push(innerFaceMat);
+    innerFaceMat.userData.baseOpacity = innerFaceMat.opacity;
+    innerFaceMat.userData.baseEmissive = innerFaceMat.emissiveIntensity;
+    const innerEdgeMat = archEdgeMat.clone();
+    innerEdgeMat.color = new THREE.Color(0xd0c0ff);
+    innerEdgeMat.opacity = 0.45;
+    materials.push(innerEdgeMat);
+    innerEdgeMat.userData.baseOpacity = innerEdgeMat.opacity;
+
+    const innerCube = new THREE.Mesh(boxGeo, innerFaceMat);
+    innerCube.scale.setScalar(archSize * 0.55);
+    archPivot.add(innerCube);
+    const innerEdges = new THREE.LineSegments(edgesGeo, innerEdgeMat);
+    innerEdges.scale.setScalar(archSize * 0.552);
+    archPivot.add(innerEdges);
+
+    type AccentItem = {
+      group: THREE.Group;
+      mats: THREE.MeshPhysicalMaterial[];
+      edgeMat: THREE.LineBasicMaterial;
+      base: THREE.Vector3;
+      phase: number;
+      spin: number;
+      size: number;
+    };
+    const accents: AccentItem[] = [];
+    const accentDefs = [
+      { p: new THREE.Vector3(-2.1, 1.15, 0.4), s: 0.28, c: CYAN },
+      { p: new THREE.Vector3(2.0, 0.95, 0.15), s: 0.22, c: PURPLE },
+      { p: new THREE.Vector3(-1.7, -1.1, 0.55), s: 0.2, c: CYAN },
+      { p: new THREE.Vector3(1.85, -0.85, 0.7), s: 0.24, c: PURPLE },
+      { p: new THREE.Vector3(0.15, 1.55, -0.2), s: 0.16, c: CYAN },
+      { p: new THREE.Vector3(-0.35, -1.45, 0.3), s: 0.18, c: GREEN },
+    ];
+
+    accentDefs.forEach((def, i) => {
+      const group = new THREE.Group();
+      group.position.copy(def.p);
+      wireArch.add(group);
+      const faceMat = new THREE.MeshPhysicalMaterial({
+        color: GLASS_TINT,
+        emissive: def.c,
+        emissiveIntensity: 0.18,
+        roughness: 0.14,
+        metalness: 0.7,
+        clearcoat: 0.9,
+        clearcoatRoughness: 0.12,
+        transparent: true,
+        opacity: 0.28,
+        envMap,
+        envMapIntensity: 1.35,
+      });
+      materials.push(faceMat);
+      faceMat.userData.baseOpacity = faceMat.opacity;
+      faceMat.userData.baseEmissive = faceMat.emissiveIntensity;
+      const face = new THREE.Mesh(boxGeo, faceMat);
+      face.scale.setScalar(def.s);
+      group.add(face);
+      const eMat = new THREE.LineBasicMaterial({
+        color: def.c.clone().lerp(new THREE.Color("#ffffff"), 0.4),
+        transparent: true,
+        opacity: 0.7,
+        depthWrite: false,
+      });
+      materials.push(eMat);
+      eMat.userData.baseOpacity = eMat.opacity;
+      const edges = new THREE.LineSegments(edgesGeo, eMat);
+      edges.scale.setScalar(def.s * 1.02);
+      group.add(edges);
+      registerHover(`accent-${i}`, group, [face], [faceMat]);
+      accents.push({
+        group,
+        mats: [faceMat],
+        edgeMat: eMat,
+        base: def.p.clone(),
+        phase: i * 0.9,
+        spin: 0.12 + (i % 3) * 0.06,
+        size: def.s,
+      });
+    });
+
+    const archWash = new THREE.Sprite(
+      new THREE.SpriteMaterial({
+        map: glowTex ?? undefined,
+        color: PURPLE,
+        transparent: true,
+        opacity: 0.08,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      }),
+    );
+    materials.push(archWash.material);
+    archWash.position.set(0, 0.2, -2.2);
+    archWash.scale.set(6.5, 5.2, 1);
+    wireArch.add(archWash);
+
     // State for morph
     let fromStage: StageId = stageRef.current;
     let toStage: StageId = stageRef.current;
@@ -1352,6 +1799,97 @@ export default function StageScene({ stage }: Props) {
         item.group.visible = e > 0.02;
       });
 
+      // Future corridor — pillars, fibers, beam
+      const corr = v.corridor;
+      corridor.visible = corr > 0.02;
+      corridor.position.set(-0.35 * corr, 0.05, 0.2);
+      if (corr > 0.02) {
+        for (let i = 0; i < pillars.length; i++) {
+          const p = pillars[i];
+          const idleY = reduceMotion
+            ? 0
+            : Math.sin(t * 0.35 + p.phase) * p.idleAmp;
+          const idleX = reduceMotion
+            ? 0
+            : Math.cos(t * 0.22 + p.phase) * p.idleAmp * 0.35;
+          p.group.position.set(p.base.x + idleX, p.base.y + idleY, p.base.z);
+          p.group.userData.assembleScale = 0.4 + corr * 0.6;
+          p.group.visible = true;
+          p.shadowMat.opacity = 0.12 + corr * 0.18;
+        }
+        pillarMetalMat.emissiveIntensity =
+          (pillarMetalMat.userData.baseEmissive as number) * (0.7 + corr * 0.9);
+        pillarConcreteMat.emissiveIntensity =
+          (pillarConcreteMat.userData.baseEmissive as number) * (0.7 + corr * 0.8);
+
+        for (let i = 0; i < corridorFibers.length; i++) {
+          const f = corridorFibers[i];
+          const pulse = reduceMotion
+            ? 1
+            : 0.72 + Math.sin(t * f.pulse + f.phase) * 0.28;
+          f.mat.opacity = (f.mat.userData.baseOpacity as number) * corr * pulse;
+          f.mat.emissiveIntensity =
+            (f.mat.userData.baseEmissive as number) * corr * (0.65 + pulse * 0.55);
+          f.glowMat.opacity =
+            (f.glowMat.userData.baseOpacity as number) * corr * pulse;
+          f.mesh.visible = corr > 0.05;
+          f.glow.visible = corr > 0.08;
+        }
+
+        const beamPulse = reduceMotion ? 1 : 0.85 + Math.sin(t * 1.4) * 0.15;
+        beamMat.opacity = 0.35 + corr * 0.35 * beamPulse;
+        beamMat.emissiveIntensity = 1.2 + corr * 1.1 * beamPulse;
+        beamGlow.material.opacity = 0.2 + corr * 0.35 * beamPulse;
+        beamPurple.material.opacity = 0.1 + corr * 0.18;
+        beamPtsMat.opacity = 0.4 + corr * 0.5;
+        for (let i = 0; i < BEAM_PARTICLES; i++) {
+          let y = beamBaseY[i] + (reduceMotion ? 0 : t * (0.35 + (i % 5) * 0.08));
+          y = ((y % 5.5) + 5.5) % 5.5;
+          beamPos[i * 3 + 1] = y;
+        }
+        beamPtsGeo.attributes.position.needsUpdate = true;
+        floorMat.opacity = 0.25 + corr * 0.35;
+      }
+      beamLight.intensity = corr * (1.6 + Math.sin(t * 1.3) * 0.35);
+      beamFill.intensity = corr * 0.9;
+
+      // Realization wireframe architecture
+      const arch = v.wireArch;
+      wireArch.visible = arch > 0.02;
+      if (arch > 0.02) {
+        archPivot.rotation.x = reduceMotion ? 0.25 : 0.28 + Math.sin(t * 0.18) * 0.06;
+        archPivot.rotation.y = reduceMotion ? 0.45 : t * 0.08 + 0.35;
+        archPivot.rotation.z = reduceMotion ? 0.08 : Math.sin(t * 0.12) * 0.05;
+        archPivot.userData.assembleScale = 0.45 + arch * 0.55;
+        archFaceMat.opacity = (archFaceMat.userData.baseOpacity as number) * arch;
+        archFaceMat.emissiveIntensity =
+          (archFaceMat.userData.baseEmissive as number) * (0.6 + arch);
+        archEdgeMat.opacity = (archEdgeMat.userData.baseOpacity as number) * arch;
+        innerFaceMat.opacity = (innerFaceMat.userData.baseOpacity as number) * arch;
+        innerEdgeMat.opacity = (innerEdgeMat.userData.baseOpacity as number) * arch;
+        archWash.material.opacity = 0.04 + arch * 0.1;
+        archWash.material.color.copy(tint);
+
+        for (let i = 0; i < accents.length; i++) {
+          const a = accents[i];
+          const fx = reduceMotion ? 0 : Math.cos(t * 0.4 + a.phase) * 0.08;
+          const fy = reduceMotion ? 0 : Math.sin(t * 0.5 + a.phase) * 0.1;
+          a.group.position.set(a.base.x + fx, a.base.y + fy, a.base.z);
+          a.group.rotation.x = t * a.spin * 0.7;
+          a.group.rotation.y = t * a.spin;
+          a.group.userData.assembleScale = 0.35 + arch * 0.65;
+          const ht = hoverById.get(`accent-${i}`);
+          const hoverBoost = ht ? 1 + ht.hover * 1.2 + ht.bounce * 0.6 : 1;
+          for (const m of a.mats) {
+            m.opacity = (m.userData.baseOpacity as number) * arch;
+            m.emissiveIntensity =
+              (m.userData.baseEmissive as number) * arch * hoverBoost;
+          }
+          a.edgeMat.opacity = (a.edgeMat.userData.baseOpacity as number) * arch;
+          a.group.visible = arch > 0.05;
+        }
+      }
+
       // Per-element hover (raycast throttled); no camera/group parallax
       if (pointer.moved) {
         pointer.moved = false;
@@ -1384,9 +1922,12 @@ export default function StageScene({ stage }: Props) {
         }
       }
 
-      // Camera fixed — no mouse parallax
-      camera.position.set(0, 0.15, 6.2);
-      camera.lookAt(0, 0, 0);
+      // Camera: gentle per-stage framing — no mouse parallax
+      const camX = -0.2 * corr + -0.08 * arch;
+      const camY = 0.2 + corr * 0.45 + arch * 0.08;
+      const camZ = 6.2 - corr * 0.35 - arch * 0.15;
+      camera.position.set(camX, camY, camZ);
+      camera.lookAt(corr * -0.05, 0.15 + corr * 0.55, -corr * 3.2 - arch * 0.5);
 
       renderer.render(scene, camera);
       raf = requestAnimationFrame(frame);

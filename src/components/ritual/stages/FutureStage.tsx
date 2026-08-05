@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { ArrowUpRight } from "lucide-react";
 
 type Status = "idle" | "submitting" | "success";
 
@@ -21,34 +22,20 @@ export default function FutureStage({ active: _active = true }: Props) {
   }
 
   return (
-    <section id="future" className="ritual-stage relative overflow-hidden">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-40"
-        aria-hidden="true"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent 0%, rgba(77,243,255,0.03) 45%, rgba(138,92,246,0.05) 50%, rgba(77,243,255,0.03) 55%, transparent 100%), repeating-linear-gradient(90deg, transparent 0, transparent 11%, rgba(255,255,255,0.025) 11%, rgba(255,255,255,0.025) 11.4%, transparent 11.4%, transparent 20%)",
-          maskImage: "linear-gradient(180deg, transparent 0%, black 25%, black 80%, transparent 100%)",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute top-[18%] left-1/2 h-[55%] w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-[rgba(77,243,255,0.55)] to-transparent shadow-[0_0_24px_rgba(77,243,255,0.45)]"
-        aria-hidden="true"
-      />
-
-      <div className="relative z-10 mx-auto grid w-full max-w-[1180px] gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-14">
-        <div className="text-content">
-          <h2 className="ritual-headline ritual-brand-glow text-[clamp(1.5rem,3.8vw,2.6rem)] leading-[1.25] text-white">
+    <section id="future" className="ritual-stage relative overflow-hidden !justify-end lg:!justify-center">
+      <div className="relative z-10 mx-auto grid w-full max-w-[1180px] gap-8 lg:grid-cols-[1fr_minmax(300px,420px)] lg:items-center lg:gap-10">
+        <div className="text-content max-w-xl lg:pb-28 lg:pt-8">
+          <h2 className="ritual-headline ritual-brand-glow text-[clamp(1.45rem,3.6vw,2.45rem)] leading-[1.28] text-white">
             {t("headline")}
           </h2>
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3.5 sm:gap-4">
           <div className="ritual-glass rounded-2xl p-5 sm:p-6">
-            <h3 className="text-content mb-3 text-lg font-medium text-white sm:text-xl">
+            <h3 className="text-content mb-3 text-base font-medium text-white sm:text-lg">
               {t("manifestoTitle")}
             </h3>
-            <p className="text-content text-sm leading-relaxed text-[var(--ritual-muted)] sm:text-base">
+            <p className="text-content text-sm leading-relaxed text-[var(--ritual-muted)] sm:text-[0.95rem]">
               {t("manifestoBody")}
             </p>
           </div>
@@ -57,11 +44,13 @@ export default function FutureStage({ active: _active = true }: Props) {
             {status === "success" ? (
               <p className="text-content text-base text-white">{t("form.success")}</p>
             ) : (
-              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <h3 className="text-content mb-1 text-lg font-medium text-white">{t("ctaTitle")}</h3>
+              <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
+                <h3 className="text-content mb-0.5 text-base font-medium text-white sm:text-lg">
+                  {t("ctaTitle")}
+                </h3>
 
                 <div className="text-content">
-                  <label htmlFor="ritual-name" className="label-mono mb-2 block text-[10px] text-white/45">
+                  <label htmlFor="ritual-name" className="label-mono mb-1.5 block text-[10px] text-white/45">
                     {t("form.name")}
                   </label>
                   <input
@@ -75,7 +64,7 @@ export default function FutureStage({ active: _active = true }: Props) {
                 </div>
 
                 <div className="text-content">
-                  <label htmlFor="ritual-email" className="label-mono mb-2 block text-[10px] text-white/45">
+                  <label htmlFor="ritual-email" className="label-mono mb-1.5 block text-[10px] text-white/45">
                     {t("form.email")}
                   </label>
                   <input
@@ -91,7 +80,7 @@ export default function FutureStage({ active: _active = true }: Props) {
                 </div>
 
                 <div className="text-content">
-                  <label htmlFor="ritual-message" className="label-mono mb-2 block text-[10px] text-white/45">
+                  <label htmlFor="ritual-message" className="label-mono mb-1.5 block text-[10px] text-white/45">
                     {t("form.message")}
                   </label>
                   <textarea
@@ -105,8 +94,15 @@ export default function FutureStage({ active: _active = true }: Props) {
                   />
                 </div>
 
-                <button type="submit" disabled={status === "submitting"} className="ritual-cta mt-1 self-stretch sm:self-start">
-                  {status === "submitting" ? t("form.submitting") : t("form.submit")}
+                <button
+                  type="submit"
+                  disabled={status === "submitting"}
+                  className="ritual-cta mt-1 self-stretch"
+                >
+                  <span>{status === "submitting" ? t("form.submitting") : t("form.submit")}</span>
+                  {status !== "submitting" && (
+                    <ArrowUpRight className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />
+                  )}
                 </button>
               </form>
             )}

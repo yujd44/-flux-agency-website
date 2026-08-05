@@ -533,7 +533,21 @@
       "title": "Реализация",
       "subtitle": "Четыре направления. Реальный каталог. Живые проекты.",
       "worksEyebrow": "Работы",
-      "worksTitle": "Примеры проектов"
+      "worksTitle": "Цифровые продукты",
+      "caseStudyEyebrow": "Кейс в продакшене",
+      "highlightBot": "Быстрее отвечаем клиентам через автоматизацию в Telegram.",
+      "metrics": {
+        "servicesLabel": "Услуг в каталоге",
+        "servicesValue": "19",
+        "efficiencyLabel": "Фокус поставки",
+        "efficiencyValue": "4 домена",
+        "responseValue": "−75%",
+        "scaleLabel": "Операционный масштаб",
+        "monitoringLabel": "События мониторинга",
+        "monitoringValue": "361",
+        "deploysLabel": "DevOps-деплои",
+        "deploysValue": "50"
+      }
     },
     "future": {
       "headline": "Будущее: ваш технологический партнёр на пути к эволюции.",

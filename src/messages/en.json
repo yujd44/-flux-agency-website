@@ -533,7 +533,21 @@
       "title": "The Realization",
       "subtitle": "Four domains. Real catalog. Live projects.",
       "worksEyebrow": "Works",
-      "worksTitle": "Project examples"
+      "worksTitle": "Digital products",
+      "caseStudyEyebrow": "Live case study",
+      "highlightBot": "Faster client response through Telegram automation.",
+      "metrics": {
+        "servicesLabel": "Catalog services",
+        "servicesValue": "19",
+        "efficiencyLabel": "Delivery focus",
+        "efficiencyValue": "4 domains",
+        "responseValue": "−75%",
+        "scaleLabel": "Operational scale",
+        "monitoringLabel": "Monitoring events",
+        "monitoringValue": "361",
+        "deploysLabel": "DevOps deploys",
+        "deploysValue": "50"
+      }
     },
     "future": {
       "headline": "Future: your technology partner on the path to evolution.",

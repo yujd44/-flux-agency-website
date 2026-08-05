@@ -533,7 +533,21 @@
       "title": "המימוש",
       "subtitle": "ארבעה תחומים. קטלוג אמיתי. פרויקטים חיים.",
       "worksEyebrow": "עבודות",
-      "worksTitle": "דוגמאות פרויקטים"
+      "worksTitle": "מוצרים דיגיטליים",
+      "caseStudyEyebrow": "קייס לייב",
+      "highlightBot": "מענה מהיר יותר ללקוחות באמצעות אוטומציה בטלגרם.",
+      "metrics": {
+        "servicesLabel": "שירותים בקטלוג",
+        "servicesValue": "19",
+        "efficiencyLabel": "מיקוד אספקה",
+        "efficiencyValue": "4 תחומים",
+        "responseValue": "−75%",
+        "scaleLabel": "קנה מידה תפעולי",
+        "monitoringLabel": "אירועי ניטור",
+        "monitoringValue": "361",
+        "deploysLabel": "פריסות DevOps",
+        "deploysValue": "50"
+      }
     },
     "future": {
       "headline": "עתיד: השותף הטכנולוגי שלכם בדרך לאבולוציה.",

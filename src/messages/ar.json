@@ -533,7 +533,21 @@
       "title": "التنفيذ",
       "subtitle": "أربعة مجالات. كتالوج حقيقي. مشاريع حية.",
       "worksEyebrow": "الأعمال",
-      "worksTitle": "أمثلة المشاريع"
+      "worksTitle": "منتجات رقمية",
+      "caseStudyEyebrow": "دراسة حالة حية",
+      "highlightBot": "استجابة أسرع للعملاء عبر أتمتة تيليجرام.",
+      "metrics": {
+        "servicesLabel": "خدمات الكتالوج",
+        "servicesValue": "19",
+        "efficiencyLabel": "تركيز التسليم",
+        "efficiencyValue": "4 مجالات",
+        "responseValue": "−75%",
+        "scaleLabel": "النطاق التشغيلي",
+        "monitoringLabel": "أحداث المراقبة",
+        "monitoringValue": "361",
+        "deploysLabel": "عمليات DevOps",
+        "deploysValue": "50"
+      }
     },
     "future": {
       "headline": "المستقبل: شريككم التقني في طريق التطور.",

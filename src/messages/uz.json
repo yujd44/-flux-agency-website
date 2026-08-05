@@ -533,7 +533,21 @@
       "title": "Amalga oshirish",
       "subtitle": "To‘rt yo‘nalish. Haqiqiy katalog. Tirik loyihalar.",
       "worksEyebrow": "Ishlar",
-      "worksTitle": "Loyiha namunalari"
+      "worksTitle": "Raqamli mahsulotlar",
+      "caseStudyEyebrow": "Jonli keys",
+      "highlightBot": "Telegram avtomatlashtirish orqali mijozlarga tezroq javob.",
+      "metrics": {
+        "servicesLabel": "Katalog xizmatlari",
+        "servicesValue": "19",
+        "efficiencyLabel": "Yetkazish foqusi",
+        "efficiencyValue": "4 domen",
+        "responseValue": "−75%",
+        "scaleLabel": "Operatsion miqyos",
+        "monitoringLabel": "Monitoring hodisalari",
+        "monitoringValue": "361",
+        "deploysLabel": "DevOps deploylar",
+        "deploysValue": "50"
+      }
     },
     "future": {
       "headline": "Kelajak: evolyutsiya yo‘lidagi texnologik hamkoringiz.",
