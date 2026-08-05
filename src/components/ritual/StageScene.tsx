@@ -341,8 +341,8 @@ function integrateWander(
   opts?: { wallPad?: number; spring?: number; jitter?: number },
 ) {
   const pad = opts?.wallPad ?? 0.42;
-  const spring = opts?.spring ?? 3.4;
-  const jitter = opts?.jitter ?? 0.24;
+  const spring = opts?.spring ?? 1.8;
+  const jitter = opts?.jitter ?? 0.1;
 
   if (body.pos.x < bounds.minX + pad) {
     body.vel.x += (bounds.minX + pad - body.pos.x) * spring * dt;
@@ -365,7 +365,7 @@ function integrateWander(
   body.vel.z += (Math.random() - 0.5) * jitter * 0.55 * dt;
 
   let sp = body.vel.length();
-  if (sp < 0.04) {
+  if (sp < 0.015) {
     const a = Math.random() * Math.PI * 2;
     body.vel.set(
       Math.cos(a) * body.speed,
@@ -374,7 +374,7 @@ function integrateWander(
     );
     sp = body.vel.length();
   } else {
-    const blend = 1 - Math.exp(-dt * 2.1);
+    const blend = 1 - Math.exp(-dt * 1.05);
     const next = sp + (body.speed - sp) * blend;
     body.vel.multiplyScalar(next / sp);
   }
@@ -383,24 +383,24 @@ function integrateWander(
 
   if (body.pos.x < bounds.minX) {
     body.pos.x = bounds.minX;
-    body.vel.x = Math.abs(body.vel.x) * 0.92;
+    body.vel.x = Math.abs(body.vel.x) * 0.72;
   } else if (body.pos.x > bounds.maxX) {
     body.pos.x = bounds.maxX;
-    body.vel.x = -Math.abs(body.vel.x) * 0.92;
+    body.vel.x = -Math.abs(body.vel.x) * 0.72;
   }
   if (body.pos.y < bounds.minY) {
     body.pos.y = bounds.minY;
-    body.vel.y = Math.abs(body.vel.y) * 0.92;
+    body.vel.y = Math.abs(body.vel.y) * 0.72;
   } else if (body.pos.y > bounds.maxY) {
     body.pos.y = bounds.maxY;
-    body.vel.y = -Math.abs(body.vel.y) * 0.92;
+    body.vel.y = -Math.abs(body.vel.y) * 0.72;
   }
   if (body.pos.z < bounds.minZ) {
     body.pos.z = bounds.minZ;
-    body.vel.z = Math.abs(body.vel.z) * 0.9;
+    body.vel.z = Math.abs(body.vel.z) * 0.7;
   } else if (body.pos.z > bounds.maxZ) {
     body.pos.z = bounds.maxZ;
-    body.vel.z = -Math.abs(body.vel.z) * 0.9;
+    body.vel.z = -Math.abs(body.vel.z) * 0.7;
   }
 }
 
@@ -658,7 +658,7 @@ export default function StageScene({ stage }: Props) {
         pulse: 0.35 + Math.random() * 0.45,
         orbitSpeed: 0.12 + Math.random() * 0.22,
         baseScale: s,
-        wander: seedWander(base, 0.18 + Math.random() * 0.16),
+        wander: seedWander(base, 0.075 + Math.random() * 0.065),
       });
     }
 
@@ -899,7 +899,7 @@ export default function StageScene({ stage }: Props) {
         accent,
         wander: seedWander(
           def.p,
-          def.kind === "hub" ? 0.12 + Math.random() * 0.08 : 0.16 + Math.random() * 0.14,
+          def.kind === "hub" ? 0.05 + Math.random() * 0.03 : 0.07 + Math.random() * 0.055,
         ),
       });
     });
@@ -1206,7 +1206,7 @@ export default function StageScene({ stage }: Props) {
         rotSpeed: 0.045 + (i % 3) * 0.028,
         thickness: def.t,
         phase: Math.random() * Math.PI * 2,
-        wander: seedWander(def.p, 0.15 + Math.random() * 0.14),
+        wander: seedWander(def.p, 0.065 + Math.random() * 0.055),
       });
     });
 
@@ -1302,7 +1302,7 @@ export default function StageScene({ stage }: Props) {
           shadowMat,
           base,
           phase: row * 0.7 + (side > 0 ? 1.2 : 0),
-          wander: seedWander(base, 0.09 + row * 0.012 + Math.random() * 0.05),
+          wander: seedWander(base, 0.04 + row * 0.005 + Math.random() * 0.02),
           bounds: leashBounds(base, 0.28 + row * 0.04),
         });
       }
@@ -1626,13 +1626,13 @@ export default function StageScene({ stage }: Props) {
         vel: new THREE.Vector3(),
         mass: 0.55 + def.s * 1.4,
         radius: 1.55 + def.s * 2.2,
-        wander: seedWander(def.p, 0.17 + Math.random() * 0.15),
+        wander: seedWander(def.p, 0.07 + Math.random() * 0.06),
       });
     });
 
     // Main wireframe cube — light per-mesh scatter (not whole-scene drag)
     const archHome = archPivot.position.clone();
-    const archWander = seedWander(archHome, 0.13 + Math.random() * 0.07);
+    const archWander = seedWander(archHome, 0.055 + Math.random() * 0.03);
     const archScatter = {
       offset: new THREE.Vector3(),
       vel: new THREE.Vector3(),
@@ -1851,7 +1851,7 @@ export default function StageScene({ stage }: Props) {
         const o = orbs[i];
         const breathe = reduceMotion ? 1 : 1 + Math.sin(t * o.pulse + o.phase) * 0.08;
         if (!reduceMotion) {
-          integrateWander(o.wander, dt, ROOT_BOUNDS, { wallPad: 0.5, spring: 3.6, jitter: 0.3 });
+          integrateWander(o.wander, dt, ROOT_BOUNDS, { wallPad: 0.5, spring: 1.9, jitter: 0.12 });
         } else {
           o.wander.pos.copy(o.base);
           o.wander.vel.set(0, 0, 0);
@@ -1902,8 +1902,8 @@ export default function StageScene({ stage }: Props) {
         if (!reduceMotion && clampedPop > 0.15) {
           integrateWander(node.wander, dt, NETWORK_BOUNDS, {
             wallPad: 0.32,
-            spring: 4.0,
-            jitter: 0.28,
+            spring: 2.1,
+            jitter: 0.11,
           });
         } else if (reduceMotion) {
           node.wander.pos.copy(node.base);
@@ -1950,8 +1950,8 @@ export default function StageScene({ stage }: Props) {
         if (!reduceMotion && e > 0.15) {
           integrateWander(item.wander, dt, ROOT_BOUNDS, {
             wallPad: 0.48,
-            spring: 3.5,
-            jitter: 0.26,
+            spring: 1.85,
+            jitter: 0.1,
           });
         } else if (reduceMotion) {
           item.wander.pos.copy(item.base);
@@ -1991,8 +1991,8 @@ export default function StageScene({ stage }: Props) {
           if (!reduceMotion) {
             integrateWander(p.wander, dt, p.bounds, {
               wallPad: 0.12,
-              spring: 4.8,
-              jitter: 0.15,
+              spring: 2.4,
+              jitter: 0.06,
             });
           } else {
             p.wander.pos.copy(p.base);
@@ -2098,8 +2098,8 @@ export default function StageScene({ stage }: Props) {
         if (!reduceMotion) {
           integrateWander(archWander, dt, ARCH_BOUNDS, {
             wallPad: 0.38,
-            spring: 3.1,
-            jitter: 0.17,
+            spring: 1.6,
+            jitter: 0.07,
           });
         } else {
           archWander.pos.copy(archHome);
@@ -2125,8 +2125,8 @@ export default function StageScene({ stage }: Props) {
           if (!reduceMotion) {
             integrateWander(a.wander, dt, ACCENT_BOUNDS, {
               wallPad: 0.4,
-              spring: 3.7,
-              jitter: 0.3,
+              spring: 1.9,
+              jitter: 0.12,
             });
             tmpPos.copy(a.wander.pos);
             integrateScatter(tmpPos, a.offset, a.vel, a.mass, a.radius, 1);
