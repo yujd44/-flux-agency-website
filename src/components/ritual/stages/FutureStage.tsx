@@ -22,17 +22,17 @@ export default function FutureStage({ active: _active = true }: Props) {
   }
 
   return (
-    <section id="future" className="ritual-stage relative overflow-hidden !justify-end lg:!justify-center">
-      <div className="relative z-10 mx-auto grid w-full max-w-[1180px] gap-8 lg:grid-cols-[1fr_minmax(300px,420px)] lg:items-center lg:gap-10">
+    <section id="future" className="ritual-stage relative overflow-x-hidden !justify-start sm:!justify-end lg:!justify-center">
+      <div className="relative z-10 mx-auto grid w-full max-w-[1180px] gap-6 sm:gap-8 lg:grid-cols-[1fr_minmax(300px,420px)] lg:items-center lg:gap-10">
         <div className="text-content max-w-xl lg:pb-28 lg:pt-8">
-          <h2 className="ritual-headline ritual-brand-glow text-[clamp(1.45rem,3.6vw,2.45rem)] leading-[1.28] text-white">
+          <h2 className="ritual-headline ritual-brand-glow text-[clamp(1.25rem,5vw,2.45rem)] leading-[1.28] text-white">
             {t("headline")}
           </h2>
         </div>
 
-        <div className="flex flex-col gap-3.5 sm:gap-4">
-          <div className="ritual-glass rounded-2xl p-5 sm:p-6">
-            <h3 className="text-content mb-3 text-base font-medium text-white sm:text-lg">
+        <div className="flex min-w-0 flex-col gap-3 sm:gap-4">
+          <div className="ritual-glass rounded-2xl p-4 sm:p-5 md:p-6">
+            <h3 className="text-content mb-2 text-base font-medium text-white sm:mb-3 sm:text-lg">
               {t("manifestoTitle")}
             </h3>
             <p className="text-content text-sm leading-relaxed text-[var(--ritual-muted)] sm:text-[0.95rem]">
@@ -40,7 +40,7 @@ export default function FutureStage({ active: _active = true }: Props) {
             </p>
           </div>
 
-          <div className="ritual-glass rounded-2xl p-5 sm:p-6">
+          <div className="ritual-glass rounded-2xl p-4 sm:p-5 md:p-6">
             {status === "success" ? (
               <p className="text-content text-base text-white">{t("form.success")}</p>
             ) : (

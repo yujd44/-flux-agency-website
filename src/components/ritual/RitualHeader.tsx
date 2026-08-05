@@ -24,7 +24,7 @@ export default function RitualHeader({ onNavigate, active }: Props) {
 
   return (
     <header className="fixed top-0 right-0 left-0 z-50 bg-transparent">
-      <div className="chrome-ltr mx-auto flex h-14 w-full max-w-[var(--page-max)] items-center justify-between gap-4 px-[var(--page-pad)]">
+      <div className="chrome-ltr mx-auto flex h-14 w-full max-w-[var(--page-max)] items-center justify-between gap-2 px-[var(--page-pad)] sm:gap-4">
         <button
           type="button"
           onClick={() => onNavigate("intro")}
@@ -58,8 +58,8 @@ export default function RitualHeader({ onNavigate, active }: Props) {
           })}
         </nav>
 
-        <div className="ritual-glass chrome-ltr rounded-full px-3 py-1.5">
-          <LanguageSwitcher className="[&_button]:text-[10px] [&_button]:tracking-[0.22em] [&_button]:text-white/80 [&_button:hover]:text-[var(--ritual-cyan,#4df3ff)] [&_ul]:rounded-xl [&_ul]:border-white/15 [&_ul]:bg-[#0a0c12]/95 [&_ul]:backdrop-blur-md" />
+        <div className="ritual-glass chrome-ltr shrink-0 rounded-full px-2 py-1.5 sm:px-3">
+          <LanguageSwitcher className="[&_button]:text-[10px] [&_button]:tracking-[0.18em] sm:[&_button]:tracking-[0.22em] [&_button]:text-white/80 [&_button:hover]:text-[var(--ritual-cyan,#4df3ff)] [&_ul]:rounded-xl [&_ul]:border-white/15 [&_ul]:bg-[#0a0c12]/95 [&_ul]:backdrop-blur-md" />
         </div>
       </div>
     </header>

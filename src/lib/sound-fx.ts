@@ -1,16 +1,19 @@
-// Tiny, dependency-free Web Audio sound effects. Every sound here is
-// synthesized on the fly (oscillators + a noise burst) rather than loaded
-// from an audio file, so there is nothing to fetch, license, or ship as a
-// static asset.
-//
-// Browsers suspend a freshly-created AudioContext until a user gesture
-// resumes it. Every function below is written to fail silently: if Web
-// Audio isn't available, or the context is still suspended (e.g. a sound
-// tries to play automatically before the user has interacted at all), the
-// call is just a no-op instead of throwing or queuing up silently-broken
-// audio.
+// Lightweight sound effects. Typing uses short royalty-free WAV clicks from
+// /public/sounds/; UI ticks stay synthesized. AudioContext must be resumed
+// from a user gesture — every play path fails silently if still suspended.
 
 let sharedContext: AudioContext | null = null;
+let typeBuffers: AudioBuffer[] | null = null;
+let typeBuffersLoading: Promise<AudioBuffer[] | null> | null = null;
+
+const TYPE_SAMPLE_URLS = [
+  "/sounds/key-1.wav",
+  "/sounds/key-2.wav",
+  "/sounds/key-3.wav",
+] as const;
+
+/** Peak gain for typewriter key clicks — intentionally audible. */
+const TYPE_GAIN = 0.72;
 
 function getContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
@@ -29,19 +32,55 @@ function getContext(): AudioContext | null {
   }
 
   if (sharedContext.state === "suspended") {
-    // Only actually resumes when called as part of a user gesture; if it's
-    // not (e.g. the logo-intro chime firing on an untouched page), this
-    // rejects/no-ops and the context stays suspended, which we check for
-    // below before scheduling anything audible.
     void sharedContext.resume().catch(() => {});
   }
 
   return sharedContext;
 }
 
-/** Nudges the shared AudioContext awake. Safe to call from any user gesture. */
-export function primeAudio(): void {
-  getContext();
+async function loadTypeBuffers(ctx: AudioContext): Promise<AudioBuffer[] | null> {
+  if (typeBuffers) return typeBuffers;
+  if (typeBuffersLoading) return typeBuffersLoading;
+
+  typeBuffersLoading = (async () => {
+    try {
+      const decoded = await Promise.all(
+        TYPE_SAMPLE_URLS.map(async (url) => {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error(`failed ${url}`);
+          const raw = await res.arrayBuffer();
+          return ctx.decodeAudioData(raw.slice(0));
+        }),
+      );
+      typeBuffers = decoded;
+      return decoded;
+    } catch {
+      typeBuffers = null;
+      return null;
+    } finally {
+      typeBuffersLoading = null;
+    }
+  })();
+
+  return typeBuffersLoading;
+}
+
+/**
+ * Resume AudioContext and preload typewriter samples.
+ * Call from a user gesture. Resolves true when audio is ready to play.
+ */
+export async function primeAudio(): Promise<boolean> {
+  const ctx = getContext();
+  if (!ctx) return false;
+  try {
+    if (ctx.state === "suspended") {
+      await ctx.resume();
+    }
+    await loadTypeBuffers(ctx);
+    return ctx.state === "running";
+  } catch {
+    return false;
+  }
 }
 
 type ToneOptions = {
@@ -103,6 +142,19 @@ function playNoiseBurst(
   source.stop(start + duration + 0.03);
 }
 
+/** Fallback synthetic key click when WAV samples are unavailable. */
+function playTypeSoundFallback(ctx: AudioContext): void {
+  const freq = 1600 + Math.random() * 600;
+  playTone(ctx, {
+    frequency: freq,
+    duration: 0.04,
+    type: "square",
+    peak: 0.22,
+    attack: 0.001,
+  });
+  playNoiseBurst(ctx, { duration: 0.028, peak: 0.28, filterFrequency: 3200, q: 1.4 });
+}
+
 /** Very short, soft tick -- fired on any button/link/interactive click. */
 export function playClickSound(): void {
   try {
@@ -114,21 +166,31 @@ export function playClickSound(): void {
   }
 }
 
-
-/** Very short key-click for typewriter letters (quieter than UI click). */
+/** Audible key-click for typewriter letters (real WAV samples when loaded). */
 export function playTypeSound(): void {
   try {
     const ctx = getContext();
     if (!ctx || ctx.state !== "running") return;
-    const freq = 880 + Math.random() * 220;
-    playTone(ctx, {
-      frequency: freq,
-      duration: 0.028,
-      type: "square",
-      peak: 0.018,
-      attack: 0.001,
-    });
-    playNoiseBurst(ctx, { duration: 0.02, peak: 0.012, filterFrequency: 2400, q: 1.2 });
+
+    const buffers = typeBuffers;
+    if (buffers && buffers.length > 0) {
+      const buffer = buffers[Math.floor(Math.random() * buffers.length)];
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.playbackRate.value = 0.92 + Math.random() * 0.18;
+
+      const gain = ctx.createGain();
+      const peak = TYPE_GAIN * (0.85 + Math.random() * 0.2);
+      gain.gain.setValueAtTime(peak, ctx.currentTime);
+
+      source.connect(gain).connect(ctx.destination);
+      source.start(0);
+      return;
+    }
+
+    // Kick off load for subsequent letters; play loud synthetic fallback now.
+    void loadTypeBuffers(ctx);
+    playTypeSoundFallback(ctx);
   } catch {
     // Never let a decorative sound break the intro.
   }
@@ -150,14 +212,12 @@ export function playChimeSound(): void {
   try {
     const ctx = getContext();
     if (!ctx || ctx.state !== "running") return;
-    // A fundamental plus a fifth above it, the second note landing just
-    // after the first so it reads as a gentle "ding" rather than a chord.
-    playTone(ctx, { frequency: 523.25, duration: 0.55, type: "sine", peak: 0.07, attack: 0.015 });
+    playTone(ctx, { frequency: 523.25, duration: 0.55, type: "sine", peak: 0.12, attack: 0.015 });
     playTone(ctx, {
       frequency: 784.0,
       duration: 0.5,
       type: "sine",
-      peak: 0.05,
+      peak: 0.09,
       attack: 0.015,
       delay: 0.09,
     });

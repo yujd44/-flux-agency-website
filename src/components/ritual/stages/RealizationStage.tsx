@@ -65,11 +65,11 @@ export default function RealizationStage({
   return (
     <section
       id="realization"
-      className="ritual-stage relative !justify-start overflow-hidden py-20 sm:py-24"
+      className="ritual-stage relative !justify-start overflow-x-hidden py-4 sm:py-10 md:py-20"
     >
-      <div className="relative z-10 mx-auto flex w-full max-w-[1220px] flex-col gap-8 lg:gap-10">
+      <div className="relative z-10 mx-auto flex w-full max-w-[1220px] flex-col gap-6 sm:gap-8 lg:gap-10">
         <div className="text-content text-center">
-          <h2 className="ritual-headline ritual-brand-glow text-[clamp(1.55rem,3.8vw,2.6rem)] tracking-[0.16em] text-white uppercase">
+          <h2 className="ritual-headline ritual-brand-glow text-[clamp(1.35rem,5vw,2.6rem)] tracking-[0.1em] text-white uppercase sm:tracking-[0.16em]">
             {t("title")}
           </h2>
         </div>
@@ -85,7 +85,7 @@ export default function RealizationStage({
                 onClick={() => toggleCategory(cat.id)}
                 aria-expanded={isOpen}
                 className={clsx(
-                  "ritual-glass ritual-glass-hover flex flex-col rounded-2xl p-4 text-start sm:p-5",
+                  "ritual-glass ritual-glass-hover flex min-w-0 flex-col rounded-2xl p-3.5 text-start sm:p-4 md:p-5",
                   isOpen &&
                     "border-[rgba(77,243,255,0.4)] shadow-[0_0_28px_rgba(77,243,255,0.14)]",
                 )}

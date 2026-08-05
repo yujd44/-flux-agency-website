@@ -27,11 +27,31 @@ type IntroSizes = { icon: number; gap: number; textW: number; textPx: number };
 
 const DEFAULT_SIZES: IntroSizes = { icon: 248, gap: 52, textW: 580, textPx: 82 };
 
+/** Fit lockup inside the viewport with side margin — prevents mobile clipping. */
 function sizesForWidth(w: number): IntroSizes {
-  if (w < 420) return { icon: 148, gap: 22, textW: 280, textPx: 42 };
-  if (w < 720) return { icon: 188, gap: 34, textW: 420, textPx: 58 };
-  if (w < 1100) return { icon: 220, gap: 44, textW: 520, textPx: 72 };
-  return DEFAULT_SIZES;
+  if (w >= 1100) return DEFAULT_SIZES;
+
+  const budget = Math.max(260, w - 40);
+  if (w >= 720) {
+    const icon = Math.min(220, Math.round(budget * 0.28));
+    const gap = Math.min(44, Math.round(budget * 0.055));
+    const textW = Math.max(280, budget - icon - gap);
+    const textPx = Math.min(72, Math.round(textW / 7.2));
+    return { icon, gap, textW, textPx };
+  }
+  if (w >= 560) {
+    const icon = Math.min(188, Math.round(budget * 0.3));
+    const gap = Math.min(34, Math.round(budget * 0.05));
+    const textW = Math.max(220, budget - icon - gap);
+    const textPx = Math.min(58, Math.round(textW / 7.2));
+    return { icon, gap, textW, textPx };
+  }
+
+  const icon = Math.round(Math.min(148, Math.max(88, budget * 0.3)));
+  const gap = Math.round(Math.min(22, Math.max(10, budget * 0.045)));
+  const textW = Math.max(160, budget - icon - gap);
+  const textPx = Math.round(Math.min(42, Math.max(28, textW / 7.1)));
+  return { icon, gap, textW, textPx };
 }
 
 function revealSite() {
@@ -54,6 +74,7 @@ export default function LogoIntro() {
   const [soundOk, setSoundOk] = useState(false);
   const dismissed = useRef(false);
   const timers = useRef<number[]>([]);
+  const soundOkRef = useRef(false);
 
   const dismiss = (withChime: boolean) => {
     if (dismissed.current) return;
@@ -114,27 +135,37 @@ export default function LogoIntro() {
     const dismissTimer = window.setTimeout(() => dismiss(true), DISMISS_MS);
     timers.current.push(dismissTimer);
 
+    const onResize = () => setSizes(sizesForWidth(window.innerWidth));
+    window.addEventListener("resize", onResize);
+
     return () => {
       for (const id of timers.current) window.clearTimeout(id);
       timers.current = [];
+      window.removeEventListener("resize", onResize);
     };
-    // soundOk intentionally omitted — typing timers are scheduled once on mount;
-    // sound gates via ref-like state checked at fire time after first gesture.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Unlock audio on first pointer/key — browsers block autoplay.
+  // Also listen on the intro overlay so the first tap of Skip/intro unlocks.
   useEffect(() => {
-    if (!show) return;
+    if (!show || soundOkRef.current) return;
+
     const unlock = () => {
-      primeAudio();
-      setSoundOk(true);
+      void primeAudio().then((ok) => {
+        if (!ok || soundOkRef.current) return;
+        soundOkRef.current = true;
+        setSoundOk(true);
+      });
     };
-    window.addEventListener("pointerdown", unlock, { once: true, passive: true });
-    window.addEventListener("keydown", unlock, { once: true });
+
+    window.addEventListener("pointerdown", unlock, { passive: true });
+    window.addEventListener("keydown", unlock);
+    window.addEventListener("touchstart", unlock, { passive: true });
     return () => {
       window.removeEventListener("pointerdown", unlock);
       window.removeEventListener("keydown", unlock);
+      window.removeEventListener("touchstart", unlock);
     };
   }, [show]);
 
@@ -144,16 +175,14 @@ export default function LogoIntro() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
-        primeAudio();
-        dismiss(true);
+        void primeAudio().then(() => dismiss(true));
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [show]);
 
-  // When sound unlocks mid-type, remaining letters can click (already gated in timers via soundOk —
-  // but timers captured stale soundOk). Fix: play type sounds from a separate effect on typed.
+  // Play a keyclick each time a new letter appears (once audio is unlocked).
   const prevTyped = useRef(0);
   useEffect(() => {
     if (!show || !soundOk) {
@@ -180,10 +209,17 @@ export default function LogoIntro() {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: EXIT_DUR, ease: EASE }}
-          className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden bg-[#05070a]"
+          className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden bg-[#05070a] px-4"
+          onPointerDown={() => {
+            void primeAudio().then((ok) => {
+              if (!ok || soundOkRef.current) return;
+              soundOkRef.current = true;
+              setSoundOk(true);
+            });
+          }}
         >
           <div
-            className="chrome-ltr relative flex items-center"
+            className="chrome-ltr relative flex max-w-full items-center"
             style={{ width: LOCKUP_W, height: ICON }}
           >
             {/* Icon stays centered while alone, then slides left as type begins */}
@@ -247,7 +283,7 @@ export default function LogoIntro() {
 
             {/* Wordmark typewriter */}
             <div
-              className="absolute top-0 flex h-full items-center whitespace-nowrap"
+              className="absolute top-0 flex h-full items-center overflow-hidden whitespace-nowrap"
               style={{ left: ICON + GAP, width: TEXT_W }}
               aria-hidden="true"
             >
@@ -271,8 +307,7 @@ export default function LogoIntro() {
             className="label-mono absolute bottom-10 left-1/2 -translate-x-1/2 text-[11px] tracking-[0.32em] text-white/35 uppercase transition-colors hover:text-white/70"
             onClick={(e) => {
               e.stopPropagation();
-              primeAudio();
-              dismiss(true);
+              void primeAudio().then(() => dismiss(true));
             }}
           >
             Skip

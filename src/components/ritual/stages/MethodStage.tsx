@@ -27,18 +27,18 @@ export default function MethodStage({
   const [phase, setPhase] = useState<(typeof PHASES)[number]["id"]>("analysis");
 
   return (
-    <section id="method" className="ritual-stage relative overflow-hidden">
-      <div className="relative z-10 mx-auto flex w-full max-w-[1200px] flex-1 flex-col justify-center gap-10 lg:gap-14">
+    <section id="method" className="ritual-stage relative overflow-x-hidden">
+      <div className="relative z-10 mx-auto flex w-full max-w-[1200px] flex-1 flex-col justify-center gap-7 sm:gap-10 lg:gap-14">
         <div className="text-content max-w-3xl">
-          <p className="label-mono mb-4 text-[var(--ritual-cyan)]">{t("eyebrow")}</p>
-          <h2 className="ritual-headline text-[clamp(1.75rem,4.5vw,3.4rem)] leading-[1.15] text-white">
+          <p className="label-mono mb-3 text-[var(--ritual-cyan)] sm:mb-4">{t("eyebrow")}</p>
+          <h2 className="ritual-headline text-[clamp(1.45rem,5.5vw,3.4rem)] leading-[1.15] text-white">
             {t("title")}
             <br />
             <span className="text-white/90">{t("titleLine2")}</span>
           </h2>
         </div>
 
-        <div className="chrome-ltr grid gap-4 md:grid-cols-3">
+        <div className="chrome-ltr grid gap-3 sm:gap-4 md:grid-cols-3">
           {PHASES.map(({ id, Icon }) => {
             const isActive = phase === id;
             return (
@@ -46,7 +46,7 @@ export default function MethodStage({
                 key={id}
                 onMouseEnter={() => setPhase(id)}
                 className={clsx(
-                  "ritual-glass ritual-glass-hover flex flex-col rounded-2xl p-5 text-start sm:p-6",
+                  "ritual-glass ritual-glass-hover flex min-w-0 flex-col rounded-2xl p-4 text-start sm:p-5 md:p-6",
                   isActive && "border-[rgba(77,243,255,0.35)] shadow-[0_0_28px_rgba(77,243,255,0.12)]",
                 )}
               >
