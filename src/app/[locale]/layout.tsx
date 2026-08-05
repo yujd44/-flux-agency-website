@@ -12,6 +12,7 @@ import {
 } from "@/lib/fonts";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import LogoIntro from "@/components/layout/LogoIntro";
 import PortalTransition from "@/components/home/PortalTransition";
 import "../globals.css";
 
@@ -56,6 +57,7 @@ export default async function LocaleLayout({
     >
       <body className="flex min-h-full flex-col bg-bg text-text">
         <NextIntlClientProvider messages={messages}>
+          <LogoIntro />
           <div className="page-frame">
             <Header />
             <main className="flex-1">{children}</main>

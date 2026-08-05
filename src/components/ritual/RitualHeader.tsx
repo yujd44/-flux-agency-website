@@ -28,10 +28,10 @@ export default function RitualHeader({ onNavigate, active }: Props) {
         <button
           type="button"
           onClick={() => onNavigate("intro")}
-          className="ritual-brand-glow shrink-0 text-[var(--ritual-cyan,#4df3ff)]"
-          aria-label="METHODEA"
+          className="ritual-brand-glow shrink-0 text-white"
+          aria-label="Methodea"
         >
-          <MethodaLogo size={18} morph />
+          <MethodaLogo size={22} morph href="" />
         </button>
 
         <nav className="hidden items-center gap-5 lg:flex xl:gap-7" aria-label={t("aria")}>
