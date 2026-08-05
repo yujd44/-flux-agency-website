@@ -50,10 +50,14 @@ export default async function LocaleLayout({
   const messages = await getMessages();
   const dir = rtlLocales.includes(locale as Locale) ? "rtl" : "ltr";
 
+  // data-intro="wait" is the stable SSR default; INTRO_BOOT_SCRIPT may flip to
+  // "done" before hydrate — suppressHydrationWarning allows that mismatch.
   return (
     <html
       lang={locale}
       dir={dir}
+      data-intro="wait"
+      suppressHydrationWarning
       className={`${fontLatin.variable} ${fontMono.variable} ${fontHeadline.variable} ${fontHebrew.variable} ${fontArabic.variable} h-full antialiased`}
     >
       <head>

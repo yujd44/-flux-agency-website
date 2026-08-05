@@ -682,22 +682,29 @@ export default function StageScene({ stage }: Props) {
       collider: Collider;
     };
     const orbs: OrbItem[] = [];
-    // Explicit roster: network icons prominent + clear XS→XL size ladder.
+    // Explicit roster: IT icons + clear XS→XL size ladder (≈6× span).
     const orbDefs: { kind: ServiceFigureKind; s: number; style: FigureStyle }[] = [
-      { kind: "wifi", s: 0.44, style: "accent" },
-      { kind: "laptop", s: 0.36, style: "glass" },
-      { kind: "globe", s: 0.4, style: "glass" },
+      { kind: "laptop", s: 0.52, style: "glass" },
+      { kind: "wifi", s: 0.46, style: "accent" },
+      { kind: "globe", s: 0.42, style: "glass" },
+      { kind: "server", s: 0.38, style: "metal" },
+      { kind: "desktop", s: 0.34, style: "metal" },
       { kind: "router", s: 0.3, style: "metal" },
-      { kind: "desktop", s: 0.22, style: "metal" },
-      { kind: "headphones", s: 0.18, style: "accent" },
-      { kind: "cloud", s: 0.12, style: "glass" },
-      { kind: "server", s: 0.26, style: "metal" },
-      { kind: "phone", s: 0.09, style: "glass" },
-      { kind: "browser", s: 0.15, style: "glass" },
-      { kind: "gear", s: 0.07, style: "accent" },
-      { kind: "wifi", s: 0.14, style: "glass" },
-      { kind: "laptop", s: 0.08, style: "metal" },
-      { kind: "globe", s: 0.2, style: "accent" },
+      { kind: "database", s: 0.28, style: "glass" },
+      { kind: "antenna", s: 0.26, style: "accent" },
+      { kind: "keyboard", s: 0.24, style: "metal" },
+      { kind: "tablet", s: 0.22, style: "glass" },
+      { kind: "headphones", s: 0.2, style: "accent" },
+      { kind: "browser", s: 0.18, style: "glass" },
+      { kind: "cloud", s: 0.16, style: "glass" },
+      { kind: "chip", s: 0.14, style: "metal" },
+      { kind: "code", s: 0.12, style: "accent" },
+      { kind: "phone", s: 0.1, style: "glass" },
+      { kind: "usb", s: 0.09, style: "metal" },
+      { kind: "mouse", s: 0.08, style: "accent" },
+      { kind: "gear", s: 0.07, style: "glass" },
+      { kind: "wifi", s: 0.11, style: "glass" },
+      { kind: "laptop", s: 0.06, style: "metal" },
     ];
     orbDefs.forEach((def, i) => {
       const kind = def.kind;
@@ -799,19 +806,23 @@ export default function StageScene({ stage }: Props) {
       figure: ServiceFigureKind | "hub";
     }[] = [
       { p: new THREE.Vector3(0, 0, 0), s: 0.42, style: "hub", figure: "hub" },
-      { p: new THREE.Vector3(0.85, 0.55, 0.2), s: 0.26, style: "glass", figure: "globe" },
-      { p: new THREE.Vector3(1.1, -0.35, -0.15), s: 0.18, style: "metal", figure: "server" },
-      { p: new THREE.Vector3(0.35, -0.75, 0.35), s: 0.28, style: "accent", figure: "wifi" },
-      { p: new THREE.Vector3(-0.55, 0.65, -0.25), s: 0.32, style: "glass", figure: "browser" },
-      { p: new THREE.Vector3(-0.9, -0.2, 0.3), s: 0.2, style: "metal", figure: "laptop" },
-      { p: new THREE.Vector3(0.15, 0.95, -0.4), s: 0.08, style: "glass", figure: "gear" },
+      { p: new THREE.Vector3(0.85, 0.55, 0.2), s: 0.3, style: "glass", figure: "globe" },
+      { p: new THREE.Vector3(1.1, -0.35, -0.15), s: 0.2, style: "metal", figure: "server" },
+      { p: new THREE.Vector3(0.35, -0.75, 0.35), s: 0.34, style: "accent", figure: "wifi" },
+      { p: new THREE.Vector3(-0.55, 0.65, -0.25), s: 0.28, style: "glass", figure: "browser" },
+      { p: new THREE.Vector3(-0.9, -0.2, 0.3), s: 0.24, style: "metal", figure: "laptop" },
+      { p: new THREE.Vector3(0.15, 0.95, -0.4), s: 0.07, style: "glass", figure: "gear" },
       { p: new THREE.Vector3(1.45, 0.15, 0.45), s: 0.22, style: "metal", figure: "router" },
-      { p: new THREE.Vector3(-0.25, -0.55, -0.5), s: 0.24, style: "glass", figure: "desktop" },
-      { p: new THREE.Vector3(0.65, 0.15, -0.65), s: 0.1, style: "accent", figure: "wifi" },
-      { p: new THREE.Vector3(-1.15, 0.35, 0.1), s: 0.28, style: "metal", figure: "server" },
+      { p: new THREE.Vector3(-0.25, -0.55, -0.5), s: 0.26, style: "glass", figure: "desktop" },
+      { p: new THREE.Vector3(0.65, 0.15, -0.65), s: 0.1, style: "accent", figure: "chip" },
+      { p: new THREE.Vector3(-1.15, 0.35, 0.1), s: 0.32, style: "metal", figure: "database" },
       { p: new THREE.Vector3(0.4, -0.15, 0.7), s: 0.06, style: "glass", figure: "phone" },
       { p: new THREE.Vector3(0.95, 0.85, -0.3), s: 0.16, style: "accent", figure: "headphones" },
-      { p: new THREE.Vector3(-0.7, -0.7, 0.15), s: 0.36, style: "glass", figure: "cloud" },
+      { p: new THREE.Vector3(-0.7, -0.7, 0.15), s: 0.38, style: "glass", figure: "cloud" },
+      { p: new THREE.Vector3(1.25, 0.55, -0.5), s: 0.14, style: "metal", figure: "antenna" },
+      { p: new THREE.Vector3(-1.35, -0.45, -0.2), s: 0.12, style: "accent", figure: "code" },
+      { p: new THREE.Vector3(0.05, 0.45, 0.75), s: 0.08, style: "metal", figure: "usb" },
+      { p: new THREE.Vector3(-0.45, 0.15, -0.75), s: 0.18, style: "glass", figure: "tablet" },
     ];
 
     nodeDefs.forEach((def, i) => {
@@ -978,6 +989,8 @@ export default function StageScene({ stage }: Props) {
       [0, 9],
       [0, 11],
       [0, 12],
+      [0, 14],
+      [0, 16],
       [1, 7],
       [1, 6],
       [1, 12],
@@ -993,6 +1006,10 @@ export default function StageScene({ stage }: Props) {
       [9, 2],
       [11, 2],
       [12, 6],
+      [14, 1],
+      [15, 10],
+      [16, 5],
+      [17, 4],
     ];
 
     type FiberItem = {
@@ -1655,12 +1672,17 @@ export default function StageScene({ stage }: Props) {
       kind: ServiceFigureKind;
       style: FigureStyle;
     }[] = [
-      { p: new THREE.Vector3(-2.1, 1.15, 0.4), s: 0.4, c: CYAN, kind: "laptop", style: "glass" },
-      { p: new THREE.Vector3(2.0, 0.95, 0.15), s: 0.32, c: PURPLE, kind: "wifi", style: "accent" },
+      { p: new THREE.Vector3(-2.1, 1.15, 0.4), s: 0.44, c: CYAN, kind: "laptop", style: "glass" },
+      { p: new THREE.Vector3(2.0, 0.95, 0.15), s: 0.36, c: PURPLE, kind: "wifi", style: "accent" },
       { p: new THREE.Vector3(-1.7, -1.1, 0.55), s: 0.3, c: CYAN, kind: "router", style: "metal" },
-      { p: new THREE.Vector3(1.85, -0.85, 0.7), s: 0.12, c: PURPLE, kind: "phone", style: "glass" },
-      { p: new THREE.Vector3(0.15, 1.55, -0.2), s: 0.48, c: CYAN, kind: "globe", style: "glass" },
+      { p: new THREE.Vector3(1.85, -0.85, 0.7), s: 0.1, c: PURPLE, kind: "phone", style: "glass" },
+      { p: new THREE.Vector3(0.15, 1.55, -0.2), s: 0.5, c: CYAN, kind: "globe", style: "glass" },
       { p: new THREE.Vector3(-0.35, -1.45, 0.3), s: 0.22, c: GREEN, kind: "headphones", style: "accent" },
+      { p: new THREE.Vector3(1.35, 1.35, -0.35), s: 0.18, c: GREEN, kind: "chip", style: "metal" },
+      { p: new THREE.Vector3(-2.25, -0.25, 0.2), s: 0.28, c: PURPLE, kind: "database", style: "glass" },
+      { p: new THREE.Vector3(2.2, -0.15, 0.55), s: 0.08, c: CYAN, kind: "usb", style: "accent" },
+      { p: new THREE.Vector3(-1.1, 1.4, -0.5), s: 0.16, c: CYAN, kind: "antenna", style: "metal" },
+      { p: new THREE.Vector3(0.85, -1.35, 0.15), s: 0.14, c: PURPLE, kind: "code", style: "accent" },
     ];
 
     accentDefs.forEach((def, i) => {

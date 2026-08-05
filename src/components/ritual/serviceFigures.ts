@@ -2,7 +2,8 @@ import * as THREE from "three";
 
 /**
  * Service-themed 3D figures for StageScene — composed MeshPhysical meshes
- * (laptop, wifi, router, globe, cloud, phone, server, browser, gear, desktop, headphones).
+ * (laptop, wifi, router, globe, cloud, phone, server, browser, gear, desktop,
+ * headphones, chip, keyboard, mouse, database, code, tablet, antenna, usb).
  */
 
 export type ServiceFigureKind =
@@ -16,8 +17,15 @@ export type ServiceFigureKind =
   | "server"
   | "browser"
   | "gear"
-  | "headphones";
-
+  | "headphones"
+  | "chip"
+  | "keyboard"
+  | "mouse"
+  | "database"
+  | "code"
+  | "tablet"
+  | "antenna"
+  | "usb";
 export type FigureStyle = "glass" | "metal" | "accent";
 
 export type ServiceFigureBuild = {
@@ -175,6 +183,30 @@ export class ServiceFigurePool {
         break;
       case "headphones":
         this.buildHeadphones(content, s, opts, pick, mats);
+        break;
+      case "chip":
+        this.buildChip(content, s, opts, pick, mats);
+        break;
+      case "keyboard":
+        this.buildKeyboard(content, s, opts, pick, mats);
+        break;
+      case "mouse":
+        this.buildMouse(content, s, opts, pick, mats);
+        break;
+      case "database":
+        this.buildDatabase(content, s, opts, pick, mats);
+        break;
+      case "code":
+        this.buildCode(content, s, opts, pick, mats);
+        break;
+      case "tablet":
+        this.buildTablet(content, s, opts, pick, mats);
+        break;
+      case "antenna":
+        this.buildAntenna(content, s, opts, pick, mats);
+        break;
+      case "usb":
+        this.buildUsb(content, s, opts, pick, mats);
         break;
     }
 
@@ -892,6 +924,370 @@ export class ServiceFigurePool {
       );
     }
   }
+
+  private buildChip(
+    g: THREE.Group,
+    s: number,
+    opts: MatOpts,
+    pick: THREE.Object3D[],
+    mats: THREE.MeshPhysicalMaterial[],
+  ) {
+    const body = this.makeMat(opts, { metalness: 0.55, roughness: 0.35 });
+    const pin = this.makeMat(opts, { style: "accent", emissiveBoost: 0.85, opacity: 0.9 });
+    const die = this.makeMat(opts, {
+      tintMix: 0.4,
+      opacity: 0.72,
+      emissiveBoost: 1.2,
+      depthWrite: false,
+    });
+    mats.push(body, pin, die);
+
+    // Package
+    this.addMesh(g, this.box, body, pick, mats, 0, 0, 0, s * 0.85, s * 0.18, s * 0.85);
+    // Silicon die
+    this.addMesh(g, this.box, die, pick, mats, 0, s * 0.1, 0, s * 0.42, s * 0.06, s * 0.42);
+    // Pins on four sides
+    for (let i = 0; i < 4; i++) {
+      const x = -s * 0.28 + i * s * 0.18;
+      this.addMesh(g, this.box, pin, pick, mats, x, 0, s * 0.55, s * 0.08, s * 0.05, s * 0.22);
+      this.addMesh(g, this.box, pin, pick, mats, x, 0, -s * 0.55, s * 0.08, s * 0.05, s * 0.22);
+      this.addMesh(g, this.box, pin, pick, mats, s * 0.55, 0, x, s * 0.22, s * 0.05, s * 0.08);
+      this.addMesh(g, this.box, pin, pick, mats, -s * 0.55, 0, x, s * 0.22, s * 0.05, s * 0.08);
+    }
+  }
+
+  private buildKeyboard(
+    g: THREE.Group,
+    s: number,
+    opts: MatOpts,
+    pick: THREE.Object3D[],
+    mats: THREE.MeshPhysicalMaterial[],
+  ) {
+    const deck = this.makeMat(opts, { metalness: 0.7, roughness: 0.3 });
+    const key = this.makeMat(opts, { style: "accent", emissiveBoost: 0.7, opacity: 0.88 });
+    mats.push(deck, key);
+
+    this.addMesh(g, this.box, deck, pick, mats, 0, -s * 0.05, 0, s * 1.7, s * 0.12, s * 0.75);
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 5; col++) {
+        this.addMesh(
+          g,
+          this.box,
+          key,
+          pick,
+          mats,
+          -s * 0.58 + col * s * 0.29,
+          s * 0.04,
+          -s * 0.2 + row * s * 0.2,
+          s * 0.22,
+          s * 0.07,
+          s * 0.15,
+        );
+      }
+    }
+  }
+
+  private buildMouse(
+    g: THREE.Group,
+    s: number,
+    opts: MatOpts,
+    pick: THREE.Object3D[],
+    mats: THREE.MeshPhysicalMaterial[],
+  ) {
+    const shell = this.makeMat(opts);
+    const accent = this.makeMat(opts, { style: "accent", emissiveBoost: 1.1, opacity: 0.9 });
+    mats.push(shell, accent);
+
+    // Body
+    this.addMesh(g, this.sphere, shell, pick, mats, 0, 0, 0, s * 0.38, s * 0.22, s * 0.55);
+    // Split line / buttons
+    this.addMesh(g, this.box, accent, pick, mats, 0, s * 0.12, -s * 0.05, s * 0.04, s * 0.05, s * 0.45);
+    // Scroll wheel
+    this.addMesh(
+      g,
+      this.cyl,
+      accent,
+      pick,
+      mats,
+      0,
+      s * 0.14,
+      -s * 0.05,
+      s * 0.08,
+      s * 0.1,
+      s * 0.08,
+      0,
+      0,
+      Math.PI / 2,
+    );
+  }
+
+  private buildDatabase(
+    g: THREE.Group,
+    s: number,
+    opts: MatOpts,
+    pick: THREE.Object3D[],
+    mats: THREE.MeshPhysicalMaterial[],
+  ) {
+    const disk = this.makeMat(opts, { tintMix: 0.25, emissiveBoost: 0.95 });
+    const rim = this.makeMat(opts, { style: "accent", emissiveBoost: 1.15, opacity: 0.88 });
+    mats.push(disk, rim);
+
+    for (let i = 0; i < 3; i++) {
+      const y = s * 0.38 - i * s * 0.38;
+      this.addMesh(g, this.cyl, disk, pick, mats, 0, y, 0, s * 0.55, s * 0.16, s * 0.55);
+      this.addMesh(
+        g,
+        this.torusFull,
+        rim,
+        pick,
+        mats,
+        0,
+        y,
+        0,
+        s * 0.56,
+        s * 0.56,
+        s * 0.56,
+        Math.PI / 2,
+        0,
+        0,
+      );
+    }
+  }
+
+  private buildCode(
+    g: THREE.Group,
+    s: number,
+    opts: MatOpts,
+    pick: THREE.Object3D[],
+    mats: THREE.MeshPhysicalMaterial[],
+  ) {
+    const bar = this.makeMat(opts, { emissiveBoost: 1.25, opacity: 0.9 });
+    mats.push(bar);
+
+    // Left chevron <
+    this.addMesh(
+      g,
+      this.box,
+      bar,
+      pick,
+      mats,
+      -s * 0.35,
+      s * 0.18,
+      0,
+      s * 0.45,
+      s * 0.1,
+      s * 0.08,
+      0,
+      0,
+      0.55,
+    );
+    this.addMesh(
+      g,
+      this.box,
+      bar,
+      pick,
+      mats,
+      -s * 0.35,
+      -s * 0.18,
+      0,
+      s * 0.45,
+      s * 0.1,
+      s * 0.08,
+      0,
+      0,
+      -0.55,
+    );
+    // Right chevron >
+    this.addMesh(
+      g,
+      this.box,
+      bar,
+      pick,
+      mats,
+      s * 0.35,
+      s * 0.18,
+      0,
+      s * 0.45,
+      s * 0.1,
+      s * 0.08,
+      0,
+      0,
+      -0.55,
+    );
+    this.addMesh(
+      g,
+      this.box,
+      bar,
+      pick,
+      mats,
+      s * 0.35,
+      -s * 0.18,
+      0,
+      s * 0.45,
+      s * 0.1,
+      s * 0.08,
+      0,
+      0,
+      0.55,
+    );
+    // Slash /
+    this.addMesh(
+      g,
+      this.box,
+      bar,
+      pick,
+      mats,
+      0,
+      0,
+      0,
+      s * 0.12,
+      s * 0.85,
+      s * 0.08,
+      0,
+      0,
+      -0.45,
+    );
+  }
+
+  private buildTablet(
+    g: THREE.Group,
+    s: number,
+    opts: MatOpts,
+    pick: THREE.Object3D[],
+    mats: THREE.MeshPhysicalMaterial[],
+  ) {
+    const frame = this.makeMat(opts);
+    const glass = this.makeMat(opts, {
+      tintMix: 0.42,
+      opacity: 0.52,
+      depthWrite: false,
+      emissiveBoost: 1.25,
+      side: THREE.DoubleSide,
+    });
+    mats.push(frame, glass);
+
+    this.addMesh(g, this.box, frame, pick, mats, 0, 0, 0, s * 1.05, s * 1.45, s * 0.1);
+    this.addMesh(
+      g,
+      this.box,
+      glass,
+      pick,
+      mats,
+      0,
+      s * 0.02,
+      s * 0.06,
+      s * 0.9,
+      s * 1.22,
+      s * 0.04,
+    );
+    // Home indicator
+    this.addMesh(
+      g,
+      this.box,
+      frame,
+      pick,
+      mats,
+      0,
+      -s * 0.62,
+      s * 0.07,
+      s * 0.22,
+      s * 0.035,
+      s * 0.03,
+    );
+  }
+
+  private buildAntenna(
+    g: THREE.Group,
+    s: number,
+    opts: MatOpts,
+    pick: THREE.Object3D[],
+    mats: THREE.MeshPhysicalMaterial[],
+  ) {
+    const mast = this.makeMat(opts, { metalness: 0.92, roughness: 0.24 });
+    const dish = this.makeMat(opts, {
+      tintMix: 0.3,
+      opacity: opts.style === "glass" ? 0.55 : 0.78,
+      emissiveBoost: 1.05,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    });
+    const tip = this.makeMat(opts, { style: "accent", emissiveBoost: 1.4, opacity: 0.92 });
+    mats.push(mast, dish, tip);
+
+    // Mast
+    this.addMesh(g, this.cyl, mast, pick, mats, 0, -s * 0.15, 0, s * 0.05, s * 0.9, s * 0.05);
+    // Dish (tilted sphere slice look via flattened sphere)
+    this.addMesh(
+      g,
+      this.sphere,
+      dish,
+      pick,
+      mats,
+      0,
+      s * 0.35,
+      s * 0.12,
+      s * 0.55,
+      s * 0.55,
+      s * 0.18,
+      -0.55,
+      0,
+      0,
+    );
+    // Feed horn
+    this.addMesh(
+      g,
+      this.cyl,
+      mast,
+      pick,
+      mats,
+      0,
+      s * 0.28,
+      s * 0.28,
+      s * 0.06,
+      s * 0.28,
+      s * 0.06,
+      1.1,
+      0,
+      0,
+    );
+    this.addMesh(g, this.sphere, tip, pick, mats, 0, s * 0.42, s * 0.42, s * 0.07, s * 0.07, s * 0.07);
+    // Base
+    this.addMesh(g, this.cyl, mast, pick, mats, 0, -s * 0.58, 0, s * 0.28, s * 0.08, s * 0.28);
+  }
+
+  private buildUsb(
+    g: THREE.Group,
+    s: number,
+    opts: MatOpts,
+    pick: THREE.Object3D[],
+    mats: THREE.MeshPhysicalMaterial[],
+  ) {
+    const body = this.makeMat(opts);
+    const tip = this.makeMat(opts, { metalness: 0.95, roughness: 0.2 });
+    const led = this.makeMat(opts, { style: "accent", emissiveBoost: 1.6, opacity: 0.95 });
+    mats.push(body, tip, led);
+
+    // Housing
+    this.addMesh(g, this.box, body, pick, mats, -s * 0.12, 0, 0, s * 0.85, s * 0.35, s * 0.18);
+    // Metal connector
+    this.addMesh(g, this.box, tip, pick, mats, s * 0.5, 0, 0, s * 0.45, s * 0.28, s * 0.12);
+    // Cap detail
+    this.addMesh(g, this.box, body, pick, mats, -s * 0.55, 0, 0, s * 0.12, s * 0.38, s * 0.2);
+    // Activity LED
+    this.addMesh(
+      g,
+      this.sphere,
+      led,
+      pick,
+      mats,
+      -s * 0.2,
+      s * 0.12,
+      s * 0.1,
+      s * 0.05,
+      s * 0.05,
+      s * 0.05,
+    );
+  }
 }
 
 export function collisionRadius(kind: ServiceFigureKind, s: number): number {
@@ -918,6 +1314,22 @@ export function collisionRadius(kind: ServiceFigureKind, s: number): number {
       return s * 0.85;
     case "headphones":
       return s * 0.85;
+    case "chip":
+      return s * 0.8;
+    case "keyboard":
+      return s * 1.05;
+    case "mouse":
+      return s * 0.7;
+    case "database":
+      return s * 0.9;
+    case "code":
+      return s * 0.85;
+    case "tablet":
+      return s * 0.95;
+    case "antenna":
+      return s * 0.9;
+    case "usb":
+      return s * 0.75;
     default:
       return s * 0.85;
   }
@@ -936,4 +1348,12 @@ export const SERVICE_KINDS: ServiceFigureKind[] = [
   "gear",
   "desktop",
   "headphones",
+  "chip",
+  "keyboard",
+  "mouse",
+  "database",
+  "code",
+  "tablet",
+  "antenna",
+  "usb",
 ];
