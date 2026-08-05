@@ -7,11 +7,10 @@ import BidiBlock from "@/components/ui/BidiBlock";
 import { Link } from "@/i18n/navigation";
 import { serviceCategories, categoryIcons, serviceIcons } from "@/lib/services-data";
 import { portfolioCases } from "@/lib/portfolio-data";
-import NebulaCanvas from "../NebulaCanvas";
 
 type Props = { active?: boolean };
 
-export default function RealizationStage({ active = true }: Props) {
+export default function RealizationStage({ active: _active = true }: Props) {
   const t = useTranslations("ritual.realization");
   const ts = useTranslations("services");
   const tp = useTranslations("portfolio.cases");
@@ -19,10 +18,6 @@ export default function RealizationStage({ active = true }: Props) {
 
   return (
     <section id="realization" className="ritual-stage relative !justify-start overflow-hidden py-24 sm:py-28">
-      <div className="absolute inset-0 opacity-45">
-        <NebulaCanvas mode="soft" density={0.7} active={active} />
-      </div>
-
       <div className="relative z-10 mx-auto flex w-full max-w-[1280px] flex-col gap-12 lg:gap-16">
         <div className="text-content text-center">
           <h2 className="ritual-headline ritual-brand-glow text-[clamp(1.6rem,4vw,2.8rem)] tracking-[0.14em] text-white">

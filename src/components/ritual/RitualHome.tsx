@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import "./ritual.css";
 import RitualHeader from "./RitualHeader";
 import StageRail, { type StageId } from "./StageRail";
+import StageScene from "./StageScene";
+import GlassHud from "./GlassHud";
 import IntroStage from "./stages/IntroStage";
 import MethodStage from "./stages/MethodStage";
 import RealizationStage from "./stages/RealizationStage";
@@ -186,6 +188,8 @@ export default function RitualHome() {
 
   return (
     <div ref={rootRef} className="ritual-root" data-stage={active}>
+      <StageScene stage={active} />
+      <GlassHud stage={active} />
       <RitualHeader active={active} onNavigate={goTo} />
       <StageRail active={active} onSelect={goTo} />
 

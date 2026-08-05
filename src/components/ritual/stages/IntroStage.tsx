@@ -1,19 +1,14 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import NebulaCanvas from "../NebulaCanvas";
 
 type Props = { active?: boolean };
 
-export default function IntroStage({ active = true }: Props) {
+export default function IntroStage({ active: _active = true }: Props) {
   const t = useTranslations("ritual.intro");
 
   return (
     <section id="intro" className="ritual-stage relative items-center justify-center overflow-hidden">
-      <div className="absolute inset-0">
-        <NebulaCanvas mode="nebula" density={1} active={active} />
-      </div>
-
       <div className="relative z-10 flex flex-col items-center px-4 text-center">
         <h1 className="ritual-headline ritual-brand-glow text-content text-[clamp(2.4rem,7vw,5.5rem)] leading-none tracking-[0.12em] text-white">
           {t("brand")}

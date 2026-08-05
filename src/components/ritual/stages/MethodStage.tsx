@@ -5,7 +5,6 @@ import clsx from "clsx";
 import { useTranslations } from "next-intl";
 import { CloudUpload, Code2, Search } from "lucide-react";
 import BidiBlock from "@/components/ui/BidiBlock";
-import NebulaCanvas from "../NebulaCanvas";
 
 const PHASES = [
   { id: "analysis", Icon: Search },
@@ -15,16 +14,12 @@ const PHASES = [
 
 type Props = { active?: boolean };
 
-export default function MethodStage({ active = true }: Props) {
+export default function MethodStage({ active: _active = true }: Props) {
   const t = useTranslations("ritual.method");
   const [phase, setPhase] = useState<(typeof PHASES)[number]["id"]>("analysis");
 
   return (
     <section id="method" className="ritual-stage relative overflow-hidden">
-      <div className="absolute inset-0 opacity-70">
-        <NebulaCanvas mode="structure" density={0.85} active={active} />
-      </div>
-
       <div className="relative z-10 mx-auto flex w-full max-w-[1200px] flex-1 flex-col justify-center gap-10 lg:gap-14">
         <div className="text-content max-w-3xl">
           <p className="label-mono mb-4 text-[var(--ritual-cyan)]">{t("eyebrow")}</p>
