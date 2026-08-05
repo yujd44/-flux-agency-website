@@ -1,11 +1,18 @@
+"use client";
+
 import { useTranslations } from "next-intl";
 import Container from "@/components/ui/Container";
 import MethodaLogo from "@/components/brand/MethodaLogo";
 import LanguageSwitcher from "./LanguageSwitcher";
+import { usePathname } from "@/i18n/navigation";
 
-/** Minimal footer — brand, contact, language. No page sitemap. */
+/** Minimal footer — brand, contact, language. Hidden on ritual home. */
 export default function Footer() {
   const tf = useTranslations("footer");
+  const pathname = usePathname();
+  const isHome = pathname === "/" || pathname === "";
+
+  if (isHome) return null;
 
   return (
     <footer className="border-t border-border bg-bg">

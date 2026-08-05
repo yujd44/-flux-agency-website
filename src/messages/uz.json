@@ -488,5 +488,69 @@
     "phone": "+972 3 555 0192",
     "address": "12 Rothschild Blvd, Tel Aviv, Isroil",
     "copyright": "METHODEA. Barcha huquqlar himoyalangan."
+  },
+  "ritual": {
+    "stages": {
+      "aria": "Hikoya bosqichlari",
+      "intro": "Kirish",
+      "method": "Usul",
+      "realization": "Amalga oshirish",
+      "future": "Kelajak"
+    },
+    "nav": {
+      "aria": "Asosiy navigatsiya",
+      "home": "Bosh sahifa",
+      "method": "Usul",
+      "services": "Xizmatlar",
+      "works": "Ishlar",
+      "support": "Qo‘llab-quvvatlash",
+      "contact": "Aloqa"
+    },
+    "intro": {
+      "brand": "METHODEA",
+      "tagline": "Sizda g‘oya bor. Bizda yo‘l bor."
+    },
+    "method": {
+      "eyebrow": "Usul",
+      "title": "METHODEA",
+      "titleLine2": "Aniq yechimlar arxitekturasi.",
+      "phases": {
+        "analysis": {
+          "title": "Tahlil va arxitektura",
+          "body": "Maqsad, cheklovlar va tuzilmani birinchi qator koddan oldin belgilaymiz."
+        },
+        "engineering": {
+          "title": "Muhandislik va ishlab chiqish",
+          "body": "Birinchi kundan o‘sishga tayyor, barqaror va o‘lchanadigan tizimlarni quramiz."
+        },
+        "optimization": {
+          "title": "Optimallashtirish va xavfsizlik",
+          "body": "Ishlashni kuchaytiramiz, himoyani mustahkamlaymiz va tizimni uzoq umrga tayyorlaymiz."
+        }
+      }
+    },
+    "realization": {
+      "title": "Amalga oshirish",
+      "subtitle": "To‘rt yo‘nalish. Haqiqiy katalog. Tirik loyihalar.",
+      "worksEyebrow": "Ishlar",
+      "worksTitle": "Loyiha namunalari"
+    },
+    "future": {
+      "headline": "Kelajak: evolyutsiya yo‘lidagi texnologik hamkoringiz.",
+      "manifestoTitle": "Biz shunchaki yechim yaratmaymiz. Uning o‘sishini ta’minlaymiz.",
+      "manifestoBody": "METHODEA — uzoq muddatli raqamli evolyutsiya hamkori: biznesingiz o‘sishi bilan qo‘llab-quvvatlash, yaxshilash va kengaytirish.",
+      "ctaTitle": "Transformatsiyani boshlashga tayyormisiz?",
+      "form": {
+        "name": "Ism",
+        "namePlaceholder": "Ismingiz",
+        "email": "Email",
+        "emailPlaceholder": "you@company.com",
+        "message": "G‘oyangiz yoki vazifangizni tasvirlang",
+        "messagePlaceholder": "Nima qurish kerakligini yozing…",
+        "submit": "Usulni ishga tushirish",
+        "submitting": "Yuborilmoqda…",
+        "success": "Rahmat — xabaringiz qabul qilindi. Tez orada bog‘lanamiz."
+      }
+    }
   }
 }

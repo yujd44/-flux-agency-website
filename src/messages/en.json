@@ -488,5 +488,69 @@
     "phone": "+972 3 555 0192",
     "address": "12 Rothschild Blvd, Tel Aviv, Israel",
     "copyright": "METHODEA. All rights reserved."
+  },
+  "ritual": {
+    "stages": {
+      "aria": "Narrative stages",
+      "intro": "Intro",
+      "method": "Method",
+      "realization": "Realization",
+      "future": "Future"
+    },
+    "nav": {
+      "aria": "Primary navigation",
+      "home": "Home",
+      "method": "Method",
+      "services": "Services",
+      "works": "Works",
+      "support": "Support",
+      "contact": "Contact"
+    },
+    "intro": {
+      "brand": "METHODEA",
+      "tagline": "You have an idea. We have a way."
+    },
+    "method": {
+      "eyebrow": "The Method",
+      "title": "METHODEA",
+      "titleLine2": "Architecture of precise solutions.",
+      "phases": {
+        "analysis": {
+          "title": "Analysis & architecture",
+          "body": "We map goals, constraints, and structure — before a single line of code."
+        },
+        "engineering": {
+          "title": "Engineering & development",
+          "body": "We build stable, measurable systems ready to grow from day one."
+        },
+        "optimization": {
+          "title": "Optimization & security",
+          "body": "We sharpen performance, harden defenses, and keep the system alive."
+        }
+      }
+    },
+    "realization": {
+      "title": "The Realization",
+      "subtitle": "Four domains. Real catalog. Live projects.",
+      "worksEyebrow": "Works",
+      "worksTitle": "Project examples"
+    },
+    "future": {
+      "headline": "Future: your technology partner on the path to evolution.",
+      "manifestoTitle": "We don't just ship a solution. We ensure its growth.",
+      "manifestoBody": "METHODEA is a partner for long-term digital evolution — support, refinement, and scale as your business grows.",
+      "ctaTitle": "Ready to start the transformation?",
+      "form": {
+        "name": "Name",
+        "namePlaceholder": "Your name",
+        "email": "Email",
+        "emailPlaceholder": "you@company.com",
+        "message": "Describe your idea or task",
+        "messagePlaceholder": "Tell us what needs to be built…",
+        "submit": "Launch the method",
+        "submitting": "Sending…",
+        "success": "Thank you — your message was received. We'll be in touch soon."
+      }
+    }
   }
 }

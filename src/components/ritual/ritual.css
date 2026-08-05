@@ -1,0 +1,180 @@
+/* Ritual landing — scoped tokens (cyan/purple glass, deep space) */
+.ritual-root {
+  --bg-deep: #07080c;
+  --ritual-cyan: #4df3ff;
+  --ritual-purple: #8a5cf6;
+  --ritual-glass: rgba(255, 255, 255, 0.06);
+  --ritual-glass-border: rgba(255, 255, 255, 0.12);
+  --ritual-text: #f4f7fb;
+  --ritual-muted: rgba(210, 220, 235, 0.72);
+  --ritual-glow: 0 0 40px rgba(77, 243, 255, 0.22);
+
+  background: var(--bg-deep);
+  color: var(--ritual-text);
+  position: relative;
+  height: 100svh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-snap-type: y proximity;
+  scroll-behavior: smooth;
+}
+
+.ritual-root::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 30%, rgba(77, 243, 255, 0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 80% 70%, rgba(138, 92, 246, 0.1) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 35% at 15% 80%, rgba(77, 243, 255, 0.04) 0%, transparent 70%);
+}
+
+.ritual-stage {
+  position: relative;
+  z-index: 1;
+  min-height: 100svh;
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 5.5rem var(--page-pad) 3.5rem;
+}
+
+.ritual-glass {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+  border: 1px solid var(--ritual-glass-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.ritual-glass-hover {
+  transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+.ritual-glass-hover:hover {
+  transform: translateY(-3px);
+  border-color: rgba(77, 243, 255, 0.28);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 24px rgba(77, 243, 255, 0.08);
+}
+
+.ritual-brand-glow {
+  text-shadow:
+    0 0 20px rgba(77, 243, 255, 0.45),
+    0 0 48px rgba(138, 92, 246, 0.25);
+}
+
+.ritual-headline {
+  font-family: var(--font-headline), var(--font-latin), system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+html[lang="he"] .ritual-headline {
+  font-family: var(--font-he), var(--font-headline), system-ui, sans-serif;
+  letter-spacing: 0;
+}
+
+html[lang="ar"] .ritual-headline {
+  font-family: var(--font-ar), var(--font-headline), system-ui, sans-serif;
+  letter-spacing: 0;
+}
+
+.ritual-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 52px;
+  padding: 0 1.75rem;
+  border-radius: 4px;
+  border: 1px solid rgba(77, 243, 255, 0.35);
+  background: linear-gradient(105deg, #4df3ff 0%, #6a8cff 45%, #8a5cf6 100%);
+  color: #061018;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  box-shadow: 0 0 28px rgba(77, 243, 255, 0.35);
+  transition: filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ritual-cta:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 0 36px rgba(77, 243, 255, 0.5);
+}
+
+.ritual-cta:disabled {
+  opacity: 0.6;
+}
+
+.ritual-input {
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(7, 8, 12, 0.55);
+  padding: 0.85rem 1rem;
+  color: var(--ritual-text);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ritual-input::placeholder {
+  color: rgba(210, 220, 235, 0.4);
+}
+
+.ritual-input:focus {
+  border-color: rgba(77, 243, 255, 0.45);
+  box-shadow: 0 0 0 1px rgba(77, 243, 255, 0.15);
+}
+
+.ritual-scroll-hint {
+  width: 1px;
+  height: 28px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.7), transparent);
+  animation: ritual-hint 2.2s ease-in-out infinite;
+}
+
+@keyframes ritual-hint {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scaleY(0.85);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scaleY(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ritual-root {
+    scroll-behavior: auto;
+  }
+
+  .ritual-scroll-hint,
+  .ritual-glass-hover {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .ritual-glass-hover:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .ritual-stage {
+    padding-top: 4.75rem;
+    padding-bottom: 2.5rem;
+    justify-content: flex-start;
+  }
+}

@@ -1,8 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
-import Hero from "@/components/home/Hero";
-import StatsBar from "@/components/home/StatsBar";
-import ServicesTeaser from "@/components/home/ServicesTeaser";
-import PortfolioTeaser from "@/components/home/PortfolioTeaser";
+import RitualHome from "@/components/ritual/RitualHome";
 
 export default async function HomePage({
   params,
@@ -12,12 +9,5 @@ export default async function HomePage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return (
-    <>
-      <Hero />
-      <StatsBar />
-      <ServicesTeaser />
-      <PortfolioTeaser />
-    </>
-  );
+  return <RitualHome />;
 }
