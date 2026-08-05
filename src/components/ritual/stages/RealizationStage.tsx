@@ -22,12 +22,6 @@ export default function RealizationStage({ active: _active = true }: Props) {
   const featuredTitle = tp(`${featured.id}.title`);
   const featuredTag = tp(`${featured.id}.tag`);
 
-  const primaryCats = serviceCategories.filter(
-    (c) => c.id === "digitalProducts" || c.id === "businessAutomation",
-  );
-  const infraCat = serviceCategories.find((c) => c.id === "infrastructure");
-  const commCat = serviceCategories.find((c) => c.id === "communication");
-
   const chartMax = Math.max(...METRIC_POINTS);
   const chartW = 220;
   const chartH = 72;
@@ -49,110 +43,42 @@ export default function RealizationStage({ active: _active = true }: Props) {
           </h2>
         </div>
 
-        <div className="chrome-ltr grid gap-3 lg:grid-cols-[1.35fr_1fr] lg:gap-4">
-          <div className="ritual-glass rounded-2xl p-4 sm:p-5">
-            <div className="mb-4 flex flex-wrap items-center gap-3">
-              {primaryCats.map((cat) => {
-                const Icon = categoryIcons[cat.id];
-                return (
-                  <div key={cat.id} className="flex items-center gap-2">
-                    <Icon className="h-3.5 w-3.5 text-[var(--ritual-cyan)]" strokeWidth={1.5} />
-                    <BidiBlock className="label-mono text-[10px] tracking-[0.14em] text-white/90">
-                      {ts(`categories.${cat.id}.title`)}
-                    </BidiBlock>
-                  </div>
-                );
-              })}
-            </div>
-            <ul className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
-              {primaryCats.flatMap((cat) =>
-                cat.items.slice(0, cat.id === "digitalProducts" ? 6 : 3).map((itemId) => {
-                  const ItemIcon = serviceIcons[itemId];
-                  return (
-                    <li key={itemId} className="flex items-start gap-2.5 text-start">
-                      <ItemIcon
-                        className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white/40"
-                        strokeWidth={1.5}
-                      />
-                      <div className="min-w-0">
-                        <BidiBlock as="span" className="block text-sm font-medium text-white">
-                          {ts(`items.${itemId}.title`)}
-                        </BidiBlock>
+        <div className="chrome-ltr grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {serviceCategories.map((cat) => {
+            const Icon = categoryIcons[cat.id];
+            return (
+              <div
+                key={cat.id}
+                className="ritual-glass ritual-glass-hover flex flex-col rounded-2xl p-4 sm:p-5"
+              >
+                <div className="mb-4 flex items-center gap-2.5">
+                  <Icon className="h-4 w-4 text-[var(--ritual-cyan)]" strokeWidth={1.5} />
+                  <BidiBlock className="label-mono text-[10px] tracking-[0.16em] text-white">
+                    {ts(`categories.${cat.id}.title`)}
+                  </BidiBlock>
+                </div>
+                <ul className="flex flex-col gap-2.5">
+                  {cat.items.map((itemId) => {
+                    const ItemIcon = serviceIcons[itemId];
+                    return (
+                      <li key={itemId} className="flex items-start gap-2 text-start">
+                        <ItemIcon
+                          className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white/35"
+                          strokeWidth={1.5}
+                        />
                         <BidiBlock
                           as="span"
-                          className="mt-0.5 line-clamp-2 block text-[11px] leading-snug text-[var(--ritual-muted)] sm:text-xs"
+                          className="text-xs leading-snug text-[var(--ritual-muted)] sm:text-sm"
                         >
-                          {ts(`items.${itemId}.description`)}
+                          {ts(`items.${itemId}.title`)}
                         </BidiBlock>
-                      </div>
-                    </li>
-                  );
-                }),
-              )}
-            </ul>
-          </div>
-
-          <div className="ritual-glass flex flex-col rounded-2xl p-4 sm:p-5">
-            <div className="mb-4 flex items-center gap-2">
-              {infraCat && (
-                <>
-                  {(() => {
-                    const Icon = categoryIcons[infraCat.id];
-                    return <Icon className="h-3.5 w-3.5 text-[var(--ritual-cyan)]" strokeWidth={1.5} />;
-                  })()}
-                  <BidiBlock className="label-mono text-[10px] tracking-[0.14em] text-white/90">
-                    {ts(`categories.${infraCat.id}.title`)}
-                  </BidiBlock>
-                </>
-              )}
-            </div>
-            <ul className="flex flex-1 flex-col gap-3">
-              {infraCat?.items.map((itemId) => {
-                const ItemIcon = serviceIcons[itemId];
-                return (
-                  <li key={itemId} className="flex items-start gap-2.5 text-start">
-                    <ItemIcon
-                      className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white/40"
-                      strokeWidth={1.5}
-                    />
-                    <div className="min-w-0">
-                      <BidiBlock as="span" className="block text-sm font-medium text-white">
-                        {ts(`items.${itemId}.title`)}
-                      </BidiBlock>
-                      <BidiBlock
-                        as="span"
-                        className="mt-0.5 line-clamp-2 block text-[11px] leading-snug text-[var(--ritual-muted)] sm:text-xs"
-                      >
-                        {ts(`items.${itemId}.description`)}
-                      </BidiBlock>
-                    </div>
-                  </li>
-                );
-              })}
-              {commCat?.items.slice(0, 2).map((itemId) => {
-                const ItemIcon = serviceIcons[itemId];
-                return (
-                  <li key={itemId} className="flex items-start gap-2.5 text-start">
-                    <ItemIcon
-                      className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--ritual-cyan)]/70"
-                      strokeWidth={1.5}
-                    />
-                    <div className="min-w-0">
-                      <BidiBlock as="span" className="block text-sm font-medium text-white">
-                        {ts(`items.${itemId}.title`)}
-                      </BidiBlock>
-                      <BidiBlock
-                        as="span"
-                        className="mt-0.5 line-clamp-2 block text-[11px] leading-snug text-[var(--ritual-muted)] sm:text-xs"
-                      >
-                        {ts(`items.${itemId}.description`)}
-                      </BidiBlock>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            );
+          })}
         </div>
 
         <div id="works" className="chrome-ltr scroll-mt-24 grid gap-3 md:grid-cols-12">
