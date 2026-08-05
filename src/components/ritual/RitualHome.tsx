@@ -208,8 +208,10 @@ export default function RitualHome() {
               style={{ transitionTimingFunction: EASE }}
             >
               {id === "intro" && <IntroStage active={isActive} />}
-              {id === "method" && <MethodStage active={isActive} />}
-              {id === "realization" && <RealizationStage active={isActive} />}
+              {id === "method" && <MethodStage active={isActive} onNavigate={goTo} />}
+              {id === "realization" && (
+                <RealizationStage active={isActive} onNavigate={goTo} />
+              )}
               {id === "future" && <FutureStage active={isActive} />}
             </div>
           );

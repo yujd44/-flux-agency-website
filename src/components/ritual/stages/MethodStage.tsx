@@ -3,8 +3,9 @@
 import { useState } from "react";
 import clsx from "clsx";
 import { useTranslations } from "next-intl";
-import { CloudUpload, Code2, Search } from "lucide-react";
+import { ArrowUpRight, CloudUpload, Code2, Search } from "lucide-react";
 import BidiBlock from "@/components/ui/BidiBlock";
+import type { StageId } from "../StageRail";
 
 const PHASES = [
   { id: "analysis", Icon: Search },
@@ -12,10 +13,17 @@ const PHASES = [
   { id: "optimization", Icon: CloudUpload },
 ] as const;
 
-type Props = { active?: boolean };
+type Props = {
+  active?: boolean;
+  onNavigate?: (id: StageId | "works") => void;
+};
 
-export default function MethodStage({ active: _active = true }: Props) {
+export default function MethodStage({
+  active: _active = true,
+  onNavigate,
+}: Props) {
   const t = useTranslations("ritual.method");
+  const tReal = useTranslations("ritual.realization");
   const [phase, setPhase] = useState<(typeof PHASES)[number]["id"]>("analysis");
 
   return (
@@ -34,28 +42,45 @@ export default function MethodStage({ active: _active = true }: Props) {
           {PHASES.map(({ id, Icon }) => {
             const isActive = phase === id;
             return (
-              <button
+              <div
                 key={id}
-                type="button"
-                onClick={() => setPhase(id)}
                 onMouseEnter={() => setPhase(id)}
                 className={clsx(
-                  "ritual-glass ritual-glass-hover rounded-2xl p-5 text-start sm:p-6",
+                  "ritual-glass ritual-glass-hover flex flex-col rounded-2xl p-5 text-start sm:p-6",
                   isActive && "border-[rgba(77,243,255,0.35)] shadow-[0_0_28px_rgba(77,243,255,0.12)]",
                 )}
               >
-                <div className="mb-4 flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/15 bg-white/5">
-                    <Icon className="h-4 w-4 text-[var(--ritual-cyan)]" strokeWidth={1.5} />
-                  </span>
-                  <BidiBlock className="label-mono text-[11px] tracking-[0.16em] text-white">
-                    {t(`phases.${id}.title`)}
+                <button
+                  type="button"
+                  onClick={() => setPhase(id)}
+                  aria-expanded={isActive}
+                  className="flex flex-col text-start"
+                >
+                  <div className="mb-4 flex items-center gap-3">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/15 bg-white/5">
+                      <Icon className="h-4 w-4 text-[var(--ritual-cyan)]" strokeWidth={1.5} />
+                    </span>
+                    <BidiBlock className="label-mono text-[11px] tracking-[0.16em] text-white">
+                      {t(`phases.${id}.title`)}
+                    </BidiBlock>
+                  </div>
+                  <BidiBlock className="text-sm leading-relaxed text-[var(--ritual-muted)]">
+                    {t(`phases.${id}.body`)}
                   </BidiBlock>
-                </div>
-                <BidiBlock className="text-sm leading-relaxed text-[var(--ritual-muted)]">
-                  {t(`phases.${id}.body`)}
-                </BidiBlock>
-              </button>
+                </button>
+                {isActive && onNavigate && (
+                  <button
+                    type="button"
+                    onClick={() => onNavigate("future")}
+                    className="mt-5 inline-flex items-center gap-1.5 self-start text-[var(--ritual-cyan)] transition-opacity hover:opacity-80"
+                  >
+                    <span className="label-mono text-[11px] !tracking-[0.14em]">
+                      {tReal("learnMore")}
+                    </span>
+                    <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
+                  </button>
+                )}
+              </div>
             );
           })}
         </div>

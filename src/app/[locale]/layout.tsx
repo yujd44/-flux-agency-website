@@ -7,7 +7,6 @@ import {
   fontLatin,
   fontMono,
   fontHeadline,
-  fontAccent,
   fontHebrew,
   fontArabic,
 } from "@/lib/fonts";
@@ -53,7 +52,7 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       dir={dir}
-      className={`${fontLatin.variable} ${fontMono.variable} ${fontHeadline.variable} ${fontAccent.variable} ${fontHebrew.variable} ${fontArabic.variable} h-full antialiased`}
+      className={`${fontLatin.variable} ${fontMono.variable} ${fontHeadline.variable} ${fontHebrew.variable} ${fontArabic.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-bg text-text">
         <NextIntlClientProvider messages={messages}>

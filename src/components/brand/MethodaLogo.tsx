@@ -110,7 +110,7 @@ export default function MethodaLogo({
       {showWordmark && (
         <span
           className="text-[13px] font-normal tracking-[0.28em] text-text uppercase sm:text-[14px]"
-          style={{ fontFamily: "var(--font-latin), system-ui, sans-serif" }}
+          style={{ fontFamily: "var(--font-headline), var(--font-latin), system-ui, sans-serif" }}
         >
           METHODEA
         </span>

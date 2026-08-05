@@ -390,7 +390,7 @@
 .ritual-headline {
   font-family: var(--font-headline), var(--font-latin), system-ui, sans-serif;
   font-weight: 500;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
 }
 
 html[lang="he"] .ritual-headline {
@@ -414,7 +414,7 @@ html[lang="ar"] .ritual-headline {
   border: 1px solid rgba(77, 243, 255, 0.35);
   background: linear-gradient(105deg, #4df3ff 0%, #6a8cff 45%, #8a5cf6 100%);
   color: #061018;
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-family: var(--font-code), ui-monospace, monospace;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.18em;

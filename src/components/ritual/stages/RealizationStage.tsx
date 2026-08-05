@@ -1,22 +1,38 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import clsx from "clsx";
 import { useTranslations } from "next-intl";
-import { ArrowUpRight, ExternalLink } from "lucide-react";
+import { ArrowUpRight, ExternalLink, X } from "lucide-react";
 import BidiBlock from "@/components/ui/BidiBlock";
 import { Link } from "@/i18n/navigation";
-import { serviceCategories, categoryIcons, serviceIcons } from "@/lib/services-data";
+import {
+  serviceCategories,
+  categoryIcons,
+  serviceIcons,
+  type ServiceCategoryId,
+} from "@/lib/services-data";
 import { portfolioCases } from "@/lib/portfolio-data";
+import type { StageId } from "../StageRail";
 
-type Props = { active?: boolean };
+type Props = {
+  active?: boolean;
+  onNavigate?: (id: StageId | "works") => void;
+};
 
 const METRIC_POINTS = [28, 34, 32, 40, 48, 55, 62, 70, 78];
 
-export default function RealizationStage({ active: _active = true }: Props) {
+export default function RealizationStage({
+  active: _active = true,
+  onNavigate,
+}: Props) {
   const t = useTranslations("ritual.realization");
   const ts = useTranslations("services");
   const tp = useTranslations("portfolio.cases");
   const common = useTranslations("common");
+  const [selected, setSelected] = useState<ServiceCategoryId | null>(null);
+  const detailRef = useRef<HTMLDivElement>(null);
 
   const featured = portfolioCases[0];
   const featuredTitle = tp(`${featured.id}.title`);
@@ -30,6 +46,21 @@ export default function RealizationStage({ active: _active = true }: Props) {
     const y = chartH - (v / chartMax) * (chartH - 8) - 4;
     return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
   }).join(" ");
+
+  const selectedCat = serviceCategories.find((c) => c.id === selected);
+
+  useEffect(() => {
+    if (!selected || !detailRef.current) return;
+    detailRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [selected]);
+
+  function toggleCategory(id: ServiceCategoryId) {
+    setSelected((prev) => (prev === id ? null : id));
+  }
+
+  function goToForm() {
+    onNavigate?.("future");
+  }
 
   return (
     <section
@@ -46,10 +77,18 @@ export default function RealizationStage({ active: _active = true }: Props) {
         <div className="chrome-ltr grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {serviceCategories.map((cat) => {
             const Icon = categoryIcons[cat.id];
+            const isOpen = selected === cat.id;
             return (
-              <div
+              <button
                 key={cat.id}
-                className="ritual-glass ritual-glass-hover flex flex-col rounded-2xl p-4 sm:p-5"
+                type="button"
+                onClick={() => toggleCategory(cat.id)}
+                aria-expanded={isOpen}
+                className={clsx(
+                  "ritual-glass ritual-glass-hover flex flex-col rounded-2xl p-4 text-start sm:p-5",
+                  isOpen &&
+                    "border-[rgba(77,243,255,0.4)] shadow-[0_0_28px_rgba(77,243,255,0.14)]",
+                )}
               >
                 <div className="mb-4 flex items-center gap-2.5">
                   <Icon className="h-4 w-4 text-[var(--ritual-cyan)]" strokeWidth={1.5} />
@@ -76,10 +115,73 @@ export default function RealizationStage({ active: _active = true }: Props) {
                     );
                   })}
                 </ul>
-              </div>
+              </button>
             );
           })}
         </div>
+
+        {selectedCat && (
+          <div
+            ref={detailRef}
+            className="ritual-glass chrome-ltr rounded-2xl border-[rgba(77,243,255,0.28)] p-5 sm:p-6"
+            role="region"
+            aria-live="polite"
+          >
+            <div className="mb-4 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="label-mono mb-2 text-[10px] tracking-[0.16em] text-[var(--ritual-cyan)]">
+                  {ts(`categories.${selectedCat.id}.number`)}
+                </p>
+                <BidiBlock className="text-content text-lg font-medium text-white sm:text-xl">
+                  {ts(`categories.${selectedCat.id}.title`)}
+                </BidiBlock>
+                <BidiBlock className="text-content mt-2 max-w-2xl text-sm leading-relaxed text-[var(--ritual-muted)]">
+                  {ts(`categories.${selectedCat.id}.description`)}
+                </BidiBlock>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelected(null)}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 text-white/70 transition-colors hover:border-white/30 hover:text-white"
+                aria-label={t("closeDetail")}
+              >
+                <X className="h-4 w-4" strokeWidth={1.75} />
+              </button>
+            </div>
+
+            <ul className="grid gap-3 sm:grid-cols-2">
+              {selectedCat.items.map((itemId) => {
+                const ItemIcon = serviceIcons[itemId];
+                return (
+                  <li
+                    key={itemId}
+                    className="rounded-xl border border-white/10 bg-white/[0.03] p-3.5 sm:p-4"
+                  >
+                    <div className="mb-2 flex items-center gap-2">
+                      <ItemIcon
+                        className="h-3.5 w-3.5 shrink-0 text-[var(--ritual-cyan)]"
+                        strokeWidth={1.5}
+                      />
+                      <BidiBlock className="text-sm font-medium text-white">
+                        {ts(`items.${itemId}.title`)}
+                      </BidiBlock>
+                    </div>
+                    <BidiBlock className="text-xs leading-relaxed text-[var(--ritual-muted)] sm:text-sm">
+                      {ts(`items.${itemId}.description`)}
+                    </BidiBlock>
+                  </li>
+                );
+              })}
+            </ul>
+
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <button type="button" onClick={goToForm} className="ritual-cta">
+                <span>{t("learnMore")}</span>
+                <ArrowUpRight className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+        )}
 
         <div id="works" className="chrome-ltr scroll-mt-24 grid gap-3 md:grid-cols-12">
           <a

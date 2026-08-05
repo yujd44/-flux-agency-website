@@ -532,6 +532,8 @@
     "realization": {
       "title": "التنفيذ",
       "subtitle": "أربعة مجالات. كتالوج حقيقي. مشاريع حية.",
+      "learnMore": "المزيد",
+      "closeDetail": "إغلاق",
       "worksEyebrow": "الأعمال",
       "worksTitle": "منتجات رقمية",
       "caseStudyEyebrow": "دراسة حالة حية",
@@ -553,17 +555,17 @@
       "headline": "المستقبل: شريككم التقني في طريق التطور.",
       "manifestoTitle": "نحن لا نصنع حلاً فحسب. نحن نضمن نموه.",
       "manifestoBody": "METHODEA شريك للتطور الرقمي طويل الأمد — دعم وتحسين وتوسيع مع نمو أعمالكم.",
-      "ctaTitle": "هل أنتم مستعدون لبدء التحول؟",
+      "ctaTitle": "تقديم طلب",
       "form": {
         "name": "الاسم",
         "namePlaceholder": "اسمكم",
         "email": "البريد الإلكتروني",
         "emailPlaceholder": "you@company.com",
-        "message": "صفوا فكرتكم أو مهمتكم",
-        "messagePlaceholder": "أخبرونا بما يجب بناؤه…",
-        "submit": "تشغيل المنهج",
+        "message": "صفوا المهمة",
+        "messagePlaceholder": "أخبرونا باختصار بما تحتاجون…",
+        "submit": "إرسال الطلب",
         "submitting": "جارٍ الإرسال…",
-        "success": "شكراً — استلمنا رسالتكم. سنتواصل معكم قريباً."
+        "success": "شكراً — استلمنا طلبكم. سنتواصل معكم قريباً."
       }
     }
   }

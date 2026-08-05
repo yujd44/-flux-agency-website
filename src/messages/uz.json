@@ -532,6 +532,8 @@
     "realization": {
       "title": "Amalga oshirish",
       "subtitle": "To‘rt yo‘nalish. Haqiqiy katalog. Tirik loyihalar.",
+      "learnMore": "Batafsil",
+      "closeDetail": "Yopish",
       "worksEyebrow": "Ishlar",
       "worksTitle": "Raqamli mahsulotlar",
       "caseStudyEyebrow": "Jonli keys",
@@ -553,17 +555,17 @@
       "headline": "Kelajak: evolyutsiya yo‘lidagi texnologik hamkoringiz.",
       "manifestoTitle": "Biz shunchaki yechim yaratmaymiz. Uning o‘sishini ta’minlaymiz.",
       "manifestoBody": "METHODEA — uzoq muddatli raqamli evolyutsiya hamkori: biznesingiz o‘sishi bilan qo‘llab-quvvatlash, yaxshilash va kengaytirish.",
-      "ctaTitle": "Transformatsiyani boshlashga tayyormisiz?",
+      "ctaTitle": "Ariza qoldirish",
       "form": {
         "name": "Ism",
         "namePlaceholder": "Ismingiz",
         "email": "Email",
         "emailPlaceholder": "you@company.com",
-        "message": "G‘oyangiz yoki vazifangizni tasvirlang",
-        "messagePlaceholder": "Nima qurish kerakligini yozing…",
-        "submit": "Usulni ishga tushirish",
+        "message": "Vazifani tasvirlang",
+        "messagePlaceholder": "Qisqacha nima kerakligini yozing…",
+        "submit": "Ariza yuborish",
         "submitting": "Yuborilmoqda…",
-        "success": "Rahmat — xabaringiz qabul qilindi. Tez orada bog‘lanamiz."
+        "success": "Rahmat — arizangiz qabul qilindi. Tez orada bog‘lanamiz."
       }
     }
   }

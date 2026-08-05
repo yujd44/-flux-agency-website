@@ -2,6 +2,7 @@
 
 /* METHODEA — dark premium theme (client mock). */
 :root {
+  --font-accent: var(--font-headline);
   --color-bg: #05070a;
   --color-surface: #0c1016;
   --color-border: rgba(255, 255, 255, 0.08);
@@ -40,7 +41,7 @@
   --color-button-hover: var(--color-button-hover);
   --color-on-button: var(--color-on-button);
   --font-sans: var(--font-latin);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-code);
   --font-hebrew: var(--font-he);
   --font-arabic: var(--font-ar);
 }
@@ -105,7 +106,7 @@ html[lang="ar"] body {
 
 /* Mono engineering labels */
 .label-mono {
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-family: var(--font-code), ui-monospace, monospace;
   font-size: 12px;
   font-weight: 400;
   letter-spacing: 0.28em;
@@ -180,20 +181,20 @@ html[lang="ar"] .hero-headline {
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  font-family: var(--font-accent), var(--font-headline), Georgia, serif;
+  font-family: var(--font-accent), var(--font-headline), var(--font-latin), system-ui, sans-serif;
   font-weight: 500;
-  font-style: italic;
+  font-style: normal;
   letter-spacing: 0.01em;
 }
 
 html[lang="he"] .hero-accent {
-  font-family: var(--font-he), var(--font-accent), serif;
-  font-style: italic;
+  font-family: var(--font-he), var(--font-accent), sans-serif;
+  font-style: normal;
 }
 
 html[lang="ar"] .hero-accent {
-  font-family: var(--font-ar), var(--font-accent), serif;
-  font-style: italic;
+  font-family: var(--font-ar), var(--font-accent), sans-serif;
+  font-style: normal;
 }
 
 /* Primary CTA — coral → violet gradient */
@@ -213,7 +214,7 @@ html[lang="ar"] .hero-accent {
   );
   color: var(--color-on-button);
   border: 1px solid transparent;
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-family: var(--font-code), ui-monospace, monospace;
   font-size: 12px;
   font-weight: 400;
   letter-spacing: 0.2em;
@@ -236,7 +237,7 @@ html[lang="ar"] .hero-accent {
   background: transparent;
   color: var(--color-text);
   border: 1px solid rgba(255, 255, 255, 0.55);
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-family: var(--font-code), ui-monospace, monospace;
   font-size: 10px;
   font-weight: 400;
   letter-spacing: 0.22em;
@@ -254,7 +255,7 @@ html[lang="ar"] .hero-accent {
   align-items: center;
   gap: 0.5rem;
   color: var(--color-text);
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-family: var(--font-code), ui-monospace, monospace;
   font-size: 12px;
   font-weight: 400;
   letter-spacing: 0.2em;

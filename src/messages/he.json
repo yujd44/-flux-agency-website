@@ -532,6 +532,8 @@
     "realization": {
       "title": "המימוש",
       "subtitle": "ארבעה תחומים. קטלוג אמיתי. פרויקטים חיים.",
+      "learnMore": "למידע נוסף",
+      "closeDetail": "סגירה",
       "worksEyebrow": "עבודות",
       "worksTitle": "מוצרים דיגיטליים",
       "caseStudyEyebrow": "קייס לייב",
@@ -553,17 +555,17 @@
       "headline": "עתיד: השותף הטכנולוגי שלכם בדרך לאבולוציה.",
       "manifestoTitle": "אנחנו לא רק יוצרים פתרון. אנחנו מבטיחים את צמיחתו.",
       "manifestoBody": "METHODEA היא שותפה לאבולוציה דיגיטלית ארוכת טווח — תמיכה, שיפור והרחבה ככל שהעסק שלכם גדל.",
-      "ctaTitle": "מוכנים להתחיל את השינוי?",
+      "ctaTitle": "שליחת בקשה",
       "form": {
         "name": "שם",
         "namePlaceholder": "השם שלכם",
         "email": "אימייל",
         "emailPlaceholder": "you@company.com",
-        "message": "תארו את הרעיון או המשימה",
-        "messagePlaceholder": "ספרו לנו מה צריך לבנות…",
-        "submit": "הפעלת השיטה",
+        "message": "תארו את המשימה",
+        "messagePlaceholder": "ספרו בקצרה במה מדובר…",
+        "submit": "שליחת בקשה",
         "submitting": "שולחים…",
-        "success": "תודה — קיבלנו את הפנייה. נחזור אליכם בקרוב."
+        "success": "תודה — קיבלנו את הבקשה. נחזור אליכם בקרוב."
       }
     }
   }

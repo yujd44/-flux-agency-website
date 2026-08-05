@@ -1,54 +1,46 @@
 import {
-  Cormorant_Garamond,
-  Geist,
-  Geist_Mono,
-  IBM_Plex_Sans_Hebrew,
-  IBM_Plex_Sans_Arabic,
-  Manrope,
+  IBM_Plex_Sans,
+  JetBrains_Mono,
+  Noto_Sans_Arabic,
+  Noto_Sans_Hebrew,
+  Unbounded,
 } from "next/font/google";
 
-export const fontLatin = Geist({
+/** Body / UI — tech grotesk with Latin + Cyrillic. */
+export const fontLatin = IBM_Plex_Sans({
   variable: "--font-latin",
-  subsets: ["latin", "cyrillic"],
-  weight: ["300", "400", "500", "600"],
+  subsets: ["latin", "cyrillic", "latin-ext", "cyrillic-ext"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
-export const fontMono = Geist_Mono({
-  variable: "--font-geist-mono",
+/** Console / HUD accents. */
+export const fontMono = JetBrains_Mono({
+  variable: "--font-code",
   subsets: ["latin", "cyrillic"],
-  weight: ["400", "500"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-/** Hero headline — geometric grotesk; Cyrillic-capable. */
-export const fontHeadline = Manrope({
+/** Display headlines — geometric, cosmic presence; Cyrillic-capable. */
+export const fontHeadline = Unbounded({
   variable: "--font-headline",
-  subsets: ["latin", "cyrillic"],
-  weight: ["400", "500", "600"],
+  subsets: ["latin", "cyrillic", "latin-ext", "cyrillic-ext"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-/**
- * Accent word ("intelligent") — refined serif italic (mock).
- * Cormorant covers Latin + Cyrillic; HE/AR fall back in CSS.
- */
-export const fontAccent = Cormorant_Garamond({
-  variable: "--font-accent",
-  subsets: ["latin", "cyrillic"],
-  weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
-  display: "swap",
-});
+/** Accent uses the same display family via CSS (--font-accent → --font-headline). */
+export const fontAccent = fontHeadline;
 
-export const fontHebrew = IBM_Plex_Sans_Hebrew({
+export const fontHebrew = Noto_Sans_Hebrew({
   variable: "--font-he",
   subsets: ["hebrew", "latin"],
   weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
-export const fontArabic = IBM_Plex_Sans_Arabic({
+export const fontArabic = Noto_Sans_Arabic({
   variable: "--font-ar",
   subsets: ["arabic", "latin"],
   weight: ["300", "400", "500", "600", "700"],

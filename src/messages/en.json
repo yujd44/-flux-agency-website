@@ -532,6 +532,8 @@
     "realization": {
       "title": "The Realization",
       "subtitle": "Four domains. Real catalog. Live projects.",
+      "learnMore": "Learn more",
+      "closeDetail": "Close",
       "worksEyebrow": "Works",
       "worksTitle": "Digital products",
       "caseStudyEyebrow": "Live case study",
@@ -553,17 +555,17 @@
       "headline": "Future: your technology partner on the path to evolution.",
       "manifestoTitle": "We don't just ship a solution. We ensure its growth.",
       "manifestoBody": "METHODEA is a partner for long-term digital evolution — support, refinement, and scale as your business grows.",
-      "ctaTitle": "Ready to start the transformation?",
+      "ctaTitle": "Submit an application",
       "form": {
         "name": "Name",
         "namePlaceholder": "Your name",
         "email": "Email",
         "emailPlaceholder": "you@company.com",
-        "message": "Describe your idea or task",
-        "messagePlaceholder": "Tell us what needs to be built…",
-        "submit": "Launch the method",
+        "message": "Describe the task",
+        "messagePlaceholder": "Briefly tell us what you need…",
+        "submit": "Submit application",
         "submitting": "Sending…",
-        "success": "Thank you — your message was received. We'll be in touch soon."
+        "success": "Thank you — your application was received. We'll be in touch soon."
       }
     }
   }
