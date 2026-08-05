@@ -239,12 +239,16 @@
 }
 
 .ritual-root[data-stage="future"] .ritual-bloom--a {
-  opacity: 0.4;
-  transform: translate(10%, 8%) scale(1.1);
+  opacity: 0.14;
+  transform: translate(10%, 8%) scale(1.05);
 }
 
 .ritual-root[data-stage="future"] .ritual-bloom--b {
-  opacity: 0.5;
+  opacity: 0.16;
+}
+
+.ritual-root[data-stage="future"] .ritual-bloom--c {
+  opacity: 0.1;
 }
 
 .ritual-stage-host {

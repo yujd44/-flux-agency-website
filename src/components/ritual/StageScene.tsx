@@ -66,8 +66,8 @@ const VISUALS: Record<StageId, StageVisual> = {
     tintMix: 0.4,
   },
   future: {
-    nebulaOpacity: 0.65,
-    nebulaSpread: 1.35,
+    nebulaOpacity: 0.55,
+    nebulaSpread: 1.3,
     networkOpacity: 0.28,
     networkScale: 0.72,
     networkSide: 0,
@@ -103,7 +103,7 @@ function makeStudioEnv(renderer: THREE.WebGLRenderer) {
   const pmrem = new THREE.PMREMGenerator(renderer);
   const envScene = new THREE.Scene();
   envScene.background = new THREE.Color(0x05060e);
-  envScene.add(new THREE.HemisphereLight(0xe8f0ff, 0x120818, 0.55));
+  envScene.add(new THREE.HemisphereLight(0xe8f0ff, 0x120818, 0.65));
 
   const disposables: { geo: THREE.BufferGeometry; mat: THREE.Material }[] = [];
   const addSoftbox = (
@@ -127,11 +127,12 @@ function makeStudioEnv(renderer: THREE.WebGLRenderer) {
     disposables.push({ geo, mat });
   };
 
-  addSoftbox(5.5, 2.4, 0xc8e8ff, 2.6, 4.8, 3.2, 3.4);
-  addSoftbox(3.2, 3.8, 0xb090ff, 1.8, -4.2, 1.6, 2.8);
-  addSoftbox(4.0, 4.0, 0x60ffe0, 1.4, 1.2, 0.4, -4.6);
-  addSoftbox(4.5, 4.5, 0xf0f4ff, 0.7, 0.2, 5.5, 0.6);
-  envScene.add(new THREE.AmbientLight(0x8890b0, 0.2));
+  addSoftbox(5.5, 2.4, 0xc8e8ff, 3.2, 4.8, 3.2, 3.4);
+  addSoftbox(3.2, 3.8, 0xb090ff, 2.2, -4.2, 1.6, 2.8);
+  addSoftbox(4.0, 4.0, 0x60ffe0, 1.8, 1.2, 0.4, -4.6);
+  addSoftbox(4.5, 4.5, 0xf0f4ff, 1.0, 0.2, 5.5, 0.6);
+  addSoftbox(2.2, 2.2, 0xffffff, 2.4, -1.5, 4.0, 3.5);
+  envScene.add(new THREE.AmbientLight(0x8890b0, 0.28));
 
   const envMap = pmrem.fromScene(envScene, 0.04).texture;
   for (const d of disposables) {
@@ -208,10 +209,18 @@ function hexShape(rx: number, ry: number) {
   return shape;
 }
 
+type HoverTarget = {
+  id: string;
+  root: THREE.Object3D;
+  pick: THREE.Object3D[];
+  mats: THREE.MeshPhysicalMaterial[];
+  hover: number;
+  bounce: number;
+};
+
 /**
  * Single shared WebGL layer for ritual stages.
- * Real MeshPhysical nodes + cylinder fibers + thick glass panels + cinematic lights.
- * Moderate counts, DPR capped, paused when hidden.
+ * Physical materials, autonomous idle motion, per-mesh hover — no group parallax.
  */
 export default function StageScene({ stage }: Props) {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -239,14 +248,14 @@ export default function StageScene({ stage }: Props) {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 80);
     camera.position.set(0, 0.15, 6.2);
+    camera.lookAt(0, 0, 0);
 
     const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
     renderer.setPixelRatio(dpr);
     renderer.setClearColor(0x000000, 0);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.12;
-    // No shadow maps — multi-object scene stays light on GPU
+    renderer.toneMappingExposure = 1.18;
     mount.appendChild(renderer.domElement);
     Object.assign(renderer.domElement.style, {
       width: "100%",
@@ -262,40 +271,45 @@ export default function StageScene({ stage }: Props) {
     const root = new THREE.Group();
     scene.add(root);
 
-    // —— Cinematic lights (world-fixed; parallax moves root/camera) ——
-    const hemi = new THREE.HemisphereLight(0xdce8ff, 0x100818, 0.42);
+    // —— Cinematic lights (world-fixed; no mouse-driven group drift) ——
+    const hemi = new THREE.HemisphereLight(0xdce8ff, 0x100818, 0.5);
     scene.add(hemi);
-    const ambient = new THREE.AmbientLight(0x6a78a8, 0.18);
+    const ambient = new THREE.AmbientLight(0x6a78a8, 0.22);
     scene.add(ambient);
 
-    const key = new THREE.DirectionalLight(0xe8f4ff, 1.15);
+    const key = new THREE.DirectionalLight(0xe8f4ff, 1.35);
     key.position.set(4.2, 3.8, 5.0);
     scene.add(key);
 
-    const fill = new THREE.DirectionalLight(0xa090ff, 0.45);
+    const fill = new THREE.DirectionalLight(0xa090ff, 0.55);
     fill.position.set(-3.6, 1.4, 2.8);
     scene.add(fill);
 
-    const rim = new THREE.DirectionalLight(0x50ffe0, 0.55);
+    const rim = new THREE.DirectionalLight(0x50ffe0, 0.75);
     rim.position.set(0.6, 1.2, -4.2);
     scene.add(rim);
+
+    const rim2 = new THREE.DirectionalLight(0xff80e0, 0.28);
+    rim2.position.set(-2.4, -0.8, -3.2);
+    scene.add(rim2);
 
     const hubLight = new THREE.PointLight(0x60ffc0, 1.4, 6, 2);
     hubLight.position.set(1.5, 0.2, 0.4);
     scene.add(hubLight);
 
-    const accentLight = new THREE.PointLight(0x9060ff, 0.7, 7, 2);
+    const accentLight = new THREE.PointLight(0x9060ff, 0.85, 7, 2);
     accentLight.position.set(-1.2, 0.6, 1.2);
     scene.add(accentLight);
 
-    // Shared geometries (dispose on cleanup)
+    // Shared geometries
     const boxGeo = new THREE.BoxGeometry(1, 1, 1);
     const edgesGeo = new THREE.EdgesGeometry(boxGeo);
     const fiberGeo = new THREE.CylinderGeometry(1, 1, 1, 6, 1);
-    const orbGeo = new THREE.SphereGeometry(1, 16, 12);
-    const hubCoreGeo = new THREE.SphereGeometry(0.12, 20, 16);
-    const hubShellGeo = new THREE.IcosahedronGeometry(0.2, 1);
-    const hubDotGeo = new THREE.SphereGeometry(0.032, 10, 8);
+    const orbGeo = new THREE.SphereGeometry(1, 28, 20);
+    const hubCoreGeo = new THREE.SphereGeometry(0.12, 24, 18);
+    const hubShellGeo = new THREE.IcosahedronGeometry(0.2, 2);
+    const hubDotGeo = new THREE.SphereGeometry(0.032, 12, 10);
+    const shadowGeo = new THREE.CircleGeometry(1, 24);
     const disposables: THREE.BufferGeometry[] = [
       boxGeo,
       edgesGeo,
@@ -304,12 +318,46 @@ export default function StageScene({ stage }: Props) {
       hubCoreGeo,
       hubShellGeo,
       hubDotGeo,
+      shadowGeo,
     ];
     const materials: THREE.Material[] = [];
 
+    const hoverTargets: HoverTarget[] = [];
+    const pickMeshes: THREE.Object3D[] = [];
+
+    function makeContactShadow(parent: THREE.Object3D, radius: number, yOffset: number) {
+      const mat = new THREE.MeshBasicMaterial({
+        color: 0x000000,
+        transparent: true,
+        opacity: 0.22,
+        depthWrite: false,
+      });
+      materials.push(mat);
+      const mesh = new THREE.Mesh(shadowGeo, mat);
+      mesh.rotation.x = -Math.PI / 2;
+      mesh.position.y = yOffset;
+      mesh.scale.setScalar(radius);
+      mesh.renderOrder = -2;
+      parent.add(mesh);
+      return mat;
+    }
+
+    function registerHover(
+      id: string,
+      hoverRoot: THREE.Object3D,
+      pick: THREE.Object3D[],
+      mats: THREE.MeshPhysicalMaterial[],
+    ) {
+      for (const p of pick) {
+        p.userData.hoverId = id;
+        pickMeshes.push(p);
+      }
+      hoverTargets.push({ id, root: hoverRoot, pick, mats, hover: 0, bounce: 0 });
+    }
+
     // --- 1) Nebula / particle field ---
-    const PARTICLE_COUNT = 160;
-    const ORB_COUNT = 12;
+    const PARTICLE_COUNT = 140;
+    const ORB_COUNT = 9;
     const positions = new Float32Array(PARTICLE_COUNT * 3);
     const colors = new Float32Array(PARTICLE_COUNT * 3);
     const sizes = new Float32Array(PARTICLE_COUNT);
@@ -341,10 +389,10 @@ export default function StageScene({ stage }: Props) {
     disposables.push(nebulaGeo);
 
     const nebulaMat = new THREE.PointsMaterial({
-      size: 0.09,
+      size: 0.075,
       vertexColors: true,
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.7,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
       sizeAttenuation: true,
@@ -354,55 +402,88 @@ export default function StageScene({ stage }: Props) {
     const nebula = new THREE.Points(nebulaGeo, nebulaMat);
     root.add(nebula);
 
-    // Soft glowing mesh orbs (true spheres, not only sprites)
+    // Physical glass/metal orbs — surface responds to lights + env
     const orbGroup = new THREE.Group();
     root.add(orbGroup);
     type OrbItem = {
+      pivot: THREE.Group;
       mesh: THREE.Mesh;
       mat: THREE.MeshPhysicalMaterial;
+      shadowMat: THREE.MeshBasicMaterial;
       base: THREE.Vector3;
       phase: number;
       pulse: number;
+      orbitSpeed: number;
+      orbitAmp: number;
+      baseScale: number;
+      drift: THREE.Vector3;
     };
     const orbs: OrbItem[] = [];
     for (let i = 0; i < ORB_COUNT; i++) {
       const tint = i % 2 === 0 ? CYAN : PURPLE;
+      const isGlass = i % 3 !== 1;
       const mat = new THREE.MeshPhysicalMaterial({
-        color: tint.clone().multiplyScalar(0.35),
+        color: isGlass ? tint.clone().lerp(NAVY, 0.25) : tint.clone().lerp(METAL, 0.35),
         emissive: tint,
-        emissiveIntensity: 0.55,
-        roughness: 0.55,
-        metalness: 0.05,
+        emissiveIntensity: isGlass ? 0.22 : 0.14,
+        roughness: isGlass ? 0.12 : 0.28,
+        metalness: isGlass ? 0.35 : 0.85,
+        clearcoat: 1,
+        clearcoatRoughness: 0.08,
+        ior: 1.45,
+        specularIntensity: 1,
+        specularColor: new THREE.Color("#ffffff"),
         transparent: true,
-        opacity: 0.28,
-        depthWrite: false,
+        opacity: isGlass ? 0.72 : 0.88,
+        depthWrite: true,
         envMap,
-        envMapIntensity: 0.4,
+        envMapIntensity: isGlass ? 1.55 : 1.35,
+        side: THREE.FrontSide,
       });
       materials.push(mat);
+      mat.userData.baseOpacity = mat.opacity;
+      mat.userData.baseEmissive = mat.emissiveIntensity;
+
+      const pivot = new THREE.Group();
       const mesh = new THREE.Mesh(orbGeo, mat);
       const a = Math.random() * Math.PI * 2;
-      const r = 1.1 + Math.random() * 2.6;
+      const r = 1.0 + Math.random() * 2.4;
       const base = new THREE.Vector3(
-        Math.cos(a) * r - 0.55,
-        Math.sin(a) * r * 0.5,
-        -1.0 - Math.random() * 2.2,
+        Math.cos(a) * r - 0.45,
+        Math.sin(a) * r * 0.48,
+        -0.6 - Math.random() * 1.8,
       );
-      mesh.position.copy(base);
-      const s = 0.12 + Math.random() * 0.28;
+      pivot.position.copy(base);
+      const s = 0.16 + Math.random() * 0.26;
       mesh.scale.setScalar(s);
-      orbGroup.add(mesh);
+      pivot.add(mesh);
+      const shadowMat = makeContactShadow(pivot, s * 1.35, -s * 1.05);
+      orbGroup.add(pivot);
+
+      const id = `orb-${i}`;
+      registerHover(id, pivot, [mesh], [mat]);
+
       orbs.push({
+        pivot,
         mesh,
         mat,
+        shadowMat,
         base: base.clone(),
         phase: Math.random() * Math.PI * 2,
-        pulse: 0.4 + Math.random() * 0.5,
+        pulse: 0.35 + Math.random() * 0.45,
+        orbitSpeed: 0.12 + Math.random() * 0.22,
+        orbitAmp: 0.08 + Math.random() * 0.14,
+        baseScale: s,
+        drift: new THREE.Vector3(
+          0.6 + Math.random() * 0.5,
+          0.4 + Math.random() * 0.4,
+          0.25 + Math.random() * 0.3,
+        ),
       });
     }
 
-    // Connected particle web (subset) — thin additive lines for atmosphere
-    const LINK_COUNT = 40;
+    // Connected particle web
+    const LINK_COUNT = 36;
     const linkPositions = new Float32Array(LINK_COUNT * 2 * 3);
     const linkGeo = new THREE.BufferGeometry();
     linkGeo.setAttribute("position", new THREE.BufferAttribute(linkPositions, 3));
@@ -418,7 +499,7 @@ export default function StageScene({ stage }: Props) {
     const links = new THREE.LineSegments(linkGeo, linkMat);
     root.add(links);
 
-    // --- 2) Network architecture (real boxes + cylinder fibers) ---
+    // --- 2) Network architecture ---
     const network = new THREE.Group();
     root.add(network);
 
@@ -427,6 +508,7 @@ export default function StageScene({ stage }: Props) {
       body: THREE.Mesh;
       bodyMat: THREE.MeshPhysicalMaterial;
       edgeMat: THREE.LineBasicMaterial;
+      shadowMat: THREE.MeshBasicMaterial;
       base: THREE.Vector3;
       size: number;
       phase: number;
@@ -434,6 +516,7 @@ export default function StageScene({ stage }: Props) {
       assembleDelay: number;
       isHub: boolean;
       accent: THREE.Color;
+      floatAmp: number;
     };
     const nodes: NodeItem[] = [];
     const nodeDefs: {
@@ -471,108 +554,101 @@ export default function StageScene({ stage }: Props) {
 
       let body: THREE.Mesh;
       let bodyMat: THREE.MeshPhysicalMaterial;
+      const pickables: THREE.Object3D[] = [];
+      const hoverMats: THREE.MeshPhysicalMaterial[] = [];
 
       if (def.kind === "hub") {
-        // Inner emissive core + glass shell
         const coreMat = new THREE.MeshPhysicalMaterial({
           color: new THREE.Color("#e8fff4"),
           emissive: GREEN,
-          emissiveIntensity: 1.2,
-          roughness: 0.25,
-          metalness: 0.2,
+          emissiveIntensity: 1.35,
+          roughness: 0.18,
+          metalness: 0.35,
+          clearcoat: 0.9,
+          clearcoatRoughness: 0.12,
           envMap,
-          envMapIntensity: 0.8,
+          envMapIntensity: 1.1,
         });
         materials.push(coreMat);
         const core = new THREE.Mesh(hubCoreGeo, coreMat);
         group.add(core);
+        pickables.push(core);
+        hoverMats.push(coreMat);
 
         bodyMat = new THREE.MeshPhysicalMaterial({
           color: new THREE.Color("#b8ffe8"),
           emissive: GREEN,
-          emissiveIntensity: 0.25,
-          roughness: 0.12,
-          metalness: 0.35,
+          emissiveIntensity: 0.28,
+          roughness: 0.08,
+          metalness: 0.4,
           clearcoat: 1,
-          clearcoatRoughness: 0.08,
+          clearcoatRoughness: 0.06,
+          ior: 1.5,
           transparent: true,
-          opacity: 0.42,
-          // Avoid transmission — expensive & unstable on many devices
+          opacity: 0.55,
           depthWrite: false,
           envMap,
-          envMapIntensity: 1.6,
+          envMapIntensity: 1.85,
           side: THREE.DoubleSide,
         });
         materials.push(bodyMat);
         body = new THREE.Mesh(hubShellGeo, bodyMat);
         group.add(body);
+        pickables.push(body);
+        hoverMats.push(bodyMat);
 
-        // Outer cube cage for architectural read
         const cageMat = new THREE.MeshPhysicalMaterial({
           color: METAL,
           emissive: GREEN,
-          emissiveIntensity: 0.08,
-          roughness: 0.22,
-          metalness: 0.85,
-          clearcoat: 0.6,
-          clearcoatRoughness: 0.2,
+          emissiveIntensity: 0.1,
+          roughness: 0.18,
+          metalness: 0.9,
+          clearcoat: 0.75,
+          clearcoatRoughness: 0.15,
           transparent: true,
-          opacity: 0.22,
+          opacity: 0.32,
           envMap,
-          envMapIntensity: 1.2,
+          envMapIntensity: 1.45,
         });
         materials.push(cageMat);
         const cage = new THREE.Mesh(boxGeo, cageMat);
         cage.scale.setScalar(def.s * 1.15);
         group.add(cage);
+        pickables.push(cage);
+        hoverMats.push(cageMat);
       } else if (def.kind === "glass") {
         bodyMat = new THREE.MeshPhysicalMaterial({
-          color: PURPLE.clone().lerp(NAVY, 0.35),
+          color: PURPLE.clone().lerp(NAVY, 0.28),
           emissive: PURPLE,
-          emissiveIntensity: 0.18,
-          roughness: 0.14,
-          metalness: 0.45,
+          emissiveIntensity: 0.2,
+          roughness: 0.1,
+          metalness: 0.5,
           clearcoat: 1,
-          clearcoatRoughness: 0.1,
+          clearcoatRoughness: 0.08,
+          ior: 1.48,
           transparent: true,
-          opacity: 0.48,
+          opacity: 0.58,
           envMap,
-          envMapIntensity: 1.35,
+          envMapIntensity: 1.55,
           side: THREE.FrontSide,
         });
         materials.push(bodyMat);
         body = new THREE.Mesh(boxGeo, bodyMat);
         body.scale.setScalar(def.s);
         group.add(body);
+        pickables.push(body);
+        hoverMats.push(bodyMat);
       } else if (def.kind === "accent") {
         bodyMat = new THREE.MeshPhysicalMaterial({
           color: new THREE.Color("#d8fff0"),
           emissive: GREEN,
-          emissiveIntensity: 0.45,
-          roughness: 0.2,
-          metalness: 0.7,
-          clearcoat: 0.85,
-          clearcoatRoughness: 0.15,
+          emissiveIntensity: 0.5,
+          roughness: 0.15,
+          metalness: 0.78,
+          clearcoat: 0.95,
+          clearcoatRoughness: 0.12,
           transparent: true,
-          opacity: 0.72,
-          envMap,
-          envMapIntensity: 1.25,
-        });
-        materials.push(bodyMat);
-        body = new THREE.Mesh(boxGeo, bodyMat);
-        body.scale.setScalar(def.s);
-        group.add(body);
-      } else {
-        bodyMat = new THREE.MeshPhysicalMaterial({
-          color: METAL,
-          emissive: CYAN,
-          emissiveIntensity: 0.08,
-          roughness: 0.28,
-          metalness: 0.92,
-          clearcoat: 0.7,
-          clearcoatRoughness: 0.18,
-          transparent: true,
-          opacity: 0.88,
+          opacity: 0.82,
           envMap,
           envMapIntensity: 1.4,
         });
@@ -580,6 +656,28 @@ export default function StageScene({ stage }: Props) {
         body = new THREE.Mesh(boxGeo, bodyMat);
         body.scale.setScalar(def.s);
         group.add(body);
+        pickables.push(body);
+        hoverMats.push(bodyMat);
+      } else {
+        bodyMat = new THREE.MeshPhysicalMaterial({
+          color: METAL,
+          emissive: CYAN,
+          emissiveIntensity: 0.1,
+          roughness: 0.22,
+          metalness: 0.95,
+          clearcoat: 0.8,
+          clearcoatRoughness: 0.14,
+          transparent: true,
+          opacity: 0.92,
+          envMap,
+          envMapIntensity: 1.55,
+        });
+        materials.push(bodyMat);
+        body = new THREE.Mesh(boxGeo, bodyMat);
+        body.scale.setScalar(def.s);
+        group.add(body);
+        pickables.push(body);
+        hoverMats.push(bodyMat);
       }
 
       const edgeMat = new THREE.LineBasicMaterial({
@@ -595,24 +693,34 @@ export default function StageScene({ stage }: Props) {
 
       bodyMat.userData.baseOpacity = bodyMat.opacity;
       bodyMat.userData.baseEmissive = bodyMat.emissiveIntensity;
+      for (const m of hoverMats) {
+        if (m.userData.baseOpacity == null) m.userData.baseOpacity = m.opacity;
+        if (m.userData.baseEmissive == null) m.userData.baseEmissive = m.emissiveIntensity;
+      }
       edgeMat.userData.baseOpacity = edgeMat.opacity;
+
+      const shadowMat = makeContactShadow(group, def.s * 1.4, -def.s * 0.85);
+
+      const id = `node-${i}`;
+      registerHover(id, group, pickables, hoverMats);
 
       nodes.push({
         group,
         body,
         bodyMat,
         edgeMat,
+        shadowMat,
         base: def.p.clone(),
         size: def.s,
         phase: Math.random() * Math.PI * 2,
-        spin: 0.12 + Math.random() * 0.32,
+        spin: 0.1 + Math.random() * 0.28,
         assembleDelay: i * 0.04,
         isHub: def.kind === "hub",
         accent,
+        floatAmp: 0.035 + Math.random() * 0.04,
       });
     });
 
-    // Fiber tubes between nodes (shared cylinder geo, per-fiber materials)
     const fiberPairs: [number, number][] = [
       [0, 1],
       [0, 2],
@@ -651,14 +759,15 @@ export default function StageScene({ stage }: Props) {
       const mat = new THREE.MeshPhysicalMaterial({
         color: new THREE.Color("#e8f4ff"),
         emissive: i % 3 === 0 ? GREEN : CYAN,
-        emissiveIntensity: 0.35,
-        roughness: 0.25,
-        metalness: 0.8,
-        clearcoat: 0.5,
+        emissiveIntensity: 0.4,
+        roughness: 0.2,
+        metalness: 0.85,
+        clearcoat: 0.65,
+        clearcoatRoughness: 0.2,
         transparent: true,
-        opacity: 0.75,
+        opacity: 0.8,
         envMap,
-        envMapIntensity: 0.9,
+        envMapIntensity: 1.05,
       });
       materials.push(mat);
       const mesh = new THREE.Mesh(fiberGeo, mat);
@@ -667,7 +776,7 @@ export default function StageScene({ stage }: Props) {
       const glowMat = new THREE.MeshBasicMaterial({
         color: i % 3 === 0 ? GREEN : CYAN,
         transparent: true,
-        opacity: 0.12,
+        opacity: 0.1,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
       });
@@ -681,7 +790,6 @@ export default function StageScene({ stage }: Props) {
       fiberItems.push({ mesh, mat, glow, glowMat });
     });
 
-    // Hub orbital ring
     const hubRing = new THREE.Group();
     network.add(hubRing);
     const hubDotMats: THREE.MeshPhysicalMaterial[] = [];
@@ -690,11 +798,13 @@ export default function StageScene({ stage }: Props) {
       const mat = new THREE.MeshPhysicalMaterial({
         color: 0xffffff,
         emissive: GREEN,
-        emissiveIntensity: 0.6,
-        roughness: 0.3,
-        metalness: 0.7,
+        emissiveIntensity: 0.65,
+        roughness: 0.22,
+        metalness: 0.8,
+        clearcoat: 0.7,
+        clearcoatRoughness: 0.2,
         envMap,
-        envMapIntensity: 1,
+        envMapIntensity: 1.15,
       });
       materials.push(mat);
       hubDotMats.push(mat);
@@ -715,22 +825,21 @@ export default function StageScene({ stage }: Props) {
     materials.push(hubRingMat);
     hubRing.add(new THREE.LineLoop(hubRingGeo, hubRingMat));
 
-    // Soft hub glow sprite (bloom hint without postprocessing)
     const hubGlowSprite = new THREE.Sprite(
       new THREE.SpriteMaterial({
         map: glowTex ?? undefined,
         color: GREEN,
         transparent: true,
-        opacity: 0.4,
+        opacity: 0.28,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
       }),
     );
     materials.push(hubGlowSprite.material);
-    hubGlowSprite.scale.set(1.6, 1.6, 1);
+    hubGlowSprite.scale.set(1.35, 1.35, 1);
     network.add(hubGlowSprite);
 
-    // --- 3) Floating glass panels (thick slabs) ---
+    // --- 3) Floating glass panels ---
     const panels = new THREE.Group();
     root.add(panels);
 
@@ -738,10 +847,13 @@ export default function StageScene({ stage }: Props) {
       group: THREE.Group;
       mats: THREE.MeshPhysicalMaterial[];
       edgeMats: THREE.LineBasicMaterial[];
+      shadowMat: THREE.MeshBasicMaterial;
       base: THREE.Vector3;
       delay: number;
       rotSpeed: number;
       thickness: number;
+      phase: number;
+      floatAmp: number;
     };
     const panelItems: PanelItem[] = [];
 
@@ -755,6 +867,7 @@ export default function StageScene({ stage }: Props) {
       const g = new THREE.Group();
       const mats: THREE.MeshPhysicalMaterial[] = [];
       const edgeMats: THREE.LineBasicMaterial[] = [];
+      const pickables: THREE.Object3D[] = [];
 
       let body: THREE.Mesh;
       let bodyGeo: THREE.BufferGeometry;
@@ -778,35 +891,36 @@ export default function StageScene({ stage }: Props) {
       const bodyMat = new THREE.MeshPhysicalMaterial({
         color: GLASS_TINT,
         emissive: accent,
-        emissiveIntensity: 0.06,
-        roughness: 0.18,
-        metalness: 0.55,
+        emissiveIntensity: 0.08,
+        roughness: 0.12,
+        metalness: 0.6,
         clearcoat: 1,
-        clearcoatRoughness: 0.12,
+        clearcoatRoughness: 0.08,
+        ior: 1.5,
         transparent: true,
-        opacity: 0.38,
+        opacity: 0.48,
         envMap,
-        envMapIntensity: 1.5,
+        envMapIntensity: 1.7,
         side: THREE.FrontSide,
       });
       materials.push(bodyMat);
       mats.push(bodyMat);
       body = new THREE.Mesh(bodyGeo, bodyMat);
       g.add(body);
+      pickables.push(body);
 
-      // Thin metal bezel / rim plate slightly larger
       const rimMat = new THREE.MeshPhysicalMaterial({
         color: METAL,
         emissive: accent,
-        emissiveIntensity: 0.12,
-        roughness: 0.22,
-        metalness: 0.9,
-        clearcoat: 0.8,
-        clearcoatRoughness: 0.2,
+        emissiveIntensity: 0.14,
+        roughness: 0.18,
+        metalness: 0.92,
+        clearcoat: 0.85,
+        clearcoatRoughness: 0.16,
         transparent: true,
-        opacity: 0.55,
+        opacity: 0.62,
         envMap,
-        envMapIntensity: 1.3,
+        envMapIntensity: 1.45,
       });
       materials.push(rimMat);
       mats.push(rimMat);
@@ -820,18 +934,19 @@ export default function StageScene({ stage }: Props) {
         });
         rimGeo.translate(0, 0, -thickness * 0.18);
         disposables.push(rimGeo);
-        const rim = new THREE.Mesh(rimGeo, rimMat);
-        rim.scale.set(1.02, 1.02, 1);
-        g.add(rim);
+        const rimMesh = new THREE.Mesh(rimGeo, rimMat);
+        rimMesh.scale.set(1.02, 1.02, 1);
+        g.add(rimMesh);
+        pickables.push(rimMesh);
       } else {
         const rimGeo = new THREE.BoxGeometry(w * 1.04, h * 1.04, thickness * 0.35);
         disposables.push(rimGeo);
-        const rim = new THREE.Mesh(rimGeo, rimMat);
-        rim.position.z = -thickness * 0.15;
-        g.add(rim);
+        const rimMesh = new THREE.Mesh(rimGeo, rimMat);
+        rimMesh.position.z = -thickness * 0.15;
+        g.add(rimMesh);
+        pickables.push(rimMesh);
       }
 
-      // Edge highlight
       const edgeMat = new THREE.LineBasicMaterial({
         color: accent.clone().lerp(new THREE.Color("#ffffff"), 0.5),
         transparent: true,
@@ -844,7 +959,6 @@ export default function StageScene({ stage }: Props) {
       disposables.push(edgeLines.geometry);
       g.add(edgeLines);
 
-      // Code-window silhouette lines on rectangular panels
       if (!hex) {
         const lineMat = new THREE.LineBasicMaterial({
           color: accent,
@@ -873,7 +987,7 @@ export default function StageScene({ stage }: Props) {
         m.userData.baseOpacity = m.opacity;
       });
 
-      return { group: g, mats, edgeMats };
+      return { group: g, mats, edgeMats, pickables };
     }
 
     const panelDefs = [
@@ -887,34 +1001,46 @@ export default function StageScene({ stage }: Props) {
     ];
 
     panelDefs.forEach((def, i) => {
-      const { group, mats, edgeMats } = makeGlassPanel(def.w, def.h, def.t, def.c, def.hex);
+      const { group, mats, edgeMats, pickables } = makeGlassPanel(
+        def.w,
+        def.h,
+        def.t,
+        def.c,
+        def.hex,
+      );
       group.position.copy(def.p);
       panels.add(group);
+      const shadowMat = makeContactShadow(group, Math.max(def.w, def.h) * 0.55, -def.h * 0.55);
+      const id = `panel-${i}`;
+      registerHover(id, group, pickables, mats);
       panelItems.push({
         group,
         mats,
         edgeMats,
+        shadowMat,
         base: def.p.clone(),
         delay: i * 0.055,
         rotSpeed: 0.045 + (i % 3) * 0.028,
         thickness: def.t,
+        phase: Math.random() * Math.PI * 2,
+        floatAmp: 0.05 + (i % 4) * 0.015,
       });
     });
 
-    // Atmospheric wash
+    // Soft atmospheric wash (kept subtle — not a flat blob substitute)
     const wash = new THREE.Sprite(
       new THREE.SpriteMaterial({
         map: glowTex ?? undefined,
         color: CYAN,
         transparent: true,
-        opacity: 0.09,
+        opacity: 0.05,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
       }),
     );
     materials.push(wash.material);
     wash.position.set(-0.4, 0.1, -2.8);
-    wash.scale.set(9, 7, 1);
+    wash.scale.set(7.5, 5.5, 1);
     root.add(wash);
 
     // State for morph
@@ -926,10 +1052,21 @@ export default function StageScene({ stage }: Props) {
     let nodeProgress = nodes.map(() => 1);
     let panelProgress = panelItems.map(() => 1);
 
-    const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
+    const pointer = { nx: 0, ny: 0, overUi: false, moved: false };
+    let activeHoverId: string | null = null;
+    let cursorPointer = false;
+    const raycaster = new THREE.Raycaster();
+    const pointerNdc = new THREE.Vector2();
     const hubOrigin = new THREE.Vector3(0, 0, 0);
     const tmpPos = new THREE.Vector3();
     const tintColor = new THREE.Color();
+    const hoverById = new Map(hoverTargets.map((h) => [h.id, h]));
+
+    function setCursor(on: boolean) {
+      if (on === cursorPointer) return;
+      cursorPointer = on;
+      document.documentElement.style.cursor = on ? "pointer" : "";
+    }
 
     function beginMorph(next: StageId) {
       if (next === toStage && morphT >= 1) return;
@@ -994,6 +1131,40 @@ export default function StageScene({ stage }: Props) {
       }
     }
 
+    function pickHoverTarget() {
+      if (pointer.overUi || !pickMeshes.length) {
+        activeHoverId = null;
+        setCursor(false);
+        return;
+      }
+      pointerNdc.set(pointer.nx, pointer.ny);
+      raycaster.setFromCamera(pointerNdc, camera);
+      const hits = raycaster.intersectObjects(pickMeshes, false);
+      let nextId: string | null = null;
+      for (const hit of hits) {
+        const id = hit.object.userData.hoverId as string | undefined;
+        if (!id) continue;
+        let visible = true;
+        let p: THREE.Object3D | null = hit.object;
+        while (p) {
+          if (!p.visible) {
+            visible = false;
+            break;
+          }
+          p = p.parent;
+        }
+        if (!visible) continue;
+        nextId = id;
+        break;
+      }
+      if (nextId && nextId !== activeHoverId) {
+        const ht = hoverById.get(nextId);
+        if (ht) ht.bounce = 1;
+      }
+      activeHoverId = nextId;
+      setCursor(!!activeHoverId);
+    }
+
     let raf = 0;
     let running = true;
     let visible = document.visibilityState === "visible";
@@ -1024,30 +1195,28 @@ export default function StageScene({ stage }: Props) {
       const eased = easeOutCubic(morphT);
       currentVisual = lerpVisual(VISUALS[fromStage], VISUALS[toStage], eased);
 
-      pointer.x += (pointer.tx - pointer.x) * 0.04;
-      pointer.y += (pointer.ty - pointer.y) * 0.04;
-
       const v = currentVisual;
       const tint = tintColor.copy(CYAN).lerp(PURPLE, v.tintMix);
 
-      // Lights track network side subtly
-      hubLight.position.set(1.5 * v.networkSide + pointer.x * 0.3, 0.25, 0.5);
+      hubLight.position.set(1.5 * v.networkSide, 0.25, 0.5);
       hubLight.intensity = 0.4 + v.hubGlow * 1.4;
       accentLight.intensity = 0.35 + v.nebulaOpacity * 0.45;
-      key.intensity = 0.85 + v.networkOpacity * 0.35;
+      key.intensity = 0.95 + v.networkOpacity * 0.4;
+      rim.intensity = 0.55 + v.hubGlow * 0.35;
 
       wash.material.color.copy(tint);
-      wash.material.opacity = 0.05 + v.nebulaOpacity * 0.07;
+      wash.material.opacity = 0.03 + v.nebulaOpacity * 0.04;
 
       for (let i = 0; i < PARTICLE_COUNT; i++) {
         const bx = basePos[i * 3];
         const by = basePos[i * 3 + 1];
         const bz = basePos[i * 3 + 2];
-        const drift = reduceMotion ? 0 : Math.sin(t * 0.35 + i * 0.2) * 0.04;
+        const drift = reduceMotion ? 0 : Math.sin(t * 0.35 + i * 0.2) * 0.05;
+        const driftY = reduceMotion ? 0 : Math.cos(t * 0.28 + i) * 0.035;
+        const driftZ = reduceMotion ? 0 : Math.sin(t * 0.22 + i * 0.15) * 0.03;
         positions[i * 3] = bx * v.nebulaSpread + drift;
-        positions[i * 3 + 1] =
-          by * v.nebulaSpread + Math.cos(t * 0.28 + i) * (reduceMotion ? 0 : 0.03);
-        positions[i * 3 + 2] = bz;
+        positions[i * 3 + 1] = by * v.nebulaSpread + driftY;
+        positions[i * 3 + 2] = bz + driftZ;
         const c = i % 3 === 0 ? tint : i % 2 === 0 ? CYAN : PURPLE;
         colors[i * 3] = c.r;
         colors[i * 3 + 1] = c.g;
@@ -1055,39 +1224,45 @@ export default function StageScene({ stage }: Props) {
       }
       nebulaGeo.attributes.position.needsUpdate = true;
       nebulaGeo.attributes.color.needsUpdate = true;
-      nebulaMat.opacity = 0.32 + v.nebulaOpacity * 0.55;
-      nebula.position.x = -0.55 + pointer.x * 0.15;
-      nebula.position.y = pointer.y * 0.1;
+      nebulaMat.opacity = 0.28 + v.nebulaOpacity * 0.48;
 
-      orbGroup.position.x = -0.35 + pointer.x * 0.28;
-      orbGroup.position.y = pointer.y * 0.2;
+      // Orbs — independent orbits / drifts (no group mouse offset)
       for (let i = 0; i < orbs.length; i++) {
         const o = orbs[i];
-        const breathe = reduceMotion ? 1 : 1 + Math.sin(t * o.pulse + o.phase) * 0.12;
-        o.mesh.position.set(
-          o.base.x * v.nebulaSpread,
-          o.base.y * v.nebulaSpread + (reduceMotion ? 0 : Math.sin(t * 0.3 + o.phase) * 0.08),
-          o.base.z,
+        const breathe = reduceMotion ? 1 : 1 + Math.sin(t * o.pulse + o.phase) * 0.08;
+        const ox = reduceMotion
+          ? 0
+          : Math.cos(t * o.orbitSpeed + o.phase) * o.orbitAmp * o.drift.x;
+        const oy = reduceMotion
+          ? 0
+          : Math.sin(t * o.orbitSpeed * 1.15 + o.phase * 1.3) * o.orbitAmp * o.drift.y;
+        const oz = reduceMotion
+          ? 0
+          : Math.sin(t * o.orbitSpeed * 0.7 + o.phase) * o.orbitAmp * o.drift.z;
+        o.pivot.position.set(
+          o.base.x * v.nebulaSpread + ox,
+          o.base.y * v.nebulaSpread + oy,
+          o.base.z + oz,
         );
-        const baseScale = o.mesh.userData.baseScale as number | undefined;
-        if (baseScale == null) o.mesh.userData.baseScale = o.mesh.scale.x;
-        const bs = (o.mesh.userData.baseScale as number) * breathe * (0.85 + v.nebulaSpread * 0.15);
-        o.mesh.scale.setScalar(bs);
-        o.mat.opacity = (0.12 + v.nebulaOpacity * 0.22) * breathe;
-        o.mat.emissiveIntensity = 0.35 + v.nebulaOpacity * 0.45;
+        o.mesh.scale.setScalar(o.baseScale * breathe * (0.9 + v.nebulaSpread * 0.1));
+        o.pivot.userData.assembleScale = 1;
+        o.mat.opacity = (o.mat.userData.baseOpacity as number) * (0.75 + v.nebulaOpacity * 0.35);
+        o.shadowMat.opacity = 0.1 + v.nebulaOpacity * 0.16;
+        o.mesh.rotation.y = t * (0.15 + o.orbitSpeed * 0.4);
+        o.mesh.rotation.x = Math.sin(t * 0.2 + o.phase) * 0.25;
       }
 
       updateLinks(v.nebulaSpread, v.particleLink);
 
-      // Network assemble / dissolve
-      network.position.set(1.55 * v.networkSide + pointer.x * 0.22, 0.12 + pointer.y * 0.14, 0);
+      // Network — autonomous gentle sway only
+      network.position.set(1.55 * v.networkSide, 0.12, 0);
       network.scale.setScalar(v.networkScale);
-      network.rotation.y = Math.sin(t * 0.14) * 0.14 + pointer.x * 0.1;
-      network.rotation.x = 0.2 + pointer.y * 0.07;
-      network.rotation.z = Math.sin(t * 0.09) * 0.04;
+      network.rotation.y = reduceMotion ? 0 : Math.sin(t * 0.12) * 0.1;
+      network.rotation.x = 0.18 + (reduceMotion ? 0 : Math.sin(t * 0.08) * 0.04);
+      network.rotation.z = reduceMotion ? 0 : Math.sin(t * 0.09) * 0.035;
 
-      hubGlowSprite.material.opacity = 0.12 + v.hubGlow * 0.45;
-      hubGlowSprite.scale.setScalar(1.2 + v.hubGlow * 0.65 + Math.sin(t * 1.1) * 0.1);
+      hubGlowSprite.material.opacity = 0.08 + v.hubGlow * 0.32;
+      hubGlowSprite.scale.setScalar(1.05 + v.hubGlow * 0.55 + Math.sin(t * 1.1) * 0.08);
       hubRing.rotation.z = t * 0.28;
       hubRing.rotation.x = Math.sin(t * 0.2) * 0.15;
       hubRing.visible = v.networkOpacity > 0.12;
@@ -1111,34 +1286,34 @@ export default function StageScene({ stage }: Props) {
         const pop = easeOutBack(Math.min(1, p * 1.05)) * v.networkOpacity;
         const clampedPop = Math.max(0, Math.min(1, pop));
 
-        tmpPos.set(
-          node.base.x,
-          node.base.y + (reduceMotion ? 0 : Math.sin(t * 0.55 + node.phase) * 0.045),
-          node.base.z,
-        );
+        const fx = reduceMotion ? 0 : Math.cos(t * 0.42 + node.phase) * node.floatAmp * 0.6;
+        const fy = reduceMotion ? 0 : Math.sin(t * 0.55 + node.phase) * node.floatAmp;
+        tmpPos.set(node.base.x + fx, node.base.y + fy, node.base.z);
         tmpPos.lerp(hubOrigin, 1 - clampedPop);
         node.group.position.copy(tmpPos);
 
-        // Body keeps authored size; group scale drives assemble/dissolve
-        node.group.scale.setScalar(
-          node.isHub ? 0.35 + clampedPop * 0.65 : 0.22 + clampedPop * 0.78,
-        );
+        node.group.userData.assembleScale = node.isHub
+          ? 0.35 + clampedPop * 0.65
+          : 0.22 + clampedPop * 0.78;
 
         node.group.rotation.x = t * node.spin * 0.32;
         node.group.rotation.y = t * node.spin * 0.48 + clampedPop * 0.4;
 
         const baseOp = node.bodyMat.userData.baseOpacity as number;
         const baseEm = node.bodyMat.userData.baseEmissive as number;
+        const ht = hoverById.get(`node-${i}`);
+        const hoverBoost = ht ? 1 + ht.hover * 1.35 + ht.bounce * 0.75 : 1;
         node.bodyMat.opacity = baseOp * clampedPop;
-        node.bodyMat.emissiveIntensity = baseEm * (0.5 + v.hubGlow * 0.8) * clampedPop;
+        node.bodyMat.emissiveIntensity = baseEm * (0.5 + v.hubGlow * 0.8) * clampedPop * hoverBoost;
         node.edgeMat.opacity = (node.edgeMat.userData.baseOpacity as number) * clampedPop;
+        node.shadowMat.opacity = 0.08 + clampedPop * 0.18;
         node.group.visible = clampedPop > 0.02;
       });
 
       updateFibers(v.networkOpacity, v.hubGlow);
 
-      // Panels — assemble with rotation + scale + material fade
-      panels.position.set(pointer.x * 0.38, pointer.y * 0.28, 0);
+      // Panels — autonomous float only
+      panels.position.set(0, 0, 0);
       panelItems.forEach((item, i) => {
         const dissolving =
           VISUALS[toStage].panelsOpacity < VISUALS[fromStage].panelsOpacity;
@@ -1151,31 +1326,67 @@ export default function StageScene({ stage }: Props) {
         const p = Math.max(0, Math.min(1, panelProgress[i])) * v.panelsOpacity;
         const e = easeOutCubic(p);
 
+        const fx = reduceMotion ? 0 : Math.cos(t * 0.33 + item.phase) * item.floatAmp * 0.7;
+        const fy = reduceMotion ? 0 : Math.sin(t * 0.48 + item.phase) * item.floatAmp;
         item.group.position.set(
-          item.base.x * v.panelsSpread,
-          item.base.y * v.panelsSpread + (reduceMotion ? 0 : Math.sin(t * 0.48 + i) * 0.07),
+          item.base.x * v.panelsSpread + fx,
+          item.base.y * v.panelsSpread + fy,
           item.base.z + (1 - e) * 0.8,
         );
-        item.group.scale.setScalar(0.35 + e * 0.65);
-        item.group.rotation.x = (1 - e) * 0.55 + Math.sin(t * item.rotSpeed * 0.5) * 0.06;
-        item.group.rotation.y = Math.cos(t * item.rotSpeed * 0.7) * 0.14 + (1 - e) * 0.4;
-        item.group.rotation.z = Math.sin(t * item.rotSpeed + i) * 0.08;
+        item.group.userData.assembleScale = 0.35 + e * 0.65;
+        item.group.rotation.x = (1 - e) * 0.55 + Math.sin(t * item.rotSpeed * 0.5) * 0.08;
+        item.group.rotation.y = Math.cos(t * item.rotSpeed * 0.7) * 0.16 + (1 - e) * 0.4;
+        item.group.rotation.z = Math.sin(t * item.rotSpeed + i) * 0.1;
 
+        const ht = hoverById.get(`panel-${i}`);
+        const hoverBoost = ht ? 1 + ht.hover * 1.35 + ht.bounce * 0.7 : 1;
         for (const m of item.mats) {
           m.opacity = (m.userData.baseOpacity as number) * e;
-          m.emissiveIntensity = (m.userData.baseEmissive as number) * (0.6 + e * 0.6);
+          m.emissiveIntensity =
+            (m.userData.baseEmissive as number) * (0.6 + e * 0.6) * hoverBoost;
         }
         for (const m of item.edgeMats) {
           m.opacity = (m.userData.baseOpacity as number) * e;
         }
+        item.shadowMat.opacity = 0.06 + e * 0.16;
         item.group.visible = e > 0.02;
       });
 
-      // Subtle camera parallax
-      camera.position.x = pointer.x * 0.22;
-      camera.position.y = 0.15 + pointer.y * 0.14;
-      camera.position.z = 6.2 - Math.abs(pointer.x) * 0.08;
-      camera.lookAt(pointer.x * 0.06, pointer.y * 0.05, 0);
+      // Per-element hover (raycast throttled); no camera/group parallax
+      if (pointer.moved) {
+        pointer.moved = false;
+        pickHoverTarget();
+      }
+
+      for (const ht of hoverTargets) {
+        const target = ht.id === activeHoverId ? 1 : 0;
+        ht.hover += (target - ht.hover) * Math.min(1, dt * 10);
+        ht.bounce *= Math.exp(-dt * 6);
+        if (ht.bounce < 0.002) ht.bounce = 0;
+
+        const assemble = (ht.root.userData.assembleScale as number) ?? 1;
+        const spring = 1 + ht.hover * 0.14 + Math.sin(ht.bounce * Math.PI) * 0.18;
+        const warpX = 1 + ht.hover * 0.05 * Math.sin(t * 6.5);
+        const warpY = 1 - ht.hover * 0.03 * Math.sin(t * 6.5);
+        ht.root.scale.set(
+          assemble * spring * warpX,
+          assemble * spring * warpY,
+          assemble * spring,
+        );
+
+        // Orbs/panels/nodes that share mats get emissive pulse here if not stage-driven
+        if (ht.id.startsWith("orb-")) {
+          for (const m of ht.mats) {
+            const baseEm = (m.userData.baseEmissive as number) ?? 0.14;
+            m.emissiveIntensity =
+              baseEm * (0.7 + v.nebulaOpacity * 0.6) * (1 + ht.hover * 1.5 + ht.bounce * 0.9);
+          }
+        }
+      }
+
+      // Camera fixed — no mouse parallax
+      camera.position.set(0, 0.15, 6.2);
+      camera.lookAt(0, 0, 0);
 
       renderer.render(scene, camera);
       raf = requestAnimationFrame(frame);
@@ -1187,15 +1398,22 @@ export default function StageScene({ stage }: Props) {
       raf = requestAnimationFrame(frame);
     };
 
+    const UI_SELECTOR = "a,button,input,textarea,select,label,[role='button']";
+
     const onPointer = (e: PointerEvent) => {
       const rect = mount.getBoundingClientRect();
-      pointer.tx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
-      pointer.ty = -((e.clientY - rect.top) / rect.height - 0.5) * 2;
+      if (rect.width < 1 || rect.height < 1) return;
+      pointer.nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.ny = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      const target = e.target as Element | null;
+      pointer.overUi = !!(target && target.closest(UI_SELECTOR));
+      pointer.moved = true;
     };
 
     const onVis = () => {
       visible = document.visibilityState === "visible";
       if (visible) kick();
+      else setCursor(false);
     };
 
     resize();
@@ -1207,6 +1425,7 @@ export default function StageScene({ stage }: Props) {
     return () => {
       running = false;
       cancelAnimationFrame(raf);
+      setCursor(false);
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onPointer);
       document.removeEventListener("visibilitychange", onVis);
