@@ -4,40 +4,48 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { playChimeSound, playTypeSound, primeAudio } from "@/lib/sound-fx";
+import { INTRO_SESSION_KEY } from "@/lib/intro-session";
 
-const SESSION_KEY = "methodea-intro-shown";
 const EASE = [0.22, 1, 0.36, 1] as const;
 const WORD = "Methodea";
 
 const WHITE_SRC = "/brand/methodea-chevron-white.png";
 const BLUE_SRC = "/brand/methodea-chevron-blue.png";
 
-// Choreography (seconds). Slow, spacious assemble → typewriter → hold → fade.
-const FLY_DUR = 1.45;
-const HOLD_AFTER_FLY = 0.75;
-const TYPE_START = FLY_DUR + HOLD_AFTER_FLY; // ~2.2
-const TYPE_STEP_MS = 165;
-const HOLD_AFTER_TYPE_MS = 1400;
-const EXIT_DUR = 0.95;
-const SLIDE_DUR = 0.72;
+// Choreography (seconds). Larger lockup, deliberately slow assemble → type → hold → fade.
+const FLY_DUR = 2.55;
+const HOLD_AFTER_FLY = 1.15;
+const TYPE_START = FLY_DUR + HOLD_AFTER_FLY; // ~3.7
+const TYPE_STEP_MS = 255;
+const HOLD_AFTER_TYPE_MS = 2100;
+const EXIT_DUR = 1.35;
+const SLIDE_DUR = 1.1;
 const DISMISS_MS =
   Math.round(TYPE_START * 1000) + WORD.length * TYPE_STEP_MS + HOLD_AFTER_TYPE_MS;
 
 type IntroSizes = { icon: number; gap: number; textW: number; textPx: number };
 
-const DEFAULT_SIZES: IntroSizes = { icon: 168, gap: 36, textW: 420, textPx: 58 };
+const DEFAULT_SIZES: IntroSizes = { icon: 248, gap: 52, textW: 580, textPx: 82 };
 
 function sizesForWidth(w: number): IntroSizes {
-  if (w < 420) return { icon: 112, gap: 20, textW: 250, textPx: 36 };
-  if (w < 720) return { icon: 140, gap: 28, textW: 340, textPx: 48 };
-  if (w < 1100) return { icon: 156, gap: 32, textW: 390, textPx: 54 };
+  if (w < 420) return { icon: 148, gap: 22, textW: 280, textPx: 42 };
+  if (w < 720) return { icon: 188, gap: 34, textW: 420, textPx: 58 };
+  if (w < 1100) return { icon: 220, gap: 44, textW: 520, textPx: 72 };
   return DEFAULT_SIZES;
+}
+
+function revealSite() {
+  try {
+    document.documentElement.dataset.intro = "done";
+  } catch {
+    /* ignore */
+  }
 }
 
 /**
  * One-time Methodea logo intro: white chevron flies from top, blue from bottom,
- * then "Methodea" types letter-by-letter. Session-gated; skippable. Site renders
- * underneath and is revealed on dismiss.
+ * then "Methodea" types letter-by-letter. Session-gated; skippable.
+ * Boot script sets html[data-intro=wait] before paint so the site never flashes first.
  */
 export default function LogoIntro() {
   const [show, setShow] = useState(false);
@@ -53,17 +61,29 @@ export default function LogoIntro() {
     for (const id of timers.current) window.clearTimeout(id);
     timers.current = [];
     if (withChime) playChimeSound();
+    revealSite();
     setShow(false);
   };
 
   useEffect(() => {
     let reduceMotion = false;
+    let alreadyShown = false;
     try {
-      if (sessionStorage.getItem(SESSION_KEY)) return;
-      sessionStorage.setItem(SESSION_KEY, "1");
+      alreadyShown = Boolean(sessionStorage.getItem(INTRO_SESSION_KEY));
+      if (alreadyShown) {
+        revealSite();
+        return;
+      }
+      sessionStorage.setItem(INTRO_SESSION_KEY, "1");
+      document.documentElement.dataset.intro = "wait";
       reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     } catch {
       // storage unavailable — still play once for this mount
+      try {
+        document.documentElement.dataset.intro = "wait";
+      } catch {
+        /* ignore */
+      }
     }
 
     setSizes(sizesForWidth(window.innerWidth));

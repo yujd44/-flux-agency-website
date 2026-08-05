@@ -14,6 +14,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import LogoIntro from "@/components/layout/LogoIntro";
 import PortalTransition from "@/components/home/PortalTransition";
+import { INTRO_BOOT_SCRIPT } from "@/lib/intro-session";
 import "../globals.css";
 
 export function generateStaticParams() {
@@ -55,6 +56,9 @@ export default async function LocaleLayout({
       dir={dir}
       className={`${fontLatin.variable} ${fontMono.variable} ${fontHeadline.variable} ${fontHebrew.variable} ${fontArabic.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: INTRO_BOOT_SCRIPT }} />
+      </head>
       <body className="flex min-h-full flex-col bg-bg text-text">
         <NextIntlClientProvider messages={messages}>
           <LogoIntro />

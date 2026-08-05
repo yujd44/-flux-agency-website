@@ -235,16 +235,11 @@ export default function RealizationStage({
           </a>
 
           <div className="flex flex-col gap-3 md:col-span-3">
-            <div className="ritual-glass flex flex-1 flex-col justify-between rounded-2xl p-4 sm:p-5">
-              <div>
-                <p className="label-mono mb-2 text-[10px] tracking-[0.14em] text-white/45">
-                  {ts("items.telegramBots.title")}
-                </p>
-                <p className="text-sm leading-snug text-white">{t("highlightBot")}</p>
-              </div>
-              <p className="mt-4 text-2xl font-medium text-[var(--ritual-cyan)] tabular-nums">
-                {t("metrics.responseValue")}
+            <div className="ritual-glass flex flex-1 flex-col justify-center rounded-2xl p-4 sm:p-5">
+              <p className="label-mono mb-2 text-[10px] tracking-[0.14em] text-white/45">
+                {ts("items.telegramBots.title")}
               </p>
+              <p className="text-sm leading-snug text-white">{t("highlightBot")}</p>
             </div>
             <Link
               href="/portfolio"

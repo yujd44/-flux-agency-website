@@ -77,6 +77,22 @@ body {
   background-color: transparent;
 }
 
+/* Boot gate: hide site until LogoIntro finishes (or session already saw it). */
+html[data-intro="wait"] {
+  overflow: hidden;
+  background-color: #05070a;
+}
+
+html[data-intro="wait"] body {
+  background-color: #05070a;
+  background-image: none;
+}
+
+html[data-intro="wait"] .page-frame {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 html[lang="he"] body {
   font-family: var(--font-he), var(--font-latin), system-ui, sans-serif;
 }

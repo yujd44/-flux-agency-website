@@ -2,18 +2,21 @@ import * as THREE from "three";
 
 /**
  * Service-themed 3D figures for StageScene — composed MeshPhysical meshes
- * (laptop, wifi, cloud, phone, server, browser, gear, desktop).
+ * (laptop, wifi, router, globe, cloud, phone, server, browser, gear, desktop, headphones).
  */
 
 export type ServiceFigureKind =
   | "laptop"
   | "desktop"
   | "wifi"
+  | "router"
+  | "globe"
   | "cloud"
   | "phone"
   | "server"
   | "browser"
-  | "gear";
+  | "gear"
+  | "headphones";
 
 export type FigureStyle = "glass" | "metal" | "accent";
 
@@ -149,6 +152,12 @@ export class ServiceFigurePool {
       case "wifi":
         this.buildWifi(content, s, opts, pick, mats);
         break;
+      case "router":
+        this.buildRouter(content, s, opts, pick, mats);
+        break;
+      case "globe":
+        this.buildGlobe(content, s, opts, pick, mats);
+        break;
       case "cloud":
         this.buildCloud(content, s, opts, pick, mats);
         break;
@@ -163,6 +172,9 @@ export class ServiceFigurePool {
         break;
       case "gear":
         this.buildGear(content, s, opts, pick, mats);
+        break;
+      case "headphones":
+        this.buildHeadphones(content, s, opts, pick, mats);
         break;
     }
 
@@ -327,6 +339,261 @@ export class ServiceFigurePool {
         Math.PI,
       );
     }
+  }
+
+  private buildRouter(
+    g: THREE.Group,
+    s: number,
+    opts: MatOpts,
+    pick: THREE.Object3D[],
+    mats: THREE.MeshPhysicalMaterial[],
+  ) {
+    const body = this.makeMat(opts, { metalness: 0.88, roughness: 0.26 });
+    const accent = this.makeMat(opts, {
+      style: "accent",
+      emissiveBoost: 1.4,
+      opacity: 0.92,
+    });
+    mats.push(body, accent);
+
+    // Chassis
+    this.addMesh(g, this.box, body, pick, mats, 0, -s * 0.08, 0, s * 1.15, s * 0.28, s * 0.7);
+    // Status LEDs
+    for (let i = 0; i < 4; i++) {
+      this.addMesh(
+        g,
+        this.sphere,
+        accent,
+        pick,
+        mats,
+        -s * 0.35 + i * s * 0.22,
+        -s * 0.02,
+        s * 0.38,
+        s * 0.045,
+        s * 0.045,
+        s * 0.045,
+      );
+    }
+    // Antennas
+    for (let i = 0; i < 3; i++) {
+      const x = -s * 0.35 + i * s * 0.35;
+      this.addMesh(
+        g,
+        this.cyl,
+        body,
+        pick,
+        mats,
+        x,
+        s * 0.42,
+        -s * 0.05,
+        s * 0.035,
+        s * 0.7,
+        s * 0.035,
+        0,
+        0,
+        (i - 1) * 0.18,
+      );
+      this.addMesh(
+        g,
+        this.sphere,
+        accent,
+        pick,
+        mats,
+        x,
+        s * 0.78,
+        -s * 0.05,
+        s * 0.05,
+        s * 0.05,
+        s * 0.05,
+      );
+    }
+  }
+
+  private buildGlobe(
+    g: THREE.Group,
+    s: number,
+    opts: MatOpts,
+    pick: THREE.Object3D[],
+    mats: THREE.MeshPhysicalMaterial[],
+  ) {
+    const shell = this.makeMat(opts, {
+      tintMix: 0.35,
+      opacity: opts.style === "glass" ? 0.42 : 0.62,
+      depthWrite: false,
+      emissiveBoost: 0.95,
+      side: THREE.DoubleSide,
+    });
+    const ring = this.makeMat(opts, {
+      emissiveBoost: 1.2,
+      opacity: 0.88,
+      metalness: 0.85,
+    });
+    mats.push(shell, ring);
+
+    // Sphere
+    this.addMesh(g, this.sphere, shell, pick, mats, 0, 0, 0, s * 0.55, s * 0.55, s * 0.55);
+    // Equator
+    this.addMesh(
+      g,
+      this.torusFull,
+      ring,
+      pick,
+      mats,
+      0,
+      0,
+      0,
+      s * 0.58,
+      s * 0.58,
+      s * 0.58,
+      Math.PI / 2,
+      0,
+      0,
+    );
+    // Meridian
+    this.addMesh(
+      g,
+      this.torusFull,
+      ring,
+      pick,
+      mats,
+      0,
+      0,
+      0,
+      s * 0.58,
+      s * 0.58,
+      s * 0.58,
+      0,
+      0,
+      0,
+    );
+    // Tilted orbit ring (network path)
+    this.addMesh(
+      g,
+      this.torusFull,
+      ring,
+      pick,
+      mats,
+      0,
+      0,
+      0,
+      s * 0.72,
+      s * 0.72,
+      s * 0.72,
+      0.7,
+      0.4,
+      0.2,
+    );
+    // Hub nodes on orbit
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * Math.PI * 2;
+      this.addMesh(
+        g,
+        this.sphere,
+        ring,
+        pick,
+        mats,
+        Math.cos(a) * s * 0.72,
+        Math.sin(a) * s * 0.35,
+        Math.sin(a) * s * 0.55,
+        s * 0.07,
+        s * 0.07,
+        s * 0.07,
+      );
+    }
+  }
+
+  private buildHeadphones(
+    g: THREE.Group,
+    s: number,
+    opts: MatOpts,
+    pick: THREE.Object3D[],
+    mats: THREE.MeshPhysicalMaterial[],
+  ) {
+    const band = this.makeMat(opts, { metalness: 0.9, roughness: 0.22 });
+    const cup = this.makeMat(opts, {
+      style: "accent",
+      emissiveBoost: 1.05,
+      opacity: 0.9,
+    });
+    mats.push(band, cup);
+
+    // Headband (partial torus)
+    this.addMesh(
+      g,
+      this.torus,
+      band,
+      pick,
+      mats,
+      0,
+      s * 0.15,
+      0,
+      s * 0.55,
+      s * 0.55,
+      s * 0.55,
+      0,
+      0,
+      Math.PI,
+    );
+    // Ear cups
+    this.addMesh(
+      g,
+      this.cyl,
+      cup,
+      pick,
+      mats,
+      -s * 0.52,
+      -s * 0.05,
+      0,
+      s * 0.22,
+      s * 0.16,
+      s * 0.22,
+      0,
+      0,
+      Math.PI / 2,
+    );
+    this.addMesh(
+      g,
+      this.cyl,
+      cup,
+      pick,
+      mats,
+      s * 0.52,
+      -s * 0.05,
+      0,
+      s * 0.22,
+      s * 0.16,
+      s * 0.22,
+      0,
+      0,
+      Math.PI / 2,
+    );
+    // Inner pads
+    this.addMesh(
+      g,
+      this.sphere,
+      band,
+      pick,
+      mats,
+      -s * 0.48,
+      -s * 0.05,
+      s * 0.02,
+      s * 0.12,
+      s * 0.14,
+      s * 0.1,
+    );
+    this.addMesh(
+      g,
+      this.sphere,
+      band,
+      pick,
+      mats,
+      s * 0.48,
+      -s * 0.05,
+      s * 0.02,
+      s * 0.12,
+      s * 0.14,
+      s * 0.1,
+    );
   }
 
   private buildCloud(
@@ -635,6 +902,10 @@ export function collisionRadius(kind: ServiceFigureKind, s: number): number {
       return s * 0.95;
     case "wifi":
       return s * 0.85;
+    case "router":
+      return s * 0.95;
+    case "globe":
+      return s * 0.9;
     case "cloud":
       return s * 0.9;
     case "phone":
@@ -645,6 +916,8 @@ export function collisionRadius(kind: ServiceFigureKind, s: number): number {
       return s * 1.0;
     case "gear":
       return s * 0.85;
+    case "headphones":
+      return s * 0.85;
     default:
       return s * 0.85;
   }
@@ -654,10 +927,13 @@ export function collisionRadius(kind: ServiceFigureKind, s: number): number {
 export const SERVICE_KINDS: ServiceFigureKind[] = [
   "laptop",
   "wifi",
+  "router",
+  "globe",
   "cloud",
   "phone",
   "server",
   "browser",
   "gear",
   "desktop",
+  "headphones",
 ];
