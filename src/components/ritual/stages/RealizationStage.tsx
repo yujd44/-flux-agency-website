@@ -57,7 +57,7 @@ export default function RealizationStage({ active: _active = true }: Props) {
                 return (
                   <div key={cat.id} className="flex items-center gap-2">
                     <Icon className="h-3.5 w-3.5 text-[var(--ritual-cyan)]" strokeWidth={1.5} />
-                    <BidiBlock className="label-mono text-[10px] tracking-[0.14em] text-white/80">
+                    <BidiBlock className="label-mono text-[10px] tracking-[0.14em] text-white/90">
                       {ts(`categories.${cat.id}.title`)}
                     </BidiBlock>
                   </div>
@@ -100,7 +100,7 @@ export default function RealizationStage({ active: _active = true }: Props) {
                     const Icon = categoryIcons[infraCat.id];
                     return <Icon className="h-3.5 w-3.5 text-[var(--ritual-cyan)]" strokeWidth={1.5} />;
                   })()}
-                  <BidiBlock className="label-mono text-[10px] tracking-[0.14em] text-white/80">
+                  <BidiBlock className="label-mono text-[10px] tracking-[0.14em] text-white/90">
                     {ts(`categories.${infraCat.id}.title`)}
                   </BidiBlock>
                 </>

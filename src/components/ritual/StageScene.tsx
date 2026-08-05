@@ -261,7 +261,7 @@ type HoverTarget = {
 
 /**
  * Single shared WebGL layer for ritual stages.
- * Physical materials, autonomous idle motion, per-mesh hover — no group parallax.
+ * Physical materials, autonomous idle motion, per-mesh hover/scatter — no group parallax.
  */
 export default function StageScene({ stage }: Props) {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -1357,13 +1357,13 @@ export default function StageScene({ stage }: Props) {
     const archFaceMat = new THREE.MeshPhysicalMaterial({
       color: GLASS_TINT,
       emissive: CYAN,
-      emissiveIntensity: 0.06,
+      emissiveIntensity: 0.05,
       roughness: 0.12,
       metalness: 0.55,
       clearcoat: 1,
       clearcoatRoughness: 0.1,
       transparent: true,
-      opacity: 0.12,
+      opacity: 0.09,
       depthWrite: false,
       side: THREE.DoubleSide,
       envMap,
@@ -1418,6 +1418,10 @@ export default function StageScene({ stage }: Props) {
       phase: number;
       spin: number;
       size: number;
+      offset: THREE.Vector3;
+      vel: THREE.Vector3;
+      mass: number;
+      radius: number;
     };
     const accents: AccentItem[] = [];
     const accentDefs = [
@@ -1472,8 +1476,21 @@ export default function StageScene({ stage }: Props) {
         phase: i * 0.9,
         spin: 0.12 + (i % 3) * 0.06,
         size: def.s,
+        offset: new THREE.Vector3(),
+        vel: new THREE.Vector3(),
+        mass: 0.55 + def.s * 1.4,
+        radius: 1.55 + def.s * 2.2,
       });
     });
+
+    // Main wireframe cube — light per-mesh scatter (not whole-scene drag)
+    const archHome = archPivot.position.clone();
+    const archScatter = {
+      offset: new THREE.Vector3(),
+      vel: new THREE.Vector3(),
+      mass: 2.4,
+      radius: 2.6,
+    };
 
     const archWash = new THREE.Sprite(
       new THREE.SpriteMaterial({
@@ -1499,7 +1516,7 @@ export default function StageScene({ stage }: Props) {
     let nodeProgress = nodes.map(() => 1);
     let panelProgress = panelItems.map(() => 1);
 
-    const pointer = { nx: 0, ny: 0, overUi: false, moved: false };
+    const pointer = { nx: 0, ny: 0, overUi: false, moved: false, inside: false };
     let activeHoverId: string | null = null;
     let cursorPointer = false;
     const raycaster = new THREE.Raycaster();
@@ -1508,6 +1525,14 @@ export default function StageScene({ stage }: Props) {
     const tmpPos = new THREE.Vector3();
     const tintColor = new THREE.Color();
     const hoverById = new Map(hoverTargets.map((h) => [h.id, h]));
+    // Realization pointer repulsion — project into stage plane, push individual meshes
+    const scatterPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0.55);
+    const pointerWorld = new THREE.Vector3();
+    const repelDir = new THREE.Vector3();
+    const REPEL_STRENGTH = 22;
+    const REPEL_SPRING = 9.5;
+    const REPEL_DAMP = 0.84;
+    const REPEL_MAX = 1.55;
 
     function setCursor(on: boolean) {
       if (on === cursorPointer) return;
@@ -1870,11 +1895,76 @@ export default function StageScene({ stage }: Props) {
         archWash.material.opacity = 0.04 + arch * 0.1;
         archWash.material.color.copy(tint);
 
+        // Pointer → scene-plane projection for per-mesh repulsion
+        let scatterLive = false;
+        if (!reduceMotion && pointer.inside && arch > 0.25) {
+          pointerNdc.set(pointer.nx, pointer.ny);
+          raycaster.setFromCamera(pointerNdc, camera);
+          scatterLive = !!raycaster.ray.intersectPlane(scatterPlane, pointerWorld);
+        }
+
+        const damp = Math.pow(REPEL_DAMP, dt * 60);
+        const integrateScatter = (
+          idle: THREE.Vector3,
+          offset: THREE.Vector3,
+          vel: THREE.Vector3,
+          mass: number,
+          radius: number,
+          strengthScale: number,
+        ) => {
+          if (scatterLive) {
+            const dx = idle.x - pointerWorld.x;
+            const dy = idle.y - pointerWorld.y;
+            const dz = (idle.z - pointerWorld.z) * 0.55;
+            const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            if (dist < radius && dist > 1e-4) {
+              const falloff = (1 - dist / radius) ** 2;
+              repelDir.set(dx, dy, dz).multiplyScalar(1 / dist);
+              const impulse = (REPEL_STRENGTH * strengthScale * falloff * dt) / mass;
+              vel.addScaledVector(repelDir, impulse);
+              vel.y += falloff * 3.2 * strengthScale * dt;
+            }
+          }
+          vel.x += -offset.x * REPEL_SPRING * dt;
+          vel.y += -offset.y * REPEL_SPRING * dt;
+          vel.z += -offset.z * REPEL_SPRING * dt;
+          vel.multiplyScalar(damp);
+          offset.addScaledVector(vel, dt);
+          const olen = offset.length();
+          if (olen > REPEL_MAX) offset.multiplyScalar(REPEL_MAX / olen);
+        };
+
+        tmpPos.set(archHome.x, archHome.y, archHome.z);
+        integrateScatter(
+          tmpPos,
+          archScatter.offset,
+          archScatter.vel,
+          archScatter.mass,
+          archScatter.radius,
+          0.55,
+        );
+        archPivot.position.set(
+          archHome.x + archScatter.offset.x,
+          archHome.y + archScatter.offset.y,
+          archHome.z + archScatter.offset.z,
+        );
+
         for (let i = 0; i < accents.length; i++) {
           const a = accents[i];
           const fx = reduceMotion ? 0 : Math.cos(t * 0.4 + a.phase) * 0.08;
           const fy = reduceMotion ? 0 : Math.sin(t * 0.5 + a.phase) * 0.1;
-          a.group.position.set(a.base.x + fx, a.base.y + fy, a.base.z);
+          tmpPos.set(a.base.x + fx, a.base.y + fy, a.base.z);
+          if (!reduceMotion) {
+            integrateScatter(tmpPos, a.offset, a.vel, a.mass, a.radius, 1);
+          } else {
+            a.offset.set(0, 0, 0);
+            a.vel.set(0, 0, 0);
+          }
+          a.group.position.set(
+            tmpPos.x + a.offset.x,
+            tmpPos.y + a.offset.y,
+            tmpPos.z + a.offset.z,
+          );
           a.group.rotation.x = t * a.spin * 0.7;
           a.group.rotation.y = t * a.spin;
           a.group.userData.assembleScale = 0.35 + arch * 0.65;
@@ -1887,6 +1977,14 @@ export default function StageScene({ stage }: Props) {
           }
           a.edgeMat.opacity = (a.edgeMat.userData.baseOpacity as number) * arch;
           a.group.visible = arch > 0.05;
+        }
+      } else {
+        archScatter.offset.set(0, 0, 0);
+        archScatter.vel.set(0, 0, 0);
+        archPivot.position.copy(archHome);
+        for (const a of accents) {
+          a.offset.set(0, 0, 0);
+          a.vel.set(0, 0, 0);
         }
       }
 
@@ -1948,18 +2046,32 @@ export default function StageScene({ stage }: Props) {
       pointer.ny = -((e.clientY - rect.top) / rect.height) * 2 + 1;
       const target = e.target as Element | null;
       pointer.overUi = !!(target && target.closest(UI_SELECTOR));
+      // Scatter while over ritual viewport (including content panels) — not only bare canvas
+      pointer.inside =
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom;
       pointer.moved = true;
+    };
+
+    const onPointerLeaveDoc = () => {
+      pointer.inside = false;
     };
 
     const onVis = () => {
       visible = document.visibilityState === "visible";
       if (visible) kick();
-      else setCursor(false);
+      else {
+        pointer.inside = false;
+        setCursor(false);
+      }
     };
 
     resize();
     window.addEventListener("resize", resize, { passive: true });
     window.addEventListener("pointermove", onPointer, { passive: true });
+    document.documentElement.addEventListener("mouseleave", onPointerLeaveDoc);
     document.addEventListener("visibilitychange", onVis);
     kick();
 
@@ -1969,6 +2081,7 @@ export default function StageScene({ stage }: Props) {
       setCursor(false);
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onPointer);
+      document.documentElement.removeEventListener("mouseleave", onPointerLeaveDoc);
       document.removeEventListener("visibilitychange", onVis);
       for (const g of disposables) g.dispose();
       for (const m of materials) m.dispose();

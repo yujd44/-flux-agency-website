@@ -216,6 +216,12 @@
   opacity: 0.28;
 }
 
+.ritual-root[data-stage="realization"] {
+  --ritual-text: #f7fbff;
+  --ritual-muted: rgba(232, 240, 250, 0.9);
+  --ritual-glass-border: rgba(200, 220, 255, 0.22);
+}
+
 .ritual-root[data-stage="realization"] .ritual-hud-frame {
   opacity: 0.62;
   transform: translate3d(0, 0, 0) scale(1);
@@ -231,6 +237,56 @@
 .ritual-root[data-stage="realization"] .ritual-bloom--c {
   opacity: 0.4;
   transform: scale(1.15);
+}
+
+/* Realization: denser frosted panels above the 3D layer */
+.ritual-root[data-stage="realization"] .ritual-stage-host,
+.ritual-root[data-stage="realization"] .ritual-stage-panel.is-active,
+.ritual-root[data-stage="realization"] .ritual-stage {
+  z-index: 3;
+}
+
+.ritual-root[data-stage="realization"] #realization > .relative.z-10::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: -1.25rem -0.75rem;
+  z-index: -1;
+  border-radius: 1.75rem;
+  background:
+    radial-gradient(ellipse 85% 75% at 50% 35%, rgba(5, 7, 14, 0.72) 0%, rgba(5, 7, 14, 0.35) 45%, transparent 72%),
+    linear-gradient(180deg, rgba(7, 8, 12, 0.45) 0%, rgba(7, 8, 12, 0.15) 100%);
+}
+
+.ritual-root[data-stage="realization"] .ritual-glass {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(
+    155deg,
+    rgba(12, 16, 28, 0.88) 0%,
+    rgba(8, 10, 18, 0.78) 48%,
+    rgba(10, 14, 26, 0.84) 100%
+  );
+  border-color: var(--ritual-glass-border);
+  backdrop-filter: blur(22px) saturate(1.25);
+  -webkit-backdrop-filter: blur(22px) saturate(1.25);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 1px 0 rgba(255, 255, 255, 0.08) inset;
+}
+
+.ritual-root[data-stage="realization"] .ritual-glass,
+.ritual-root[data-stage="realization"] .text-content {
+  color: var(--ritual-text);
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.55);
+}
+
+.ritual-root[data-stage="realization"] .ritual-headline {
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.7),
+    0 0 20px rgba(77, 243, 255, 0.45),
+    0 0 48px rgba(138, 92, 246, 0.25);
 }
 
 .ritual-root[data-stage="future"] .ritual-hud-frame {
