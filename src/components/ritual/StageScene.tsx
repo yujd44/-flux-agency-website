@@ -580,18 +580,21 @@ export default function StageScene({ stage }: Props) {
     let raf = 0;
     let running = true;
     let visible = document.visibilityState === "visible";
-    const clock = new THREE.Clock();
+    let lastTs = performance.now();
+    let elapsed = 0;
     let lastStage = stageRef.current;
 
-    function frame() {
+    function frame(now: number) {
       if (!running) return;
       if (!visible) {
         raf = 0;
         return;
       }
 
-      const dt = Math.min(clock.getDelta(), 0.05);
-      const t = clock.elapsedTime;
+      const dt = Math.min((now - lastTs) / 1000, 0.05);
+      lastTs = now;
+      elapsed += dt;
+      const t = elapsed;
 
       if (stageRef.current !== lastStage) {
         beginMorph(stageRef.current);
@@ -748,6 +751,7 @@ export default function StageScene({ stage }: Props) {
 
     const kick = () => {
       if (!running || raf || !visible) return;
+      lastTs = performance.now();
       raf = requestAnimationFrame(frame);
     };
 
