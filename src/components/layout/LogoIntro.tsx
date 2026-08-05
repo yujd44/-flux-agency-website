@@ -12,23 +12,25 @@ const WORD = "Methodea";
 const WHITE_SRC = "/brand/methodea-chevron-white.png";
 const BLUE_SRC = "/brand/methodea-chevron-blue.png";
 
-// Choreography (seconds). Pieces assemble, then wordmark types letter-by-letter.
-const FLY_DUR = 0.55;
-const HOLD_AFTER_FLY = 0.28;
-const TYPE_START = FLY_DUR + HOLD_AFTER_FLY; // ~0.83
-const TYPE_STEP_MS = 72;
-const HOLD_AFTER_TYPE_MS = 520;
-const EXIT_DUR = 0.55;
+// Choreography (seconds). Slow, spacious assemble → typewriter → hold → fade.
+const FLY_DUR = 1.45;
+const HOLD_AFTER_FLY = 0.75;
+const TYPE_START = FLY_DUR + HOLD_AFTER_FLY; // ~2.2
+const TYPE_STEP_MS = 165;
+const HOLD_AFTER_TYPE_MS = 1400;
+const EXIT_DUR = 0.95;
+const SLIDE_DUR = 0.72;
 const DISMISS_MS =
   Math.round(TYPE_START * 1000) + WORD.length * TYPE_STEP_MS + HOLD_AFTER_TYPE_MS;
 
 type IntroSizes = { icon: number; gap: number; textW: number; textPx: number };
 
-const DEFAULT_SIZES: IntroSizes = { icon: 96, gap: 22, textW: 240, textPx: 34 };
+const DEFAULT_SIZES: IntroSizes = { icon: 168, gap: 36, textW: 420, textPx: 58 };
 
 function sizesForWidth(w: number): IntroSizes {
-  if (w < 420) return { icon: 72, gap: 14, textW: 170, textPx: 26 };
-  if (w < 720) return { icon: 88, gap: 18, textW: 210, textPx: 30 };
+  if (w < 420) return { icon: 112, gap: 20, textW: 250, textPx: 36 };
+  if (w < 720) return { icon: 140, gap: 28, textW: 340, textPx: 48 };
+  if (w < 1100) return { icon: 156, gap: 32, textW: 390, textPx: 54 };
   return DEFAULT_SIZES;
 }
 
@@ -70,7 +72,7 @@ export default function LogoIntro() {
       // Instant lockup, brief hold, then out — no fly / type / sound.
       setShow(true);
       setTyped(WORD.length);
-      const t = window.setTimeout(() => dismiss(false), 400);
+      const t = window.setTimeout(() => dismiss(false), 900);
       timers.current.push(t);
       return () => {
         for (const id of timers.current) window.clearTimeout(id);
@@ -170,23 +172,27 @@ export default function LogoIntro() {
               style={{ width: ICON, height: ICON }}
               initial={{ x: ICON_CENTER_X }}
               animate={{ x: 0 }}
-              transition={{ delay: TYPE_START - 0.08, duration: 0.38, ease: EASE }}
+              transition={{
+                delay: TYPE_START - 0.18,
+                duration: SLIDE_DUR,
+                ease: EASE,
+              }}
             >
               <motion.div
-                className="absolute rounded-full bg-[rgba(77,180,255,0.28)] blur-2xl"
-                style={{ inset: "-40%" }}
-                initial={{ opacity: 0, scale: 0.6 }}
-                animate={{ opacity: [0, 0.5, 0.28], scale: [0.6, 1.12, 1] }}
-                transition={{ delay: FLY_DUR * 0.7, duration: 0.55, ease: EASE }}
+                className="absolute rounded-full bg-[rgba(77,180,255,0.28)] blur-3xl"
+                style={{ inset: "-55%" }}
+                initial={{ opacity: 0, scale: 0.55 }}
+                animate={{ opacity: [0, 0.55, 0.3], scale: [0.55, 1.18, 1] }}
+                transition={{ delay: FLY_DUR * 0.55, duration: 1.1, ease: EASE }}
               />
 
               {/* White chevron — from top */}
               <motion.div
                 className="absolute inset-0"
-                initial={{ y: -52, opacity: 0, filter: "blur(6px)" }}
+                initial={{ y: "-42vh", opacity: 0, filter: "blur(10px)" }}
                 animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
                 transition={{ duration: FLY_DUR, ease: EASE }}
-                style={{ filter: "drop-shadow(0 0 10px rgba(245,247,250,0.35))" }}
+                style={{ filter: "drop-shadow(0 0 18px rgba(245,247,250,0.4))" }}
               >
                 <Image
                   src={WHITE_SRC}
@@ -202,10 +208,10 @@ export default function LogoIntro() {
               {/* Blue chevron — from bottom */}
               <motion.div
                 className="absolute inset-0"
-                initial={{ y: 52, opacity: 0, filter: "blur(6px)" }}
+                initial={{ y: "42vh", opacity: 0, filter: "blur(10px)" }}
                 animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
                 transition={{ duration: FLY_DUR, ease: EASE }}
-                style={{ filter: "drop-shadow(0 0 12px rgba(56,140,255,0.55))" }}
+                style={{ filter: "drop-shadow(0 0 22px rgba(56,140,255,0.6))" }}
               >
                 <Image
                   src={BLUE_SRC}
@@ -242,7 +248,7 @@ export default function LogoIntro() {
 
           <button
             type="button"
-            className="label-mono absolute bottom-8 left-1/2 -translate-x-1/2 text-[10px] tracking-[0.28em] text-white/35 uppercase transition-colors hover:text-white/70"
+            className="label-mono absolute bottom-10 left-1/2 -translate-x-1/2 text-[11px] tracking-[0.32em] text-white/35 uppercase transition-colors hover:text-white/70"
             onClick={(e) => {
               e.stopPropagation();
               primeAudio();
