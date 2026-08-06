@@ -27,14 +27,18 @@ export default function MethodaLogo({
 }: Props) {
   const markH = size;
   const markW = Math.round(size * (304 / 236));
+  // Wordmark scales with mark height; floor keeps small chrome readable.
+  const wordPx = Math.max(13, Math.round(size * 0.52));
+  const gapPx = Math.max(8, Math.round(size * 0.32));
 
   const content = (
     <span
       className={clsx(
-        "chrome-ltr inline-flex items-center gap-2.5",
+        "chrome-ltr inline-flex items-center",
         morph && "transition-transform duration-300 ease-out hover:-translate-y-px",
         className,
       )}
+      style={{ gap: gapPx }}
     >
       <Image
         src="/brand/methodea-mark.png"
@@ -48,8 +52,11 @@ export default function MethodaLogo({
       />
       {showWordmark && (
         <span
-          className="text-[13px] font-medium tracking-[0.08em] text-text sm:text-[14px]"
-          style={{ fontFamily: "var(--font-latin), system-ui, sans-serif" }}
+          className="font-medium tracking-[0.08em] text-text"
+          style={{
+            fontFamily: "var(--font-latin), system-ui, sans-serif",
+            fontSize: wordPx,
+          }}
         >
           Methodea
         </span>

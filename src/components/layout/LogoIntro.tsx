@@ -62,10 +62,18 @@ function revealSite() {
   }
 }
 
+function markIntroShown() {
+  try {
+    sessionStorage.setItem(INTRO_SESSION_KEY, "1");
+  } catch {
+    /* ignore */
+  }
+}
+
 /**
  * One-time Methodea logo intro: white chevron flies from top, blue from bottom,
  * then "Methodea" types letter-by-letter. Session-gated; skippable.
- * Boot script sets html[data-intro=wait] before paint so the site never flashes first.
+ * Boot script + inline CSS keep pure black until this finishes — no ritual hero FOUC.
  */
 export default function LogoIntro() {
   const [show, setShow] = useState(false);
@@ -82,6 +90,7 @@ export default function LogoIntro() {
     for (const id of timers.current) window.clearTimeout(id);
     timers.current = [];
     if (withChime) playChimeSound();
+    markIntroShown();
     revealSite();
     setShow(false);
   };
@@ -95,11 +104,12 @@ export default function LogoIntro() {
         revealSite();
         return;
       }
-      sessionStorage.setItem(INTRO_SESSION_KEY, "1");
+      // Keep data-intro="wait" until dismiss — do NOT write sessionStorage here
+      // (early write + Strict Mode remount used to skip the splash and flash the site).
       document.documentElement.dataset.intro = "wait";
       reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     } catch {
-      // storage unavailable — still play once for this mount
+      // storage unavailable — still play once for this page load
       try {
         document.documentElement.dataset.intro = "wait";
       } catch {

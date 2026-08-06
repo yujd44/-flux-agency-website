@@ -356,7 +356,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 5.5rem var(--page-pad) 3.5rem;
+  padding: 6rem var(--page-pad) 3.5rem;
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
@@ -371,14 +371,26 @@
 
 .ritual-glass {
   background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.08) 0%,
-    rgba(255, 255, 255, 0.03) 100%
+    155deg,
+    rgba(10, 14, 24, 0.82) 0%,
+    rgba(7, 9, 16, 0.72) 48%,
+    rgba(9, 12, 22, 0.8) 100%
   );
   border: 1px solid var(--ritual-glass-border);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  box-shadow:
+    0 10px 36px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+}
+
+/* Keep glass copy legible when bright 3D figures drift behind */
+.ritual-glass .text-content,
+.ritual-glass .label-mono,
+.ritual-glass p,
+.ritual-glass h3,
+.ritual-glass button {
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.65);
 }
 
 .ritual-glass-hover {
@@ -393,14 +405,131 @@
 
 .ritual-brand-glow {
   text-shadow:
-    0 0 20px rgba(77, 243, 255, 0.45),
-    0 0 48px rgba(138, 92, 246, 0.25);
+    0 1px 3px rgba(0, 0, 0, 0.85),
+    0 2px 18px rgba(0, 0, 0, 0.7),
+    0 0 20px rgba(77, 243, 255, 0.4),
+    0 0 48px rgba(138, 92, 246, 0.22);
 }
 
 .ritual-headline {
   font-family: var(--font-headline), var(--font-latin), system-ui, sans-serif;
   font-weight: 500;
   letter-spacing: 0.06em;
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.8),
+    0 2px 16px rgba(0, 0, 0, 0.55);
+}
+
+/* Intro: radial dark veil so METHODEA + tagline stay readable over bright 3D */
+.ritual-root[data-stage="intro"] #intro > .relative.z-10 {
+  position: relative;
+}
+
+.ritual-root[data-stage="intro"] #intro > .relative.z-10::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: -18% -22%;
+  z-index: -1;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      ellipse 72% 68% at 50% 48%,
+      rgba(4, 6, 12, 0.82) 0%,
+      rgba(4, 6, 12, 0.48) 42%,
+      rgba(4, 6, 12, 0.12) 68%,
+      transparent 78%
+    );
+}
+
+.ritual-root[data-stage="intro"] #intro .ritual-headline {
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.9),
+    0 2px 22px rgba(0, 0, 0, 0.75),
+    0 0 20px rgba(77, 243, 255, 0.4),
+    0 0 48px rgba(138, 92, 246, 0.22);
+}
+
+.ritual-root[data-stage="intro"] #intro .text-content.mt-4,
+.ritual-root[data-stage="intro"] #intro p.text-content {
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.9),
+    0 2px 14px rgba(0, 0, 0, 0.7);
+}
+
+/* Method: title veil + denser cards above the mesh */
+.ritual-root[data-stage="method"] #method > .relative.z-10 > .text-content {
+  position: relative;
+}
+
+.ritual-root[data-stage="method"] #method > .relative.z-10 > .text-content::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: -1rem -1.25rem -0.75rem;
+  z-index: -1;
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(ellipse 90% 80% at 30% 40%, rgba(5, 7, 14, 0.7) 0%, rgba(5, 7, 14, 0.28) 55%, transparent 78%);
+}
+
+.ritual-root[data-stage="method"] .ritual-glass {
+  background: linear-gradient(
+    155deg,
+    rgba(12, 16, 28, 0.9) 0%,
+    rgba(8, 10, 18, 0.82) 48%,
+    rgba(10, 14, 26, 0.88) 100%
+  );
+  backdrop-filter: blur(22px) saturate(1.25);
+  -webkit-backdrop-filter: blur(22px) saturate(1.25);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 1px 0 rgba(255, 255, 255, 0.08) inset;
+}
+
+/* Future: denser form / manifesto panels */
+.ritual-root[data-stage="future"] #future > .relative.z-10 > .text-content {
+  position: relative;
+}
+
+.ritual-root[data-stage="future"] #future > .relative.z-10 > .text-content::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: -1rem -1.5rem;
+  z-index: -1;
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(ellipse 85% 75% at 40% 45%, rgba(5, 7, 14, 0.72) 0%, rgba(5, 7, 14, 0.3) 50%, transparent 75%);
+}
+
+.ritual-root[data-stage="future"] .ritual-glass {
+  background: linear-gradient(
+    155deg,
+    rgba(12, 16, 28, 0.9) 0%,
+    rgba(8, 10, 18, 0.82) 48%,
+    rgba(10, 14, 26, 0.88) 100%
+  );
+  backdrop-filter: blur(22px) saturate(1.25);
+  -webkit-backdrop-filter: blur(22px) saturate(1.25);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+}
+
+/* Header brand strip — soft veil so mark/nav aren't crossed by flying shapes */
+.ritual-header-veil {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    180deg,
+    rgba(5, 7, 14, 0.72) 0%,
+    rgba(5, 7, 14, 0.35) 55%,
+    transparent 100%
+  );
 }
 
 html[lang="he"] .ritual-headline {

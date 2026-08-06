@@ -77,7 +77,8 @@ body {
   background-color: transparent;
 }
 
-/* Boot gate: hide site until LogoIntro finishes (or session already saw it). */
+/* Boot gate: hide site until LogoIntro finishes (or session already saw it).
+   Critical rules are also inlined via INTRO_BOOT_STYLE so FOUC cannot win a race. */
 html[data-intro="wait"] {
   overflow: hidden;
   background-color: #05070a;
@@ -90,7 +91,20 @@ html[data-intro="wait"] body {
 
 html[data-intro="wait"] .page-frame {
   visibility: hidden;
+  opacity: 0;
   pointer-events: none;
+}
+
+#intro-boot-gate {
+  display: none;
+}
+
+html[data-intro="wait"] #intro-boot-gate {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 199;
+  background: #05070a;
 }
 
 html[lang="he"] body {
