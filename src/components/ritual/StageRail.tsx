@@ -76,7 +76,7 @@ export default function StageRail({ active, onSelect }: Props) {
         style={{ bottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))" }}
         aria-label={t("aria")}
       >
-        <ol className="pointer-events-auto flex touch-manipulation items-center gap-2.5 rounded-full border border-white/10 bg-[#07080c]/75 px-3 py-1.5 backdrop-blur-md">
+        <ol className="pointer-events-auto flex touch-manipulation items-center gap-2.5 rounded-full border border-white/10 bg-[#07080c]/90 px-3 py-1.5 md:bg-[#07080c]/75 md:backdrop-blur-md">
           {STAGES.map(({ id, Icon }) => {
             const isActive = active === id;
             return (

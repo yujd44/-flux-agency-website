@@ -552,7 +552,8 @@ export default function StageScene({ stage }: Props) {
     camera.position.set(0, 0.15, 6.2);
     camera.lookAt(0, 0, 0);
 
-    const dpr = Math.min(window.devicePixelRatio || 1, quality.dprCap);
+    // Mobile: DPR 1 + optional renderScale (<1) → fewer pixels, CSS upscales the canvas.
+    const dpr = Math.min(window.devicePixelRatio || 1, quality.dprCap) * quality.renderScale;
     renderer.setPixelRatio(dpr);
     renderer.setClearColor(0x000000, 0);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -1861,10 +1862,14 @@ export default function StageScene({ stage }: Props) {
     let fromStage: StageId = liveStageRef.current;
     let toStage: StageId = liveStageRef.current;
     let morphT = 1;
-    let morphDuration = reduceMotion ? 0.01 : 1.15;
+    let morphDuration = reduceMotion
+      ? 0.01
+      : 1.15 * quality.morphDurationScale;
     let currentVisual = { ...VISUALS[toStage] };
     let nodeProgress = nodes.map(() => 1);
     let panelProgress = panelItems.map(() => 1);
+    let lastInteractAt = performance.now();
+    const wantsPointer = quality.enableHover || quality.enableScatter;
 
     const pointer = { nx: 0, ny: 0, overUi: false, moved: false, inside: false };
     let activeHoverId: string | null = null;
@@ -1895,6 +1900,7 @@ export default function StageScene({ stage }: Props) {
       fromStage = toStage;
       toStage = next;
       morphT = 0;
+      lastInteractAt = performance.now();
       if (!reduceMotion) {
         const outgoing = VISUALS[fromStage];
         const incoming = VISUALS[toStage];
@@ -1954,7 +1960,7 @@ export default function StageScene({ stage }: Props) {
     }
 
     function pickHoverTarget() {
-      if (pointer.overUi || !pickMeshes.length) {
+      if (!quality.enableHover || pointer.overUi || !pickMeshes.length) {
         activeHoverId = null;
         setCursor(false);
         return;
@@ -2000,9 +2006,14 @@ export default function StageScene({ stage }: Props) {
     let fpsEma = 60;
     let fpsSampleAcc = 0;
     let fpsSampleFrames = 0;
+    let lastDrawnAt = 0;
 
     function canRender() {
       return tabVisible && !introCovering && stageInView && !!mountHolder.current;
+    }
+
+    function noteInteract() {
+      lastInteractAt = performance.now();
     }
 
     function frame(now: number) {
@@ -2011,6 +2022,17 @@ export default function StageScene({ stage }: Props) {
         raf = 0;
         return;
       }
+
+      const morphing = morphT < 1 || liveStageRef.current !== lastStage;
+      const idleMs = now - lastInteractAt;
+      // Mobile idle: drop to ~12fps ambient; active/morph stays at ~30fps.
+      const idleCapMs =
+        quality.isMobile && !morphing && idleMs > 1800 ? 80 : quality.minFrameMs;
+      if (idleCapMs > 0 && now - lastDrawnAt < idleCapMs) {
+        raf = requestAnimationFrame(frame);
+        return;
+      }
+      lastDrawnAt = now;
 
       const rawDt = Math.min((now - lastTs) / 1000, 0.05);
       lastTs = now;
@@ -2037,7 +2059,8 @@ export default function StageScene({ stage }: Props) {
         fpsEma = fpsEma * 0.65 + fps * 0.35;
         fpsSampleAcc = 0;
         fpsSampleFrames = 0;
-        if (fpsEma < quality.fpsFloor && frameSkip < 2) {
+        const skipCeil = quality.isMobile ? 3 : 2;
+        if (fpsEma < quality.fpsFloor && frameSkip < skipCeil) {
           frameSkip += 1;
         } else if (fpsEma > quality.fpsFloor + 12 && frameSkip > quality.frameSkip) {
           frameSkip -= 1;
@@ -2167,7 +2190,7 @@ export default function StageScene({ stage }: Props) {
           clampedPop > 0.15 ? node.hitRadius * (node.isHub ? 1.15 : 1) : 0;
       });
 
-      if (!reduceMotion && v.networkOpacity > 0.12) {
+      if (quality.enableCollisions && !reduceMotion && v.networkOpacity > 0.12) {
         resolveGroupCollisions(networkColliders);
       }
       nodes.forEach((node) => {
@@ -2211,7 +2234,7 @@ export default function StageScene({ stage }: Props) {
         }
       });
 
-      if (!reduceMotion) {
+      if (quality.enableCollisions && !reduceMotion) {
         resolveGroupCollisions(rootColliders);
       }
 
@@ -2333,9 +2356,14 @@ export default function StageScene({ stage }: Props) {
         archWash.material.opacity = 0.04 + arch * 0.1;
         archWash.material.color.copy(tint);
 
-        // Pointer → scene-plane projection for per-mesh repulsion
+        // Pointer → scene-plane projection for per-mesh repulsion (desktop only)
         let scatterLive = false;
-        if (!reduceMotion && pointer.inside && arch > 0.25) {
+        if (
+          quality.enableScatter &&
+          !reduceMotion &&
+          pointer.inside &&
+          arch > 0.25
+        ) {
           pointerNdc.set(pointer.nx, pointer.ny);
           raycaster.setFromCamera(pointerNdc, camera);
           scatterLive = !!raycaster.ray.intersectPlane(scatterPlane, pointerWorld);
@@ -2412,7 +2440,7 @@ export default function StageScene({ stage }: Props) {
             a.vel.set(0, 0, 0);
           }
         }
-        if (!reduceMotion) {
+        if (quality.enableCollisions && !reduceMotion) {
           resolveGroupCollisions(accentColliders);
         }
         for (let i = 0; i < accents.length; i++) {
@@ -2454,35 +2482,41 @@ export default function StageScene({ stage }: Props) {
         }
       }
 
-      // Per-element hover (raycast throttled); no camera/group parallax
-      if (pointer.moved) {
-        pointer.moved = false;
-        pickHoverTarget();
-      }
+      // Per-element hover (desktop); touch devices skip raycast entirely
+      if (quality.enableHover) {
+        if (pointer.moved) {
+          pointer.moved = false;
+          pickHoverTarget();
+        }
 
-      for (const ht of hoverTargets) {
-        const target = ht.id === activeHoverId ? 1 : 0;
-        ht.hover += (target - ht.hover) * Math.min(1, dt * 10);
-        ht.bounce *= Math.exp(-dt * 6);
-        if (ht.bounce < 0.002) ht.bounce = 0;
+        for (const ht of hoverTargets) {
+          const target = ht.id === activeHoverId ? 1 : 0;
+          ht.hover += (target - ht.hover) * Math.min(1, dt * 10);
+          ht.bounce *= Math.exp(-dt * 6);
+          if (ht.bounce < 0.002) ht.bounce = 0;
 
-        const assemble = (ht.root.userData.assembleScale as number) ?? 1;
-        const spring = 1 + ht.hover * 0.14 + Math.sin(ht.bounce * Math.PI) * 0.18;
-        const warpX = 1 + ht.hover * 0.05 * Math.sin(t * 6.5);
-        const warpY = 1 - ht.hover * 0.03 * Math.sin(t * 6.5);
-        ht.root.scale.set(
-          assemble * spring * warpX,
-          assemble * spring * warpY,
-          assemble * spring,
-        );
+          const assemble = (ht.root.userData.assembleScale as number) ?? 1;
+          const spring = 1 + ht.hover * 0.14 + Math.sin(ht.bounce * Math.PI) * 0.18;
+          const warpX = 1 + ht.hover * 0.05 * Math.sin(t * 6.5);
+          const warpY = 1 - ht.hover * 0.03 * Math.sin(t * 6.5);
+          ht.root.scale.set(
+            assemble * spring * warpX,
+            assemble * spring * warpY,
+            assemble * spring,
+          );
 
-        // Orbs/panels/nodes that share mats get emissive pulse here if not stage-driven
-        if (ht.id.startsWith("orb-")) {
-          for (const m of ht.mats) {
-            const baseEm = (m.userData.baseEmissive as number) ?? 0.14;
-            m.emissiveIntensity =
-              baseEm * (0.7 + v.nebulaOpacity * 0.6) * (1 + ht.hover * 1.5 + ht.bounce * 0.9);
+          if (ht.id.startsWith("orb-")) {
+            for (const m of ht.mats) {
+              const baseEm = (m.userData.baseEmissive as number) ?? 0.14;
+              m.emissiveIntensity =
+                baseEm * (0.7 + v.nebulaOpacity * 0.6) * (1 + ht.hover * 1.5 + ht.bounce * 0.9);
+            }
           }
+        }
+      } else {
+        for (const ht of hoverTargets) {
+          const assemble = (ht.root.userData.assembleScale as number) ?? 1;
+          ht.root.scale.setScalar(assemble);
         }
       }
 
@@ -2507,6 +2541,8 @@ export default function StageScene({ stage }: Props) {
     const UI_SELECTOR = "a,button,input,textarea,select,label,[role='button']";
 
     const onPointer = (e: PointerEvent) => {
+      if (!wantsPointer) return;
+      noteInteract();
       const host = mountHolder.current;
       if (!host) return;
       const rect = host.getBoundingClientRect();
@@ -2522,6 +2558,11 @@ export default function StageScene({ stage }: Props) {
         e.clientY >= rect.top &&
         e.clientY <= rect.bottom;
       pointer.moved = true;
+    };
+
+    const onTouchWake = () => {
+      noteInteract();
+      kick();
     };
 
     const onPointerLeaveDoc = () => {
@@ -2599,8 +2640,13 @@ export default function StageScene({ stage }: Props) {
       introObserver.disconnect();
       viewObserver?.disconnect();
       window.removeEventListener("resize", resize);
-      window.removeEventListener("pointermove", onPointer);
-      document.documentElement.removeEventListener("mouseleave", onPointerLeaveDoc);
+      if (wantsPointer) {
+        window.removeEventListener("pointermove", onPointer);
+        document.documentElement.removeEventListener("mouseleave", onPointerLeaveDoc);
+      }
+      if (quality.isMobile) {
+        window.removeEventListener("touchstart", onTouchWake);
+      }
       document.removeEventListener("visibilitychange", onVis);
       for (const g of disposables) g.dispose();
       for (const m of materials) m.dispose();
@@ -2618,8 +2664,13 @@ export default function StageScene({ stage }: Props) {
     sharedHandle = { attach, detach, dispose };
 
     window.addEventListener("resize", resize, { passive: true });
-    window.addEventListener("pointermove", onPointer, { passive: true });
-    document.documentElement.addEventListener("mouseleave", onPointerLeaveDoc);
+    if (wantsPointer) {
+      window.addEventListener("pointermove", onPointer, { passive: true });
+      document.documentElement.addEventListener("mouseleave", onPointerLeaveDoc);
+    }
+    if (quality.isMobile) {
+      window.addEventListener("touchstart", onTouchWake, { passive: true });
+    }
     document.addEventListener("visibilitychange", onVis);
     // First mount: attach wires IO + resize + kick (keeps locale remount path identical)
     attach(mount);

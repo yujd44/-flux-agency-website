@@ -16,12 +16,12 @@ import { resolveQualitySettings } from "./qualityTier";
 const StageScene = dynamic(() => import("./StageScene"), { ssr: false });
 
 const STAGE_IDS: StageId[] = ["intro", "method", "realization", "future"];
-const TRANSITION_MS = 900;
 const WHEEL_THRESHOLD = 48;
 const TOUCH_THRESHOLD = 56;
 /** Ignore synthetic wheel that follows a touch swipe (Chrome Android / iOS trackpad). */
 const POST_TOUCH_WHEEL_MS = 450;
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
+const EASE_MOBILE = "cubic-bezier(0.22, 1, 0.36, 1)";
 
 /** Mount WebGL only after logo intro dismisses (or session already saw it). */
 function useStageSceneReady() {
@@ -74,9 +74,13 @@ export default function RitualHome() {
   const [activeIndex, setActiveIndex] = useState(0);
   const activeIndexRef = useRef(0);
   const stageReady = useStageSceneReady();
+  const [isMobile, setIsMobile] = useState(false);
+  const transitionMsRef = useRef(900);
 
   useLayoutEffect(() => {
-    resolveQualitySettings();
+    const q = resolveQualitySettings();
+    transitionMsRef.current = q.stageTransitionMs;
+    setIsMobile(q.isMobile);
   }, []);
   const lockedRef = useRef(false);
   const wheelAccRef = useRef(0);
@@ -89,6 +93,7 @@ export default function RitualHome() {
   const unlockTimer = useRef<number | null>(null);
 
   const active = STAGE_IDS[activeIndex];
+  const panelEase = isMobile ? EASE_MOBILE : EASE;
 
   const lockBriefly = useCallback(() => {
     lockedRef.current = true;
@@ -96,7 +101,7 @@ export default function RitualHome() {
     unlockTimer.current = window.setTimeout(() => {
       lockedRef.current = false;
       wheelAccRef.current = 0;
-    }, TRANSITION_MS);
+    }, transitionMsRef.current);
   }, []);
 
   const goToIndex = useCallback(
@@ -321,7 +326,12 @@ export default function RitualHome() {
               className={`ritual-stage-panel${isActive ? " is-active" : ""}`}
               data-stage-panel={id}
               aria-hidden={!isActive}
-              style={{ transitionTimingFunction: EASE }}
+              style={{
+                transitionTimingFunction: panelEase,
+                transitionDuration: isMobile
+                  ? `${transitionMsRef.current}ms`
+                  : undefined,
+              }}
             >
               {id === "intro" && <IntroStage active={isActive} />}
               {id === "method" && <MethodStage active={isActive} onNavigate={goTo} />}

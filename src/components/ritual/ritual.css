@@ -680,9 +680,62 @@ html[lang="ar"] .ritual-headline {
   .ritual-root[data-stage="realization"] .ritual-glass,
   .ritual-root[data-stage="method"] .ritual-glass,
   .ritual-root[data-stage="future"] .ritual-glass {
-    backdrop-filter: blur(8px) saturate(1.1);
-    -webkit-backdrop-filter: blur(8px) saturate(1.1);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
+}
+
+/* Phones (incl. flagships): kill expensive filters globally for ritual UI */
+html[data-mobile="1"] .ritual-bloom {
+  filter: none !important;
+  /* Soft gradient orbs — brand look without Gaussian blur cost */
+  opacity: 0.42;
+  mix-blend-mode: screen;
+}
+
+html[data-mobile="1"] .ritual-glass-hud {
+  transition-duration: 0.42s;
+}
+
+html[data-mobile="1"] .ritual-stage-panel,
+html[data-mobile="1"] .ritual-stage-panel.is-active {
+  filter: none !important;
+  /* Opacity-led morph — avoid scale/blur layout thrash on swipe */
+  transform: none !important;
+  transition:
+    opacity 0.42s var(--ritual-ease),
+    visibility 0s linear 0.42s !important;
+  will-change: opacity;
+}
+
+html[data-mobile="1"] .ritual-stage-panel.is-active {
+  transition:
+    opacity 0.42s var(--ritual-ease),
+    visibility 0s linear 0s !important;
+}
+
+html[data-mobile="1"] .ritual-hud-frame,
+html[data-mobile="1"] .ritual-glass,
+html[data-mobile="1"] .ritual-root[data-stage="realization"] .ritual-glass,
+html[data-mobile="1"] .ritual-root[data-stage="method"] .ritual-glass,
+html[data-mobile="1"] .ritual-root[data-stage="future"] .ritual-glass {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-mobile="1"] .ritual-glass,
+html[data-mobile="1"] .ritual-root[data-stage="realization"] .ritual-glass {
+  background: linear-gradient(
+    155deg,
+    rgba(10, 14, 26, 0.94) 0%,
+    rgba(8, 10, 18, 0.9) 48%,
+    rgba(10, 14, 26, 0.92) 100%
+  );
+}
+
+html[data-mobile="1"] .ritual-glass-hover:hover {
+  transform: none;
+  filter: none;
 }
 
 /* Low-tier devices: drop blur entirely; opaque glass still reads on-brand */
@@ -703,6 +756,19 @@ html[data-quality="low"] .ritual-root[data-stage="realization"] .ritual-glass {
     rgba(8, 10, 18, 0.9) 48%,
     rgba(10, 14, 26, 0.92) 100%
   );
+}
+
+html[data-quality="low"] .ritual-bloom {
+  filter: none !important;
+}
+
+.ritual-chart-stroke {
+  filter: drop-shadow(0 0 6px rgba(77, 243, 255, 0.45));
+}
+
+html[data-mobile="1"] .ritual-chart-stroke,
+html[data-quality="low"] .ritual-chart-stroke {
+  filter: none;
 }
 
 @media (max-width: 430px) {

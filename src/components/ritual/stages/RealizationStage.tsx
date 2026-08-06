@@ -275,7 +275,7 @@ export default function RealizationStage({
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  style={{ filter: "drop-shadow(0 0 6px rgba(77,243,255,0.45))" }}
+                  className="ritual-chart-stroke"
                 />
                 <path
                   d={`${chartPath} L${chartW},${chartH} L0,${chartH} Z`}

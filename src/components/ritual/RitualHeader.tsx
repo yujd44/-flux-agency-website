@@ -62,7 +62,7 @@ export default function RitualHeader({ onNavigate, active }: Props) {
         </nav>
 
         <div className="ritual-glass chrome-ltr shrink-0 rounded-full px-1.5 py-1 touch-manipulation sm:px-3 sm:py-1.5">
-          <LanguageSwitcher className="[&_button]:min-h-11 [&_button]:min-w-[2.75rem] [&_button]:justify-center [&_button]:px-2 [&_button]:text-[10px] [&_button]:tracking-[0.14em] sm:[&_button]:min-h-0 sm:[&_button]:min-w-0 sm:[&_button]:tracking-[0.22em] [&_button]:text-white/90 [&_button:hover]:text-[var(--ritual-cyan,#4df3ff)] [&_ul]:rounded-xl [&_ul]:border-white/15 [&_ul]:bg-[#0a0c12]/95 [&_ul]:backdrop-blur-md [&_ul_button]:min-h-11 sm:[&_ul_button]:min-h-0" />
+          <LanguageSwitcher className="[&_button]:min-h-11 [&_button]:min-w-[2.75rem] [&_button]:justify-center [&_button]:px-2 [&_button]:text-[10px] [&_button]:tracking-[0.14em] sm:[&_button]:min-h-0 sm:[&_button]:min-w-0 sm:[&_button]:tracking-[0.22em] [&_button]:text-white/90 [&_button:hover]:text-[var(--ritual-cyan,#4df3ff)] [&_ul]:rounded-xl [&_ul]:border-white/15 [&_ul]:bg-[#0a0c12]/95 md:[&_ul]:backdrop-blur-md [&_ul_button]:min-h-11 sm:[&_ul_button]:min-h-0" />
         </div>
       </div>
     </header>
