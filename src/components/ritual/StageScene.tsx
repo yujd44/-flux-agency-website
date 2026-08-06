@@ -491,6 +491,8 @@ type StageSceneHandle = {
   attach: (mount: HTMLElement) => void;
   detach: () => void;
   dispose: () => void;
+  /** Start figure morph immediately (desktop); mobile still driven by RAF + swipe caps. */
+  notifyStage: (next: StageId) => void;
 };
 
 let sharedHandle: StageSceneHandle | null = null;
@@ -515,6 +517,7 @@ export default function StageScene({ stage }: Props) {
 
     if (sharedHandle) {
       sharedHandle.attach(mount);
+      sharedHandle.notifyStage(liveStageRef.current);
       return () => {
         sharedHandle?.detach();
         keepAliveTimer = setTimeout(() => {
@@ -2010,6 +2013,14 @@ export default function StageScene({ stage }: Props) {
     let fpsSampleFrames = 0;
     let lastDrawnAt = 0;
 
+    /** Apply live stage → morph. Desktop starts immediately; mobile may still throttle draws. */
+    function syncLiveStage() {
+      const next = liveStageRef.current;
+      if (next === lastStage) return;
+      beginMorph(next);
+      lastStage = next;
+    }
+
     function canRender() {
       return tabVisible && !introCovering && stageInView && !!mountHolder.current;
     }
@@ -2025,7 +2036,11 @@ export default function StageScene({ stage }: Props) {
         return;
       }
 
-      const morphing = morphT < 1 || liveStageRef.current !== lastStage;
+      // Desktop: stage morph wins over any draw cap (prevents linger→snap after stageLock).
+      if (!quality.isMobile) syncLiveStage();
+
+      const morphing =
+        morphT < 1 || (quality.isMobile && liveStageRef.current !== lastStage);
       const idleMs = now - lastInteractAt;
       // Soft ambient only after a long idle; wake instantly via noteInteract / touch.
       // Never drop to ~12fps (80ms) — that reads as glitching on phones after ~2s.
@@ -2033,9 +2048,11 @@ export default function StageScene({ stage }: Props) {
         quality.isMobile && !morphing && idleMs > 12000
           ? 33
           : quality.minFrameMs;
-      // During stage swipe morph: keep RAF alive but cap ~30fps so input stays snappy.
+      // Mobile swipe: keep RAF alive but cap ~30fps. Desktop morph stays uncapped.
       const swipeCapMs = stageLocked && quality.isMobile ? 33 : 0;
-      const drawCapMs = Math.max(idleCapMs, swipeCapMs);
+      // Desktop/laptop: never throttle frames while figures assemble/dissolve.
+      const drawCapMs =
+        !quality.isMobile && morphT < 1 ? 0 : Math.max(idleCapMs, swipeCapMs);
       if (drawCapMs > 0 && now - lastDrawnAt < drawCapMs) {
         raf = requestAnimationFrame(frame);
         return;
@@ -2045,8 +2062,10 @@ export default function StageScene({ stage }: Props) {
       const rawDt = Math.min((now - lastTs) / 1000, 0.05);
       lastTs = now;
 
-      // Adaptive skip: keep fluid motion math lighter when GPU struggles
-      if (frameSkip > 0) {
+      // Adaptive skip: keep fluid motion math lighter when GPU struggles.
+      // Desktop morph: never skip — premium dissolve/assemble needs every frame.
+      const allowSkip = quality.isMobile || morphT >= 1;
+      if (allowSkip && frameSkip > 0) {
         skipCounter++;
         if (skipCounter <= frameSkip) {
           elapsed += rawDt;
@@ -2056,7 +2075,7 @@ export default function StageScene({ stage }: Props) {
         skipCounter = 0;
       }
 
-      const dt = rawDt * (frameSkip > 0 ? frameSkip + 1 : 1);
+      const dt = rawDt * (allowSkip && frameSkip > 0 ? frameSkip + 1 : 1);
       elapsed += rawDt;
       const t = elapsed;
 
@@ -2074,10 +2093,8 @@ export default function StageScene({ stage }: Props) {
         }
       }
 
-      if (liveStageRef.current !== lastStage) {
-        beginMorph(liveStageRef.current);
-        lastStage = liveStageRef.current;
-      }
+      // Mobile: keep prior ordering — detect stage after draw-cap / skip gates.
+      if (quality.isMobile) syncLiveStage();
 
       if (morphT < 1) {
         morphT = Math.min(1, morphT + dt / morphDuration);
@@ -2599,11 +2616,15 @@ export default function StageScene({ stage }: Props) {
       }
     };
 
-    /** RitualHome stageLock is input-only — keep morphing WebGL during CSS panel transition. */
+    /**
+     * RitualHome stageLock is input-only for mobile draw caps.
+     * Desktop: start figure morph immediately when lock flips on (CSS panel may still be easing).
+     */
     const syncStageLock = () => {
       stageLocked = document.documentElement.dataset.stageLock === "1";
       if (stageLocked) {
         noteInteract();
+        if (!quality.isMobile) syncLiveStage();
         kick();
       }
     };
@@ -2691,7 +2712,19 @@ export default function StageScene({ stage }: Props) {
       mountHolder.current = null;
     };
 
-    sharedHandle = { attach, detach, dispose };
+    const notifyStage = (next: StageId) => {
+      liveStageRef.current = next;
+      // Desktop/laptop: begin dissolve/assemble now. Mobile keeps RAF + swipe-cap path.
+      if (!quality.isMobile) {
+        syncLiveStage();
+      } else if (next !== lastStage) {
+        // Still record intent; next mobile frame (possibly capped) will morph.
+        noteInteract();
+      }
+      kick();
+    };
+
+    sharedHandle = { attach, detach, dispose, notifyStage };
 
     window.addEventListener("resize", resize, { passive: true });
     if (wantsPointer) {
@@ -2716,6 +2749,12 @@ export default function StageScene({ stage }: Props) {
       }, STAGE_KEEPALIVE_MS);
     };
   }, []);
+
+  // Desktop: start figure morph as soon as React commits a stage change (not next RAF).
+  useEffect(() => {
+    liveStageRef.current = stage;
+    sharedHandle?.notifyStage(stage);
+  }, [stage]);
 
   return (
     <div
