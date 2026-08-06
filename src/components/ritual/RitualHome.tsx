@@ -97,10 +97,21 @@ export default function RitualHome() {
 
   const lockBriefly = useCallback(() => {
     lockedRef.current = true;
+    // Signal StageScene to pause WebGL RAF during CSS stage morph (critical on phones).
+    try {
+      document.documentElement.dataset.stageLock = "1";
+    } catch {
+      /* ignore */
+    }
     if (unlockTimer.current) window.clearTimeout(unlockTimer.current);
     unlockTimer.current = window.setTimeout(() => {
       lockedRef.current = false;
       wheelAccRef.current = 0;
+      try {
+        delete document.documentElement.dataset.stageLock;
+      } catch {
+        /* ignore */
+      }
     }, transitionMsRef.current);
   }, []);
 
@@ -162,6 +173,11 @@ export default function RitualHome() {
     return () => {
       document.body.style.overflow = prev;
       if (unlockTimer.current) window.clearTimeout(unlockTimer.current);
+      try {
+        delete document.documentElement.dataset.stageLock;
+      } catch {
+        /* ignore */
+      }
     };
   }, []);
 

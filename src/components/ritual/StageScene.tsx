@@ -552,7 +552,7 @@ export default function StageScene({ stage }: Props) {
     camera.position.set(0, 0.15, 6.2);
     camera.lookAt(0, 0, 0);
 
-    // Mobile: DPR 1 + optional renderScale (<1) → fewer pixels, CSS upscales the canvas.
+    // Sharp canvas: dprCap × renderScale (mobile keeps renderScale=1; never CSS-upscale mush).
     const dpr = Math.min(window.devicePixelRatio || 1, quality.dprCap) * quality.renderScale;
     renderer.setPixelRatio(dpr);
     renderer.setClearColor(0x000000, 0);
@@ -1997,6 +1997,10 @@ export default function StageScene({ stage }: Props) {
     let running = true;
     let tabVisible = document.visibilityState === "visible";
     let introCovering = document.documentElement.dataset.intro === "wait";
+    /** RitualHome sets this during stage swipe / CSS panel morph. */
+    let stageLocked = document.documentElement.dataset.stageLock === "1";
+    /** Finger down — pause GL so compositor can scroll / swipe. */
+    let touchBusy = false;
     let stageInView = true;
     let lastTs = performance.now();
     let elapsed = 0;
@@ -2009,11 +2013,40 @@ export default function StageScene({ stage }: Props) {
     let lastDrawnAt = 0;
 
     function canRender() {
-      return tabVisible && !introCovering && stageInView && !!mountHolder.current;
+      return (
+        tabVisible &&
+        !introCovering &&
+        !stageLocked &&
+        !touchBusy &&
+        stageInView &&
+        !!mountHolder.current
+      );
     }
 
     function noteInteract() {
       lastInteractAt = performance.now();
+    }
+
+    /** After a stage lock, snap WebGL to the live stage (CSS already finished). */
+    function syncStageAfterUnlock() {
+      const next = liveStageRef.current;
+      if (next === toStage && morphT >= 1) {
+        lastStage = next;
+        return;
+      }
+      if (quality.isMobile) {
+        fromStage = next;
+        toStage = next;
+        morphT = 1;
+        currentVisual = { ...VISUALS[next] };
+        nodeProgress = nodes.map(() => 1);
+        panelProgress = panelItems.map(() => 1);
+        lastStage = next;
+        lastInteractAt = performance.now();
+        return;
+      }
+      beginMorph(next);
+      lastStage = next;
     }
 
     function frame(now: number) {
@@ -2025,7 +2058,7 @@ export default function StageScene({ stage }: Props) {
 
       const morphing = morphT < 1 || liveStageRef.current !== lastStage;
       const idleMs = now - lastInteractAt;
-      // Mobile idle: drop to ~12fps ambient; active/morph stays at ~30fps.
+      // Mobile idle: ~12fps ambient; interactive frames stay sharp (no minFrameMs cap).
       const idleCapMs =
         quality.isMobile && !morphing && idleMs > 1800 ? 80 : quality.minFrameMs;
       if (idleCapMs > 0 && now - lastDrawnAt < idleCapMs) {
@@ -2059,8 +2092,7 @@ export default function StageScene({ stage }: Props) {
         fpsEma = fpsEma * 0.65 + fps * 0.35;
         fpsSampleAcc = 0;
         fpsSampleFrames = 0;
-        const skipCeil = quality.isMobile ? 3 : 2;
-        if (fpsEma < quality.fpsFloor && frameSkip < skipCeil) {
+        if (fpsEma < quality.fpsFloor && frameSkip < 2) {
           frameSkip += 1;
         } else if (fpsEma > quality.fpsFloor + 12 && frameSkip > quality.frameSkip) {
           frameSkip -= 1;
@@ -2560,8 +2592,19 @@ export default function StageScene({ stage }: Props) {
       pointer.moved = true;
     };
 
-    const onTouchWake = () => {
+    const onTouchPause = () => {
+      if (!quality.isMobile) return;
+      touchBusy = true;
+      cancelAnimationFrame(raf);
+      raf = 0;
+    };
+
+    const onTouchResume = () => {
+      if (!quality.isMobile) return;
+      touchBusy = false;
       noteInteract();
+      // stageLock may still be active after a swipe — kick() no-ops via canRender.
+      lastTs = performance.now();
       kick();
     };
 
@@ -2587,10 +2630,32 @@ export default function StageScene({ stage }: Props) {
       }
     };
 
+    const syncStageLock = () => {
+      const nextLocked = document.documentElement.dataset.stageLock === "1";
+      const wasLocked = stageLocked;
+      stageLocked = nextLocked;
+      if (stageLocked) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+        return;
+      }
+      if (wasLocked) {
+        syncStageAfterUnlock();
+        lastTs = performance.now();
+        kick();
+      }
+    };
+
     const introObserver = new MutationObserver(syncIntroGate);
     introObserver.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["data-intro"],
+    });
+
+    const stageLockObserver = new MutationObserver(syncStageLock);
+    stageLockObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-stage-lock"],
     });
 
     let viewObserver: IntersectionObserver | null = null;
@@ -2638,6 +2703,7 @@ export default function StageScene({ stage }: Props) {
       cancelAnimationFrame(raf);
       setCursor(false);
       introObserver.disconnect();
+      stageLockObserver.disconnect();
       viewObserver?.disconnect();
       window.removeEventListener("resize", resize);
       if (wantsPointer) {
@@ -2645,7 +2711,9 @@ export default function StageScene({ stage }: Props) {
         document.documentElement.removeEventListener("mouseleave", onPointerLeaveDoc);
       }
       if (quality.isMobile) {
-        window.removeEventListener("touchstart", onTouchWake);
+        window.removeEventListener("touchstart", onTouchPause, true);
+        window.removeEventListener("touchend", onTouchResume, true);
+        window.removeEventListener("touchcancel", onTouchResume, true);
       }
       document.removeEventListener("visibilitychange", onVis);
       for (const g of disposables) g.dispose();
@@ -2669,7 +2737,10 @@ export default function StageScene({ stage }: Props) {
       document.documentElement.addEventListener("mouseleave", onPointerLeaveDoc);
     }
     if (quality.isMobile) {
-      window.addEventListener("touchstart", onTouchWake, { passive: true });
+      // Capture so we pause before scroll handlers; frees main thread for swipe/scroll.
+      window.addEventListener("touchstart", onTouchPause, { passive: true, capture: true });
+      window.addEventListener("touchend", onTouchResume, { passive: true, capture: true });
+      window.addEventListener("touchcancel", onTouchResume, { passive: true, capture: true });
     }
     document.addEventListener("visibilitychange", onVis);
     // First mount: attach wires IO + resize + kick (keeps locale remount path identical)

@@ -1,7 +1,7 @@
 /**
  * Adaptive render quality for StageScene / ritual UI.
- * Phones (incl. flagship Android) always get an aggressive mobile profile —
- * deviceMemory / core count must NOT promote them to desktop high.
+ * Phones always get a mobile profile (deviceMemory must NOT promote them to desktop high).
+ * Mobile = fewer meshes + no physics/hover + pause GL on stage swipe — NOT low-res blur.
  */
 
 export type QualityTier = "high" | "medium" | "low";
@@ -10,13 +10,16 @@ export type QualitySettings = {
   tier: QualityTier;
   /** True for phones / touch-primary devices — drives CSS + stage morph shortcuts. */
   isMobile: boolean;
-  /** Cap for renderer.setPixelRatio */
+  /** Cap for renderer.setPixelRatio (keep ≥1.5 on phones for sharpness). */
   dprCap: number;
-  /** Extra canvas scale (<1 draws fewer pixels, CSS upscales). */
+  /**
+   * Extra canvas scale multiplied into setPixelRatio.
+   * Must stay 1 on mobile — values <1 force CSS upscale mush.
+   */
   renderScale: number;
   antialias: boolean;
   powerPreference: WebGLPowerPreference;
-  /** Bake PMREM studio env — expensive; skip on low/mobile. */
+  /** Bake PMREM studio env — one-time; keep on mobile for MeshPhysical beauty. */
   enableEnvMap: boolean;
   enableContactShadows: boolean;
   /** Drop rim2 + soften point lights. */
@@ -127,39 +130,42 @@ const MEDIUM: QualitySettings = {
   stageTransitionMs: 700,
 };
 
-/** Aggressive phone profile — flagships included (S24 Ultra etc.). */
+/**
+ * Phone profile (incl. flagships): sharp pixels + MeshPhysical close to desktop,
+ * fewer movers, no collisions/hover/scatter. RAF pauses during stage swipe.
+ */
 const MOBILE: QualitySettings = {
-  tier: "low",
+  tier: "medium", // figure/geo quality — not "low" mush segments
   isMobile: true,
-  dprCap: 1.0,
-  renderScale: 0.75,
-  antialias: false,
-  powerPreference: "low-power",
-  enableEnvMap: false,
-  enableContactShadows: false,
+  dprCap: 1.75,
+  renderScale: 1,
+  antialias: true,
+  powerPreference: "high-performance",
+  enableEnvMap: true,
+  enableContactShadows: true,
   simplifyLights: true,
-  simplifyMaterials: true,
+  simplifyMaterials: false,
   enableCollisions: false,
   enableHover: false,
   enableScatter: false,
-  particleCount: 18,
-  linkCount: 4,
-  beamParticles: 6,
-  orbCount: 5,
-  nodeCount: 6,
-  panelCount: 2,
-  accentCount: 3,
-  pillarRows: 2,
-  fiberTrails: 2,
-  tubeSegments: 8,
-  hubSphereSegs: [8, 6],
-  hubDotSegs: [5, 4],
-  shadowCircleSegs: 6,
-  beamRadialSegs: 4,
-  frameSkip: 1,
-  fpsFloor: 24,
-  minFrameMs: 33, // ~30fps hard cap
-  morphDurationScale: 0.45,
+  particleCount: 28,
+  linkCount: 6,
+  beamParticles: 10,
+  orbCount: 9,
+  nodeCount: 9,
+  panelCount: 3,
+  accentCount: 5,
+  pillarRows: 3,
+  fiberTrails: 4,
+  tubeSegments: 14,
+  hubSphereSegs: [12, 10],
+  hubDotSegs: [8, 6],
+  shadowCircleSegs: 12,
+  beamRadialSegs: 8,
+  frameSkip: 0,
+  fpsFloor: 28,
+  minFrameMs: 0, // interactive uncapped; idle throttle in StageScene
+  morphDurationScale: 0.5,
   stageTransitionMs: 420,
 };
 
@@ -300,12 +306,30 @@ export function resolveQualitySettings(): QualitySettings {
 
   let settings: QualitySettings;
 
-  // Critical: phones never climb to high/medium via RAM/cores (S24 Ultra = 8GB+).
+  // Phones always use MOBILE (sharp, fewer meshes) — never desktop high via RAM/cores.
   if (mobile) {
     settings = { ...MOBILE };
     if (gl === "fail") {
-      // Still assign low mobile; StageScene will no-op if renderer throws.
-      settings = { ...MOBILE, particleCount: 0, orbCount: 3, nodeCount: 4, panelCount: 1 };
+      // Minimal sharp scene; StageScene will no-op if renderer throws.
+      settings = {
+        ...MOBILE,
+        particleCount: 0,
+        orbCount: 4,
+        nodeCount: 5,
+        panelCount: 2,
+        enableEnvMap: false,
+      };
+    } else if (gl === "caveat") {
+      // Software/weak GPU: keep sharpness, cut movers further.
+      settings = {
+        ...MOBILE,
+        orbCount: 6,
+        nodeCount: 7,
+        panelCount: 2,
+        accentCount: 3,
+        particleCount: 16,
+        enableContactShadows: false,
+      };
     }
   } else if (gl === "fail" || gl === "caveat" || saveData || reduceMotion) {
     settings = { ...LOW };
