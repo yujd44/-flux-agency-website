@@ -8,7 +8,10 @@ export default function IntroStage({ active: _active = true }: Props) {
   const t = useTranslations("ritual.intro");
 
   return (
-    <section id="intro" className="ritual-stage relative items-center justify-center overflow-x-hidden">
+    <section
+      id="intro"
+      className="ritual-stage relative items-center !justify-center overflow-x-hidden"
+    >
       <div className="relative z-10 flex w-full max-w-full flex-col items-center px-2 text-center sm:px-4">
         <h1 className="ritual-headline ritual-brand-glow text-content max-w-full text-[clamp(1.85rem,9vw,5.5rem)] leading-none tracking-[0.08em] text-white sm:tracking-[0.12em]">
           {t("brand")}

@@ -234,14 +234,16 @@ export default function RitualHome() {
       }
 
       // At scroll edge (or no overflow), claim the vertical gesture so rubber-band
-      // / overflow pan doesn't eat stage swipes.
-      if (
-        touchAxisLocked.current === "y" &&
-        !lockedRef.current &&
-        Math.abs(dy) > 14
-      ) {
+      // / overflow pan doesn't eat stage swipes. Prev-stage (finger down) claims
+      // earlier and pins scrollTop — iOS rubber-band was the asymmetric hitch.
+      if (touchAxisLocked.current === "y" && !lockedRef.current) {
         const direction: 1 | -1 = dy < 0 ? 1 : -1;
-        if (canAdvanceFromPanel(direction)) {
+        const claimPx = direction < 0 ? 6 : 14;
+        if (Math.abs(dy) > claimPx && canAdvanceFromPanel(direction)) {
+          if (direction < 0) {
+            const panel = panelRefs.current[activeIndexRef.current];
+            if (panel && panel.scrollTop !== 0) panel.scrollTop = 0;
+          }
           e.preventDefault();
         }
       }

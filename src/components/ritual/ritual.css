@@ -642,6 +642,11 @@ html[lang="ar"] .ritual-headline {
     justify-content: flex-start;
   }
 
+  /* Intro: keep brand + tagline centered in the stage (not pinned under the header) */
+  #intro.ritual-stage {
+    justify-content: center;
+  }
+
   .ritual-headline {
     overflow-wrap: anywhere;
     word-break: break-word;

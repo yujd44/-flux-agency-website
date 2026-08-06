@@ -151,10 +151,11 @@ const MOBILE: QualitySettings = {
   particleCount: 48,
   linkCount: 12,
   beamParticles: 20,
-  orbCount: 11,
+  // +3 orbs vs prior mobile (denser intro cluster; still well under desktop high)
+  orbCount: 14,
   nodeCount: 11,
   panelCount: 4,
-  accentCount: 6,
+  accentCount: 7,
   pillarRows: 4,
   fiberTrails: 7,
   tubeSegments: 16,

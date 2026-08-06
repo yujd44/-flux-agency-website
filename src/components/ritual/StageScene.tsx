@@ -491,7 +491,7 @@ type StageSceneHandle = {
   attach: (mount: HTMLElement) => void;
   detach: () => void;
   dispose: () => void;
-  /** Start figure morph immediately (desktop); mobile still driven by RAF + swipe caps. */
+  /** Start figure morph immediately; mobile still draw-caps via stageLock. */
   notifyStage: (next: StageId) => void;
 };
 
@@ -2036,11 +2036,12 @@ export default function StageScene({ stage }: Props) {
         return;
       }
 
-      // Desktop: stage morph wins over any draw cap (prevents linger→snap after stageLock).
-      if (!quality.isMobile) syncLiveStage();
+      // Begin morph before any draw throttle so previous meshes don't linger frozen
+      // (felt worst on swipe-up / prev-stage after rubber-band latency). Desktop
+      // stays uncapped below; mobile still draw-caps during stageLock.
+      syncLiveStage();
 
-      const morphing =
-        morphT < 1 || (quality.isMobile && liveStageRef.current !== lastStage);
+      const morphing = morphT < 1;
       const idleMs = now - lastInteractAt;
       // Soft ambient only after a long idle; wake instantly via noteInteract / touch.
       // Never drop to ~12fps (80ms) — that reads as glitching on phones after ~2s.
@@ -2092,9 +2093,6 @@ export default function StageScene({ stage }: Props) {
           frameSkip -= 1;
         }
       }
-
-      // Mobile: keep prior ordering — detect stage after draw-cap / skip gates.
-      if (quality.isMobile) syncLiveStage();
 
       if (morphT < 1) {
         morphT = Math.min(1, morphT + dt / morphDuration);
@@ -2618,13 +2616,13 @@ export default function StageScene({ stage }: Props) {
 
     /**
      * RitualHome stageLock is input-only for mobile draw caps.
-     * Desktop: start figure morph immediately when lock flips on (CSS panel may still be easing).
+     * Start figure morph immediately when lock flips on (CSS panel may still be easing).
      */
     const syncStageLock = () => {
       stageLocked = document.documentElement.dataset.stageLock === "1";
       if (stageLocked) {
         noteInteract();
-        if (!quality.isMobile) syncLiveStage();
+        syncLiveStage();
         kick();
       }
     };
@@ -2714,13 +2712,10 @@ export default function StageScene({ stage }: Props) {
 
     const notifyStage = (next: StageId) => {
       liveStageRef.current = next;
-      // Desktop/laptop: begin dissolve/assemble now. Mobile keeps RAF + swipe-cap path.
-      if (!quality.isMobile) {
-        syncLiveStage();
-      } else if (next !== lastStage) {
-        // Still record intent; next mobile frame (possibly capped) will morph.
-        noteInteract();
-      }
+      // Begin dissolve/assemble now. Mobile still draw-caps via stageLock; don't
+      // wait for a capped RAF tick (that hitch showed up on swipe-up / prev).
+      syncLiveStage();
+      noteInteract();
       kick();
     };
 
@@ -2750,7 +2745,7 @@ export default function StageScene({ stage }: Props) {
     };
   }, []);
 
-  // Desktop: start figure morph as soon as React commits a stage change (not next RAF).
+  // Start figure morph as soon as React commits a stage change (not next RAF).
   useEffect(() => {
     liveStageRef.current = stage;
     sharedHandle?.notifyStage(stage);
