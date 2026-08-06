@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import type { QualityTier } from "./qualityTier";
 
 /**
  * Service-themed 3D figures for StageScene — composed MeshPhysical meshes
@@ -40,19 +41,41 @@ export type ServiceFigureBuild = {
 
 type MatOpts = {
   tint: THREE.Color;
-  envMap: THREE.Texture;
+  envMap: THREE.Texture | null;
   style: FigureStyle;
   navy: THREE.Color;
   metal: THREE.Color;
+  /** Drop clearcoat / lower reflections on weak GPUs. */
+  simplifyMaterials?: boolean;
 };
 
 /** Shared unit primitives — scale per part; dispose once via pool.dispose(). */
 export class ServiceFigurePool {
-  readonly box = new THREE.BoxGeometry(1, 1, 1);
-  readonly sphere = new THREE.SphereGeometry(1, 16, 12);
-  readonly cyl = new THREE.CylinderGeometry(1, 1, 1, 12, 1);
-  readonly torus = new THREE.TorusGeometry(1, 0.12, 8, 24, Math.PI * 0.85);
-  readonly torusFull = new THREE.TorusGeometry(1, 0.14, 8, 20);
+  readonly box: THREE.BoxGeometry;
+  readonly sphere: THREE.SphereGeometry;
+  readonly cyl: THREE.CylinderGeometry;
+  readonly torus: THREE.TorusGeometry;
+  readonly torusFull: THREE.TorusGeometry;
+
+  constructor(tier: QualityTier = "high") {
+    this.box = new THREE.BoxGeometry(1, 1, 1);
+    if (tier === "low") {
+      this.sphere = new THREE.SphereGeometry(1, 10, 8);
+      this.cyl = new THREE.CylinderGeometry(1, 1, 1, 8, 1);
+      this.torus = new THREE.TorusGeometry(1, 0.12, 6, 14, Math.PI * 0.85);
+      this.torusFull = new THREE.TorusGeometry(1, 0.14, 6, 12);
+    } else if (tier === "medium") {
+      this.sphere = new THREE.SphereGeometry(1, 12, 10);
+      this.cyl = new THREE.CylinderGeometry(1, 1, 1, 10, 1);
+      this.torus = new THREE.TorusGeometry(1, 0.12, 7, 18, Math.PI * 0.85);
+      this.torusFull = new THREE.TorusGeometry(1, 0.14, 7, 16);
+    } else {
+      this.sphere = new THREE.SphereGeometry(1, 16, 12);
+      this.cyl = new THREE.CylinderGeometry(1, 1, 1, 12, 1);
+      this.torus = new THREE.TorusGeometry(1, 0.12, 8, 24, Math.PI * 0.85);
+      this.torusFull = new THREE.TorusGeometry(1, 0.14, 8, 20);
+    }
+  }
 
   dispose() {
     this.box.dispose();
@@ -71,6 +94,7 @@ export class ServiceFigurePool {
     },
   ) {
     const { tint, envMap, navy, metal } = opts;
+    const simplify = Boolean(opts.simplifyMaterials);
     const style = overrides?.style ?? opts.style;
     const tintMix = overrides?.tintMix ?? 0.25;
     const emissiveBoost = overrides?.emissiveBoost ?? 1;
@@ -96,18 +120,18 @@ export class ServiceFigurePool {
       color: baseColor,
       emissive: isAccent ? tint.clone().lerp(new THREE.Color("#3dff9a"), 0.4) : tint,
       emissiveIntensity: emissiveBoost * (isGlass ? 0.2 : isAccent ? 0.45 : 0.12),
-      roughness: isGlass ? 0.12 : isAccent ? 0.16 : 0.24,
+      roughness: isGlass ? (simplify ? 0.28 : 0.12) : isAccent ? 0.16 : 0.24,
       metalness: isGlass ? 0.4 : isAccent ? 0.78 : 0.9,
-      clearcoat: 1,
-      clearcoatRoughness: isGlass ? 0.08 : 0.14,
+      clearcoat: simplify ? 0 : 1,
+      clearcoatRoughness: simplify ? 1 : isGlass ? 0.08 : 0.14,
       ior: 1.45,
-      specularIntensity: 1,
+      specularIntensity: simplify ? 0.55 : 1,
       specularColor: new THREE.Color("#ffffff"),
       transparent: true,
       opacity: isGlass ? 0.68 : isAccent ? 0.84 : 0.9,
       depthWrite: !isGlass,
-      envMap,
-      envMapIntensity: isGlass ? 1.55 : 1.4,
+      envMap: envMap ?? undefined,
+      envMapIntensity: envMap ? (isGlass ? (simplify ? 0.85 : 1.55) : simplify ? 0.75 : 1.4) : 0,
       side: THREE.FrontSide,
       ...matOverrides,
     });

@@ -669,6 +669,40 @@ html[lang="ar"] .ritual-headline {
     filter: none !important;
     will-change: opacity, transform;
   }
+
+  /* Heavy backdrop-filter is a major mobile compositor cost */
+  .ritual-hud-frame {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .ritual-glass,
+  .ritual-root[data-stage="realization"] .ritual-glass,
+  .ritual-root[data-stage="method"] .ritual-glass,
+  .ritual-root[data-stage="future"] .ritual-glass {
+    backdrop-filter: blur(8px) saturate(1.1);
+    -webkit-backdrop-filter: blur(8px) saturate(1.1);
+  }
+}
+
+/* Low-tier devices: drop blur entirely; opaque glass still reads on-brand */
+html[data-quality="low"] .ritual-hud-frame,
+html[data-quality="low"] .ritual-glass,
+html[data-quality="low"] .ritual-root[data-stage="realization"] .ritual-glass,
+html[data-quality="low"] .ritual-root[data-stage="method"] .ritual-glass,
+html[data-quality="low"] .ritual-root[data-stage="future"] .ritual-glass {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-quality="low"] .ritual-glass,
+html[data-quality="low"] .ritual-root[data-stage="realization"] .ritual-glass {
+  background: linear-gradient(
+    155deg,
+    rgba(10, 14, 26, 0.94) 0%,
+    rgba(8, 10, 18, 0.9) 48%,
+    rgba(10, 14, 26, 0.92) 100%
+  );
 }
 
 @media (max-width: 430px) {

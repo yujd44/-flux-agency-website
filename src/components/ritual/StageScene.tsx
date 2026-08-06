@@ -8,6 +8,7 @@ import {
   type FigureStyle,
   type ServiceFigureKind,
 } from "./serviceFigures";
+import { resolveQualitySettings } from "./qualityTier";
 
 type Props = {
   stage: StageId;
@@ -527,13 +528,19 @@ export default function StageScene({ stage }: Props) {
     const mountHolder: { current: HTMLElement | null } = { current: mount };
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const quality = resolveQualitySettings();
+    const PARTICLE_COUNT = quality.particleCount;
+    const LINK_COUNT = quality.linkCount;
+    const BEAM_PARTICLES = quality.beamParticles;
+    const PILLAR_ROWS = quality.pillarRows;
+    const FIBER_TRAILS = quality.fiberTrails;
 
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({
-        antialias: true,
+        antialias: quality.antialias,
         alpha: true,
-        powerPreference: "high-performance",
+        powerPreference: quality.powerPreference,
         failIfMajorPerformanceCaveat: false,
       });
     } catch {
@@ -545,12 +552,12 @@ export default function StageScene({ stage }: Props) {
     camera.position.set(0, 0.15, 6.2);
     camera.lookAt(0, 0, 0);
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    const dpr = Math.min(window.devicePixelRatio || 1, quality.dprCap);
     renderer.setPixelRatio(dpr);
     renderer.setClearColor(0x000000, 0);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.18;
+    renderer.toneMappingExposure = quality.tier === "low" ? 1.08 : 1.18;
     mount.appendChild(renderer.domElement);
     Object.assign(renderer.domElement.style, {
       width: "100%",
@@ -559,52 +566,73 @@ export default function StageScene({ stage }: Props) {
       pointerEvents: "none",
     });
 
-    const envMap = makeStudioEnv(renderer);
-    scene.environment = envMap;
+    const envMap = quality.enableEnvMap ? makeStudioEnv(renderer) : null;
+    if (envMap) scene.environment = envMap;
 
     const glowTex = makeGlowTexture();
     const root = new THREE.Group();
     scene.add(root);
 
     // —— Cinematic lights (world-fixed; no mouse-driven group drift) ——
-    const hemi = new THREE.HemisphereLight(0xdce8ff, 0x100818, 0.5);
+    const hemi = new THREE.HemisphereLight(0xdce8ff, 0x100818, quality.simplifyLights ? 0.62 : 0.5);
     scene.add(hemi);
-    const ambient = new THREE.AmbientLight(0x6a78a8, 0.22);
+    const ambient = new THREE.AmbientLight(0x6a78a8, quality.simplifyLights ? 0.32 : 0.22);
     scene.add(ambient);
 
     const key = new THREE.DirectionalLight(0xe8f4ff, 1.35);
     key.position.set(4.2, 3.8, 5.0);
     scene.add(key);
 
-    const fill = new THREE.DirectionalLight(0xa090ff, 0.55);
+    const fill = new THREE.DirectionalLight(0xa090ff, quality.simplifyLights ? 0.4 : 0.55);
     fill.position.set(-3.6, 1.4, 2.8);
     scene.add(fill);
 
-    const rim = new THREE.DirectionalLight(0x50ffe0, 0.75);
+    const rim = new THREE.DirectionalLight(0x50ffe0, quality.simplifyLights ? 0.45 : 0.75);
     rim.position.set(0.6, 1.2, -4.2);
     scene.add(rim);
 
-    const rim2 = new THREE.DirectionalLight(0xff80e0, 0.28);
-    rim2.position.set(-2.4, -0.8, -3.2);
-    scene.add(rim2);
+    let rim2: THREE.DirectionalLight | null = null;
+    if (!quality.simplifyLights) {
+      rim2 = new THREE.DirectionalLight(0xff80e0, 0.28);
+      rim2.position.set(-2.4, -0.8, -3.2);
+      scene.add(rim2);
+    }
 
-    const hubLight = new THREE.PointLight(0x60ffc0, 1.4, 6, 2);
+    const hubLight = new THREE.PointLight(
+      0x60ffc0,
+      quality.simplifyLights ? 0.9 : 1.4,
+      quality.simplifyLights ? 5 : 6,
+      2,
+    );
     hubLight.position.set(1.5, 0.2, 0.4);
     scene.add(hubLight);
 
-    const accentLight = new THREE.PointLight(0x9060ff, 0.85, 7, 2);
+    const accentLight = new THREE.PointLight(
+      0x9060ff,
+      quality.simplifyLights ? 0.5 : 0.85,
+      quality.simplifyLights ? 5.5 : 7,
+      2,
+    );
     accentLight.position.set(-1.2, 0.6, 1.2);
     scene.add(accentLight);
 
-    // Shared geometries — modest segments for laptop GPUs
-    const figurePool = new ServiceFigurePool();
+    // Shared geometries — segments scale with quality tier
+    const figurePool = new ServiceFigurePool(quality.tier);
     const boxGeo = new THREE.BoxGeometry(1, 1, 1);
     const edgesGeo = new THREE.EdgesGeometry(boxGeo);
-    const fiberGeo = new THREE.CylinderGeometry(1, 1, 1, 6, 1);
-    const hubCoreGeo = new THREE.SphereGeometry(0.12, 18, 14);
-    const hubShellGeo = new THREE.IcosahedronGeometry(0.2, 1);
-    const hubDotGeo = new THREE.SphereGeometry(0.032, 10, 8);
-    const shadowGeo = new THREE.CircleGeometry(1, 20);
+    const fiberGeo = new THREE.CylinderGeometry(1, 1, 1, quality.tier === "low" ? 5 : 6, 1);
+    const hubCoreGeo = new THREE.SphereGeometry(
+      0.12,
+      quality.hubSphereSegs[0],
+      quality.hubSphereSegs[1],
+    );
+    const hubShellGeo = new THREE.IcosahedronGeometry(0.2, quality.tier === "low" ? 0 : 1);
+    const hubDotGeo = new THREE.SphereGeometry(
+      0.032,
+      quality.hubDotSegs[0],
+      quality.hubDotSegs[1],
+    );
+    const shadowGeo = new THREE.CircleGeometry(1, quality.shadowCircleSegs);
     const disposables: THREE.BufferGeometry[] = [
       boxGeo,
       edgesGeo,
@@ -623,6 +651,17 @@ export default function StageScene({ stage }: Props) {
     const accentColliders: Collider[] = [];
 
     function makeContactShadow(parent: THREE.Object3D, radius: number, yOffset: number) {
+      if (!quality.enableContactShadows) {
+        const stub = new THREE.MeshBasicMaterial({
+          color: 0x000000,
+          transparent: true,
+          opacity: 0,
+          depthWrite: false,
+          visible: false,
+        });
+        materials.push(stub);
+        return stub;
+      }
       const mat = new THREE.MeshBasicMaterial({
         color: 0x000000,
         transparent: true,
@@ -639,6 +678,13 @@ export default function StageScene({ stage }: Props) {
       return mat;
     }
 
+    const figureMatOpts = {
+      envMap,
+      navy: NAVY,
+      metal: METAL,
+      simplifyMaterials: quality.simplifyMaterials,
+    };
+
     function registerHover(
       id: string,
       hoverRoot: THREE.Object3D,
@@ -653,7 +699,6 @@ export default function StageScene({ stage }: Props) {
     }
 
     // --- 1) Nebula / particle field ---
-    const PARTICLE_COUNT = 120;
     const positions = new Float32Array(PARTICLE_COUNT * 3);
     const colors = new Float32Array(PARTICLE_COUNT * 3);
     const sizes = new Float32Array(PARTICLE_COUNT);
@@ -740,22 +785,21 @@ export default function StageScene({ stage }: Props) {
       { kind: "wifi", s: 0.11, style: "glass" },
       { kind: "laptop", s: 0.06, style: "metal" },
     ];
-    orbDefs.forEach((def, i) => {
+    const activeOrbDefs = orbDefs.slice(0, quality.orbCount);
+    activeOrbDefs.forEach((def, i) => {
       const kind = def.kind;
       const tint = i % 3 === 0 ? GREEN : i % 2 === 0 ? CYAN : PURPLE;
       const style = def.style;
       const s = def.s;
       const built = figurePool.build(kind, s, {
         tint,
-        envMap,
         style,
-        navy: NAVY,
-        metal: METAL,
+        ...figureMatOpts,
       });
       for (const m of built.mats) materials.push(m);
 
       const pivot = built.root;
-      const a = (i / orbDefs.length) * Math.PI * 2 + Math.random() * 0.35;
+      const a = (i / activeOrbDefs.length) * Math.PI * 2 + Math.random() * 0.35;
       const r = 1.05 + (i % 5) * 0.35 + Math.random() * 0.55;
       const base = new THREE.Vector3(
         Math.cos(a) * r - 0.35,
@@ -794,7 +838,6 @@ export default function StageScene({ stage }: Props) {
     });
 
     // Connected particle web
-    const LINK_COUNT = 28;
     const linkPositions = new Float32Array(LINK_COUNT * 2 * 3);
     const linkGeo = new THREE.BufferGeometry();
     linkGeo.setAttribute("position", new THREE.BufferAttribute(linkPositions, 3));
@@ -859,7 +902,8 @@ export default function StageScene({ stage }: Props) {
       { p: new THREE.Vector3(-0.45, 0.15, -0.75), s: 0.18, style: "glass", figure: "tablet" },
     ];
 
-    nodeDefs.forEach((def, i) => {
+    const activeNodeDefs = nodeDefs.slice(0, quality.nodeCount);
+    activeNodeDefs.forEach((def, i) => {
       const accent =
         def.style === "accent" || def.style === "hub"
           ? GREEN.clone()
@@ -874,6 +918,9 @@ export default function StageScene({ stage }: Props) {
       let edgeMat: THREE.LineBasicMaterial | null = null;
       let hitRadius: number;
 
+      const clearcoat = quality.simplifyMaterials ? 0 : 1;
+      const envIntensity = envMap ? (quality.simplifyMaterials ? 0.7 : 1) : 0;
+
       if (def.style === "hub") {
         group = new THREE.Group();
         content = group;
@@ -886,10 +933,10 @@ export default function StageScene({ stage }: Props) {
           emissiveIntensity: 1.35,
           roughness: 0.18,
           metalness: 0.35,
-          clearcoat: 0.9,
-          clearcoatRoughness: 0.12,
-          envMap,
-          envMapIntensity: 1.1,
+          clearcoat: clearcoat * 0.9,
+          clearcoatRoughness: quality.simplifyMaterials ? 1 : 0.12,
+          envMap: envMap ?? undefined,
+          envMapIntensity: 1.1 * envIntensity,
         });
         materials.push(coreMat);
         coreMat.userData.baseOpacity = 1;
@@ -903,16 +950,16 @@ export default function StageScene({ stage }: Props) {
           color: new THREE.Color("#b8ffe8"),
           emissive: GREEN,
           emissiveIntensity: 0.28,
-          roughness: 0.08,
+          roughness: quality.simplifyMaterials ? 0.22 : 0.08,
           metalness: 0.4,
-          clearcoat: 1,
-          clearcoatRoughness: 0.06,
+          clearcoat,
+          clearcoatRoughness: quality.simplifyMaterials ? 1 : 0.06,
           ior: 1.5,
           transparent: true,
           opacity: 0.55,
           depthWrite: false,
-          envMap,
-          envMapIntensity: 1.85,
+          envMap: envMap ?? undefined,
+          envMapIntensity: 1.85 * envIntensity,
           side: THREE.DoubleSide,
         });
         materials.push(shellMat);
@@ -929,12 +976,12 @@ export default function StageScene({ stage }: Props) {
           emissiveIntensity: 0.1,
           roughness: 0.18,
           metalness: 0.9,
-          clearcoat: 0.75,
-          clearcoatRoughness: 0.15,
+          clearcoat: clearcoat * 0.75,
+          clearcoatRoughness: quality.simplifyMaterials ? 1 : 0.15,
           transparent: true,
           opacity: 0.32,
-          envMap,
-          envMapIntensity: 1.45,
+          envMap: envMap ?? undefined,
+          envMapIntensity: 1.45 * envIntensity,
         });
         materials.push(cageMat);
         cageMat.userData.baseOpacity = cageMat.opacity;
@@ -962,10 +1009,8 @@ export default function StageScene({ stage }: Props) {
           def.style === "accent" ? GREEN : def.style === "glass" ? PURPLE : CYAN;
         const built = figurePool.build(def.figure as ServiceFigureKind, def.s, {
           tint,
-          envMap,
           style: def.style,
-          navy: NAVY,
-          metal: METAL,
+          ...figureMatOpts,
         });
         for (const m of built.mats) materials.push(m);
         group = built.root;
@@ -1014,37 +1059,40 @@ export default function StageScene({ stage }: Props) {
       });
     });
 
-    const fiberPairs: [number, number][] = [
-      [0, 1],
-      [0, 2],
-      [0, 3],
-      [0, 4],
-      [0, 5],
-      [0, 9],
-      [0, 11],
-      [0, 12],
-      [0, 14],
-      [0, 16],
-      [1, 7],
-      [1, 6],
-      [1, 12],
-      [2, 7],
-      [2, 3],
-      [3, 8],
-      [3, 13],
-      [4, 10],
-      [4, 6],
-      [5, 10],
-      [5, 8],
-      [5, 13],
-      [9, 2],
-      [11, 2],
-      [12, 6],
-      [14, 1],
-      [15, 10],
-      [16, 5],
-      [17, 4],
-    ];
+    const nodeLimit = activeNodeDefs.length;
+    const fiberPairs: [number, number][] = (
+      [
+        [0, 1],
+        [0, 2],
+        [0, 3],
+        [0, 4],
+        [0, 5],
+        [0, 9],
+        [0, 11],
+        [0, 12],
+        [0, 14],
+        [0, 16],
+        [1, 7],
+        [1, 6],
+        [1, 12],
+        [2, 7],
+        [2, 3],
+        [3, 8],
+        [3, 13],
+        [4, 10],
+        [4, 6],
+        [5, 10],
+        [5, 8],
+        [5, 13],
+        [9, 2],
+        [11, 2],
+        [12, 6],
+        [14, 1],
+        [15, 10],
+        [16, 5],
+        [17, 4],
+      ] as [number, number][]
+    ).filter(([a, b]) => a < nodeLimit && b < nodeLimit);
 
     type FiberItem = {
       mesh: THREE.Mesh;
@@ -1061,12 +1109,12 @@ export default function StageScene({ stage }: Props) {
         emissiveIntensity: 0.4,
         roughness: 0.2,
         metalness: 0.85,
-        clearcoat: 0.65,
-        clearcoatRoughness: 0.2,
+        clearcoat: quality.simplifyMaterials ? 0 : 0.65,
+        clearcoatRoughness: quality.simplifyMaterials ? 1 : 0.2,
         transparent: true,
         opacity: 0.8,
-        envMap,
-        envMapIntensity: 1.05,
+        envMap: envMap ?? undefined,
+        envMapIntensity: envMap ? (quality.simplifyMaterials ? 0.55 : 1.05) : 0,
       });
       materials.push(mat);
       const mesh = new THREE.Mesh(fiberGeo, mat);
@@ -1075,7 +1123,7 @@ export default function StageScene({ stage }: Props) {
       const glowMat = new THREE.MeshBasicMaterial({
         color: i % 3 === 0 ? GREEN : CYAN,
         transparent: true,
-        opacity: 0.1,
+        opacity: quality.tier === "low" ? 0.06 : 0.1,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
       });
@@ -1092,18 +1140,19 @@ export default function StageScene({ stage }: Props) {
     const hubRing = new THREE.Group();
     network.add(hubRing);
     const hubDotMats: THREE.MeshPhysicalMaterial[] = [];
-    for (let i = 0; i < 10; i++) {
-      const a = (i / 10) * Math.PI * 2;
+    const hubDotCount = quality.tier === "low" ? 6 : quality.tier === "medium" ? 8 : 10;
+    for (let i = 0; i < hubDotCount; i++) {
+      const a = (i / hubDotCount) * Math.PI * 2;
       const mat = new THREE.MeshPhysicalMaterial({
         color: 0xffffff,
         emissive: GREEN,
         emissiveIntensity: 0.65,
         roughness: 0.22,
         metalness: 0.8,
-        clearcoat: 0.7,
-        clearcoatRoughness: 0.2,
-        envMap,
-        envMapIntensity: 1.15,
+        clearcoat: quality.simplifyMaterials ? 0 : 0.7,
+        clearcoatRoughness: quality.simplifyMaterials ? 1 : 0.2,
+        envMap: envMap ?? undefined,
+        envMapIntensity: envMap ? (quality.simplifyMaterials ? 0.6 : 1.15) : 0,
       });
       materials.push(mat);
       hubDotMats.push(mat);
@@ -1112,7 +1161,9 @@ export default function StageScene({ stage }: Props) {
       hubRing.add(dot);
     }
     const hubRingCurve = new THREE.EllipseCurve(0, 0, 0.58, 0.58, 0, Math.PI * 2, false, 0);
-    const hubRingPts = hubRingCurve.getPoints(48).map((p) => new THREE.Vector3(p.x, p.y, 0.06));
+    const hubRingPts = hubRingCurve
+      .getPoints(quality.tier === "low" ? 24 : 48)
+      .map((p) => new THREE.Vector3(p.x, p.y, 0.06));
     const hubRingGeo = new THREE.BufferGeometry().setFromPoints(hubRingPts);
     disposables.push(hubRingGeo);
     const hubRingMat = new THREE.LineBasicMaterial({
@@ -1176,10 +1227,10 @@ export default function StageScene({ stage }: Props) {
         const shape = hexShape(w * 0.5, h * 0.5);
         bodyGeo = new THREE.ExtrudeGeometry(shape, {
           depth: thickness,
-          bevelEnabled: true,
+          bevelEnabled: quality.tier !== "low",
           bevelThickness: thickness * 0.22,
           bevelSize: Math.min(w, h) * 0.04,
-          bevelSegments: 2,
+          bevelSegments: quality.tier === "high" ? 2 : 1,
           curveSegments: 1,
         });
         bodyGeo.translate(0, 0, -thickness * 0.5);
@@ -1192,15 +1243,15 @@ export default function StageScene({ stage }: Props) {
         color: GLASS_TINT,
         emissive: accent,
         emissiveIntensity: 0.08,
-        roughness: 0.12,
+        roughness: quality.simplifyMaterials ? 0.28 : 0.12,
         metalness: 0.6,
-        clearcoat: 1,
-        clearcoatRoughness: 0.08,
+        clearcoat: quality.simplifyMaterials ? 0 : 1,
+        clearcoatRoughness: quality.simplifyMaterials ? 1 : 0.08,
         ior: 1.5,
         transparent: true,
         opacity: 0.48,
-        envMap,
-        envMapIntensity: 1.7,
+        envMap: envMap ?? undefined,
+        envMapIntensity: envMap ? (quality.simplifyMaterials ? 0.9 : 1.7) : 0,
         side: THREE.FrontSide,
       });
       materials.push(bodyMat);
@@ -1215,12 +1266,12 @@ export default function StageScene({ stage }: Props) {
         emissiveIntensity: 0.14,
         roughness: 0.18,
         metalness: 0.92,
-        clearcoat: 0.85,
-        clearcoatRoughness: 0.16,
+        clearcoat: quality.simplifyMaterials ? 0 : 0.85,
+        clearcoatRoughness: quality.simplifyMaterials ? 1 : 0.16,
         transparent: true,
         opacity: 0.62,
-        envMap,
-        envMapIntensity: 1.45,
+        envMap: envMap ?? undefined,
+        envMapIntensity: envMap ? (quality.simplifyMaterials ? 0.75 : 1.45) : 0,
       });
       materials.push(rimMat);
       mats.push(rimMat);
@@ -1300,7 +1351,7 @@ export default function StageScene({ stage }: Props) {
       { p: new THREE.Vector3(-0.2, -1.35, 0.9), w: 0.9, h: 0.5, t: 0.055, hex: false, c: CYAN },
     ];
 
-    panelDefs.forEach((def, i) => {
+    panelDefs.slice(0, quality.panelCount).forEach((def, i) => {
       const { group, mats, edgeMats, pickables } = makeGlassPanel(
         def.w,
         def.h,
@@ -1364,10 +1415,10 @@ export default function StageScene({ stage }: Props) {
       emissiveIntensity: 0.12,
       roughness: 0.38,
       metalness: 0.92,
-      clearcoat: 0.55,
-      clearcoatRoughness: 0.28,
-      envMap,
-      envMapIntensity: 1.65,
+      clearcoat: quality.simplifyMaterials ? 0 : 0.55,
+      clearcoatRoughness: quality.simplifyMaterials ? 1 : 0.28,
+      envMap: envMap ?? undefined,
+      envMapIntensity: envMap ? (quality.simplifyMaterials ? 0.85 : 1.65) : 0,
     });
     materials.push(pillarMetalMat);
     pillarMetalMat.userData.baseEmissive = pillarMetalMat.emissiveIntensity;
@@ -1378,10 +1429,10 @@ export default function StageScene({ stage }: Props) {
       emissiveIntensity: 0.08,
       roughness: 0.55,
       metalness: 0.72,
-      clearcoat: 0.35,
-      clearcoatRoughness: 0.4,
-      envMap,
-      envMapIntensity: 1.25,
+      clearcoat: quality.simplifyMaterials ? 0 : 0.35,
+      clearcoatRoughness: quality.simplifyMaterials ? 1 : 0.4,
+      envMap: envMap ?? undefined,
+      envMapIntensity: envMap ? (quality.simplifyMaterials ? 0.7 : 1.25) : 0,
     });
     materials.push(pillarConcreteMat);
     pillarConcreteMat.userData.baseEmissive = pillarConcreteMat.emissiveIntensity;
@@ -1402,7 +1453,6 @@ export default function StageScene({ stage }: Props) {
       bounds: StageBounds;
     };
     const pillars: PillarItem[] = [];
-    const PILLAR_ROWS = 6;
 
     for (let row = 0; row < PILLAR_ROWS; row++) {
       const z = -0.35 - row * 1.28;
@@ -1445,13 +1495,14 @@ export default function StageScene({ stage }: Props) {
       pulse: number;
     };
     const corridorFibers: CorridorFiber[] = [];
-    const FIBER_TRAILS = 16;
+    const tubeRadial = quality.tier === "low" ? 3 : 4;
 
     for (let i = 0; i < FIBER_TRAILS; i++) {
       const side = i % 2 === 0 ? -1 : 1;
       const yBase = -0.85 + (i % 5) * 0.42;
       const pts: THREE.Vector3[] = [];
-      for (let s = 0; s < 7; s++) {
+      const pathSteps = quality.tier === "low" ? 5 : 7;
+      for (let s = 0; s < pathSteps; s++) {
         const z = 0.4 - s * 1.15;
         const weave = Math.sin(s * 0.95 + i * 0.55) * 0.35;
         const x = side * (0.55 + s * 0.08) + weave * (side > 0 ? -0.55 : 0.55);
@@ -1459,8 +1510,20 @@ export default function StageScene({ stage }: Props) {
         pts.push(new THREE.Vector3(x, y, z));
       }
       const curve = new THREE.CatmullRomCurve3(pts);
-      const tubeGeo = new THREE.TubeGeometry(curve, 28, 0.012, 4, false);
-      const glowGeo = new THREE.TubeGeometry(curve, 28, 0.032, 4, false);
+      const tubeGeo = new THREE.TubeGeometry(
+        curve,
+        quality.tubeSegments,
+        0.012,
+        tubeRadial,
+        false,
+      );
+      const glowGeo = new THREE.TubeGeometry(
+        curve,
+        quality.tubeSegments,
+        0.032,
+        tubeRadial,
+        false,
+      );
       disposables.push(tubeGeo, glowGeo);
 
       const tint = i % 3 === 0 ? PURPLE : CYAN;
@@ -1470,12 +1533,12 @@ export default function StageScene({ stage }: Props) {
         emissiveIntensity: 0.85,
         roughness: 0.18,
         metalness: 0.55,
-        clearcoat: 0.8,
-        clearcoatRoughness: 0.15,
+        clearcoat: quality.simplifyMaterials ? 0 : 0.8,
+        clearcoatRoughness: quality.simplifyMaterials ? 1 : 0.15,
         transparent: true,
         opacity: 0.9,
-        envMap,
-        envMapIntensity: 1.1,
+        envMap: envMap ?? undefined,
+        envMapIntensity: envMap ? (quality.simplifyMaterials ? 0.55 : 1.1) : 0,
       });
       materials.push(mat);
       mat.userData.baseOpacity = mat.opacity;
@@ -1511,7 +1574,14 @@ export default function StageScene({ stage }: Props) {
     beamGroup.position.set(0, -0.2, -7.2);
     corridor.add(beamGroup);
 
-    const beamGeo = new THREE.CylinderGeometry(0.045, 0.09, 6.5, 10, 1, true);
+    const beamGeo = new THREE.CylinderGeometry(
+      0.045,
+      0.09,
+      6.5,
+      quality.beamRadialSegs,
+      1,
+      true,
+    );
     disposables.push(beamGeo);
     const beamMat = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color("#c8f8ff"),
@@ -1523,8 +1593,8 @@ export default function StageScene({ stage }: Props) {
       opacity: 0.55,
       depthWrite: false,
       side: THREE.DoubleSide,
-      envMap,
-      envMapIntensity: 0.6,
+      envMap: envMap ?? undefined,
+      envMapIntensity: envMap ? 0.6 : 0,
     });
     materials.push(beamMat);
     const beamCore = new THREE.Mesh(beamGeo, beamMat);
@@ -1546,22 +1616,24 @@ export default function StageScene({ stage }: Props) {
     beamGlow.position.y = 1.8;
     beamGroup.add(beamGlow);
 
-    const beamPurple = new THREE.Sprite(
-      new THREE.SpriteMaterial({
-        map: glowTex ?? undefined,
-        color: PURPLE,
-        transparent: true,
-        opacity: 0.22,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending,
-      }),
-    );
-    materials.push(beamPurple.material);
-    beamPurple.scale.set(3.2, 4.2, 1);
-    beamPurple.position.set(0.15, 1.2, 0.2);
-    beamGroup.add(beamPurple);
+    let beamPurple: THREE.Sprite | null = null;
+    if (quality.tier !== "low") {
+      beamPurple = new THREE.Sprite(
+        new THREE.SpriteMaterial({
+          map: glowTex ?? undefined,
+          color: PURPLE,
+          transparent: true,
+          opacity: 0.22,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+        }),
+      );
+      materials.push(beamPurple.material);
+      beamPurple.scale.set(3.2, 4.2, 1);
+      beamPurple.position.set(0.15, 1.2, 0.2);
+      beamGroup.add(beamPurple);
+    }
 
-    const BEAM_PARTICLES = 48;
     const beamPos = new Float32Array(BEAM_PARTICLES * 3);
     const beamCol = new Float32Array(BEAM_PARTICLES * 3);
     const beamBaseY = new Float32Array(BEAM_PARTICLES);
@@ -1630,16 +1702,16 @@ export default function StageScene({ stage }: Props) {
       color: GLASS_TINT,
       emissive: CYAN,
       emissiveIntensity: 0.05,
-      roughness: 0.12,
+      roughness: quality.simplifyMaterials ? 0.28 : 0.12,
       metalness: 0.55,
-      clearcoat: 1,
-      clearcoatRoughness: 0.1,
+      clearcoat: quality.simplifyMaterials ? 0 : 1,
+      clearcoatRoughness: quality.simplifyMaterials ? 1 : 0.1,
       transparent: true,
       opacity: 0.09,
       depthWrite: false,
       side: THREE.DoubleSide,
-      envMap,
-      envMapIntensity: 1.4,
+      envMap: envMap ?? undefined,
+      envMapIntensity: envMap ? (quality.simplifyMaterials ? 0.7 : 1.4) : 0,
     });
     materials.push(archFaceMat);
     archFaceMat.userData.baseOpacity = archFaceMat.opacity;
@@ -1719,13 +1791,11 @@ export default function StageScene({ stage }: Props) {
       { p: new THREE.Vector3(0.85, -1.35, 0.15), s: 0.14, c: PURPLE, kind: "code", style: "accent" },
     ];
 
-    accentDefs.forEach((def, i) => {
+    accentDefs.slice(0, quality.accentCount).forEach((def, i) => {
       const built = figurePool.build(def.kind, def.s, {
         tint: def.c,
-        envMap,
         style: def.style,
-        navy: NAVY,
-        metal: METAL,
+        ...figureMatOpts,
       });
       // Realization accents stay more translucent / ethereal
       for (const m of built.mats) {
@@ -1919,22 +1989,60 @@ export default function StageScene({ stage }: Props) {
 
     let raf = 0;
     let running = true;
-    let visible = document.visibilityState === "visible";
+    let tabVisible = document.visibilityState === "visible";
+    let introCovering = document.documentElement.dataset.intro === "wait";
+    let stageInView = true;
     let lastTs = performance.now();
     let elapsed = 0;
     let lastStage = liveStageRef.current;
+    let frameSkip = quality.frameSkip;
+    let skipCounter = 0;
+    let fpsEma = 60;
+    let fpsSampleAcc = 0;
+    let fpsSampleFrames = 0;
+
+    function canRender() {
+      return tabVisible && !introCovering && stageInView && !!mountHolder.current;
+    }
 
     function frame(now: number) {
       if (!running) return;
-      if (!visible) {
+      if (!canRender()) {
         raf = 0;
         return;
       }
 
-      const dt = Math.min((now - lastTs) / 1000, 0.05);
+      const rawDt = Math.min((now - lastTs) / 1000, 0.05);
       lastTs = now;
-      elapsed += dt;
+
+      // Adaptive skip: keep fluid motion math lighter when GPU struggles
+      if (frameSkip > 0) {
+        skipCounter++;
+        if (skipCounter <= frameSkip) {
+          elapsed += rawDt;
+          raf = requestAnimationFrame(frame);
+          return;
+        }
+        skipCounter = 0;
+      }
+
+      const dt = rawDt * (frameSkip > 0 ? frameSkip + 1 : 1);
+      elapsed += rawDt;
       const t = elapsed;
+
+      fpsSampleAcc += rawDt;
+      fpsSampleFrames++;
+      if (fpsSampleAcc >= 1.2) {
+        const fps = fpsSampleFrames / fpsSampleAcc;
+        fpsEma = fpsEma * 0.65 + fps * 0.35;
+        fpsSampleAcc = 0;
+        fpsSampleFrames = 0;
+        if (fpsEma < quality.fpsFloor && frameSkip < 2) {
+          frameSkip += 1;
+        } else if (fpsEma > quality.fpsFloor + 12 && frameSkip > quality.frameSkip) {
+          frameSkip -= 1;
+        }
+      }
 
       if (liveStageRef.current !== lastStage) {
         beginMorph(liveStageRef.current);
@@ -2195,7 +2303,7 @@ export default function StageScene({ stage }: Props) {
         beamMat.opacity = 0.35 + corr * 0.35 * beamPulse;
         beamMat.emissiveIntensity = 1.2 + corr * 1.1 * beamPulse;
         beamGlow.material.opacity = 0.2 + corr * 0.35 * beamPulse;
-        beamPurple.material.opacity = 0.1 + corr * 0.18;
+        if (beamPurple) beamPurple.material.opacity = 0.1 + corr * 0.18;
         beamPtsMat.opacity = 0.4 + corr * 0.5;
         for (let i = 0; i < BEAM_PARTICLES; i++) {
           let y = beamBaseY[i] + (reduceMotion ? 0 : t * (0.35 + (i % 5) * 0.08));
@@ -2390,8 +2498,9 @@ export default function StageScene({ stage }: Props) {
     }
 
     const kick = () => {
-      if (!running || raf || !visible) return;
+      if (!running || raf || !canRender()) return;
       lastTs = performance.now();
+      skipCounter = 0;
       raf = requestAnimationFrame(frame);
     };
 
@@ -2420,24 +2529,60 @@ export default function StageScene({ stage }: Props) {
     };
 
     const onVis = () => {
-      visible = document.visibilityState === "visible";
-      if (visible) kick();
+      tabVisible = document.visibilityState === "visible";
+      if (tabVisible) kick();
       else {
         pointer.inside = false;
         setCursor(false);
       }
     };
 
+    const syncIntroGate = () => {
+      introCovering = document.documentElement.dataset.intro === "wait";
+      if (!introCovering) kick();
+      else {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+
+    const introObserver = new MutationObserver(syncIntroGate);
+    introObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-intro"],
+    });
+
+    let viewObserver: IntersectionObserver | null = null;
+    if (typeof IntersectionObserver !== "undefined") {
+      viewObserver = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          stageInView = Boolean(entry?.isIntersecting && (entry.intersectionRatio ?? 0) > 0.05);
+          if (stageInView) kick();
+          else {
+            cancelAnimationFrame(raf);
+            raf = 0;
+          }
+        },
+        { threshold: [0, 0.05, 0.2] },
+      );
+    }
+
     const attach = (el: HTMLElement) => {
       mountHolder.current = el;
       if (renderer.domElement.parentElement !== el) {
         el.appendChild(renderer.domElement);
       }
+      viewObserver?.disconnect();
+      viewObserver?.observe(el);
+      stageInView = true;
+      syncIntroGate();
       resize();
       kick();
     };
 
     const detach = () => {
+      viewObserver?.disconnect();
       const host = mountHolder.current;
       if (host && renderer.domElement.parentElement === host) {
         host.removeChild(renderer.domElement);
@@ -2451,6 +2596,8 @@ export default function StageScene({ stage }: Props) {
       running = false;
       cancelAnimationFrame(raf);
       setCursor(false);
+      introObserver.disconnect();
+      viewObserver?.disconnect();
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onPointer);
       document.documentElement.removeEventListener("mouseleave", onPointerLeaveDoc);
@@ -2459,7 +2606,7 @@ export default function StageScene({ stage }: Props) {
       for (const m of materials) m.dispose();
       figurePool.dispose();
       glowTex?.dispose();
-      envMap.dispose();
+      envMap?.dispose();
       renderer.dispose();
       const host = mountHolder.current;
       if (host && renderer.domElement.parentElement === host) {
@@ -2470,12 +2617,12 @@ export default function StageScene({ stage }: Props) {
 
     sharedHandle = { attach, detach, dispose };
 
-    resize();
     window.addEventListener("resize", resize, { passive: true });
     window.addEventListener("pointermove", onPointer, { passive: true });
     document.documentElement.addEventListener("mouseleave", onPointerLeaveDoc);
     document.addEventListener("visibilitychange", onVis);
-    kick();
+    // First mount: attach wires IO + resize + kick (keeps locale remount path identical)
+    attach(mount);
 
     return () => {
       sharedHandle?.detach();

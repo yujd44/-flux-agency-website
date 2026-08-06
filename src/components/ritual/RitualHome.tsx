@@ -1,15 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import "./ritual.css";
 import RitualHeader from "./RitualHeader";
 import StageRail, { type StageId } from "./StageRail";
-import StageScene from "./StageScene";
 import GlassHud from "./GlassHud";
 import IntroStage from "./stages/IntroStage";
 import MethodStage from "./stages/MethodStage";
 import RealizationStage from "./stages/RealizationStage";
 import FutureStage from "./stages/FutureStage";
+import { INTRO_SESSION_KEY } from "@/lib/intro-session";
+import { resolveQualitySettings } from "./qualityTier";
+
+const StageScene = dynamic(() => import("./StageScene"), { ssr: false });
 
 const STAGE_IDS: StageId[] = ["intro", "method", "realization", "future"];
 const TRANSITION_MS = 900;
@@ -18,6 +22,39 @@ const TOUCH_THRESHOLD = 56;
 /** Ignore synthetic wheel that follows a touch swipe (Chrome Android / iOS trackpad). */
 const POST_TOUCH_WHEEL_MS = 450;
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
+
+/** Mount WebGL only after logo intro dismisses (or session already saw it). */
+function useStageSceneReady() {
+  const [ready, setReady] = useState(false);
+
+  useLayoutEffect(() => {
+    try {
+      if (sessionStorage.getItem(INTRO_SESSION_KEY)) {
+        setReady(true);
+        return;
+      }
+    } catch {
+      /* ignore */
+    }
+    if (document.documentElement.dataset.intro === "done") {
+      setReady(true);
+      return;
+    }
+    const obs = new MutationObserver(() => {
+      if (document.documentElement.dataset.intro === "done") {
+        setReady(true);
+        obs.disconnect();
+      }
+    });
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-intro"],
+    });
+    return () => obs.disconnect();
+  }, []);
+
+  return ready;
+}
 
 function isEditableTarget(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false;
@@ -36,6 +73,11 @@ export default function RitualHome() {
   const panelRefs = useRef<(HTMLElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const activeIndexRef = useRef(0);
+  const stageReady = useStageSceneReady();
+
+  useLayoutEffect(() => {
+    resolveQualitySettings();
+  }, []);
   const lockedRef = useRef(false);
   const wheelAccRef = useRef(0);
   const touchStartY = useRef<number | null>(null);
@@ -262,7 +304,7 @@ export default function RitualHome() {
 
   return (
     <div ref={rootRef} className="ritual-root" data-stage={active}>
-      <StageScene stage={active} />
+      {stageReady ? <StageScene stage={active} /> : null}
       <GlassHud stage={active} />
       <RitualHeader active={active} onNavigate={goTo} />
       <StageRail active={active} onSelect={goTo} />

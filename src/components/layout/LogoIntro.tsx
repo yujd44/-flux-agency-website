@@ -81,6 +81,8 @@ export default function LogoIntro() {
   const [sizes, setSizes] = useState<IntroSizes>(DEFAULT_SIZES);
   const [typed, setTyped] = useState(0);
   const [soundOk, setSoundOk] = useState(false);
+  /** Skip CSS blur morph on phones — filter animation is expensive. */
+  const [liteFx, setLiteFx] = useState(false);
   const dismissed = useRef(false);
   const timers = useRef<number[]>([]);
   const soundOkRef = useRef(false);
@@ -121,6 +123,15 @@ export default function LogoIntro() {
     }
 
     setSizes(sizesForWidth(window.innerWidth));
+    try {
+      setLiteFx(
+        window.innerWidth < 768 ||
+          window.matchMedia("(pointer: coarse)").matches ||
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      );
+    } catch {
+      setLiteFx(window.innerWidth < 768);
+    }
 
     if (reduceMotion) {
       // Instant lockup, brief hold, then out — no fly / type / sound.
@@ -247,21 +258,35 @@ export default function LogoIntro() {
                 ease: EASE,
               }}
             >
-              <motion.div
-                className="absolute rounded-full bg-[rgba(77,180,255,0.28)] blur-3xl"
-                style={{ inset: "-55%" }}
-                initial={{ opacity: 0, scale: 0.55 }}
-                animate={{ opacity: [0, 0.55, 0.3], scale: [0.55, 1.18, 1] }}
-                transition={{ delay: FLY_DUR * 0.55, duration: 1.1, ease: EASE }}
-              />
+              {!liteFx && (
+                <motion.div
+                  className="absolute rounded-full bg-[rgba(77,180,255,0.28)] blur-3xl"
+                  style={{ inset: "-55%" }}
+                  initial={{ opacity: 0, scale: 0.55 }}
+                  animate={{ opacity: [0, 0.55, 0.3], scale: [0.55, 1.18, 1] }}
+                  transition={{ delay: FLY_DUR * 0.55, duration: 1.1, ease: EASE }}
+                />
+              )}
 
               {/* White chevron — from top */}
               <motion.div
                 className="absolute inset-0"
-                initial={{ y: "-42vh", opacity: 0, filter: "blur(10px)" }}
-                animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+                initial={
+                  liteFx
+                    ? { y: "-28vh", opacity: 0 }
+                    : { y: "-42vh", opacity: 0, filter: "blur(10px)" }
+                }
+                animate={
+                  liteFx
+                    ? { y: 0, opacity: 1 }
+                    : { y: 0, opacity: 1, filter: "blur(0px)" }
+                }
                 transition={{ duration: FLY_DUR, ease: EASE }}
-                style={{ filter: "drop-shadow(0 0 18px rgba(245,247,250,0.4))" }}
+                style={
+                  liteFx
+                    ? undefined
+                    : { filter: "drop-shadow(0 0 18px rgba(245,247,250,0.4))" }
+                }
               >
                 <Image
                   src={WHITE_SRC}
@@ -277,10 +302,22 @@ export default function LogoIntro() {
               {/* Blue chevron — from bottom */}
               <motion.div
                 className="absolute inset-0"
-                initial={{ y: "42vh", opacity: 0, filter: "blur(10px)" }}
-                animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+                initial={
+                  liteFx
+                    ? { y: "28vh", opacity: 0 }
+                    : { y: "42vh", opacity: 0, filter: "blur(10px)" }
+                }
+                animate={
+                  liteFx
+                    ? { y: 0, opacity: 1 }
+                    : { y: 0, opacity: 1, filter: "blur(0px)" }
+                }
                 transition={{ duration: FLY_DUR, ease: EASE }}
-                style={{ filter: "drop-shadow(0 0 22px rgba(56,140,255,0.6))" }}
+                style={
+                  liteFx
+                    ? undefined
+                    : { filter: "drop-shadow(0 0 22px rgba(56,140,255,0.6))" }
+                }
               >
                 <Image
                   src={BLUE_SRC}
