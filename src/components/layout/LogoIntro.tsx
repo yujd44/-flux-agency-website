@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { playChimeSound, playTypeSound, primeAudio } from "@/lib/sound-fx";
@@ -73,7 +73,8 @@ function markIntroShown() {
 /**
  * One-time Methodea logo intro: white chevron flies from top, blue from bottom,
  * then "Methodea" types letter-by-letter. Session-gated; skippable.
- * Boot script + inline CSS keep pure black until this finishes — no ritual hero FOUC.
+ * CSS gate (data-intro=wait) + this useLayoutEffect keep pure black until done —
+ * no boot <script> (incompatible with next-intl locale client navigation).
  */
 export default function LogoIntro() {
   const [show, setShow] = useState(false);
@@ -95,7 +96,9 @@ export default function LogoIntro() {
     setShow(false);
   };
 
-  useEffect(() => {
+  // Before paint: open the gate for return visits, or keep black + start splash.
+  // useLayoutEffect (not useEffect) so locale remounts never flash the ritual hero.
+  useLayoutEffect(() => {
     let reduceMotion = false;
     let alreadyShown = false;
     try {

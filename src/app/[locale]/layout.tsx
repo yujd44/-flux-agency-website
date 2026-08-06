@@ -50,10 +50,8 @@ export default async function LocaleLayout({
   const messages = await getMessages();
   const dir = rtlLocales.includes(locale as Locale) ? "rtl" : "ltr";
 
-  // data-intro="wait" is the stable SSR default; root layout's beforeInteractive
-  // boot script may flip to "done" before hydrate — suppressHydrationWarning
-  // allows that mismatch. Boot script lives in app/layout.tsx so locale switches
-  // do not re-render a <script> in the client React tree.
+  // SSR always starts gated (black). LogoIntro useLayoutEffect flips to "done"
+  // for return visits / after the splash — no boot <script> (breaks locale nav).
   return (
     <html
       lang={locale}
