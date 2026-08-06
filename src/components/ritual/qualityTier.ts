@@ -204,6 +204,45 @@ const LOW: QualitySettings = {
   stageTransitionMs: 550,
 };
 
+/**
+ * Old / weak phones — true lite path.
+ * renderScale stays 1 (no CSS upscale mush); cap ~30fps with fewer meshes.
+ */
+const MOBILE_LITE: QualitySettings = {
+  tier: "low",
+  isMobile: true,
+  dprCap: 1.25,
+  renderScale: 1,
+  antialias: false,
+  powerPreference: "low-power",
+  enableEnvMap: false,
+  enableContactShadows: false,
+  simplifyLights: true,
+  simplifyMaterials: true,
+  enableCollisions: false,
+  enableHover: false,
+  enableScatter: false,
+  particleCount: 14,
+  linkCount: 5,
+  beamParticles: 8,
+  orbCount: 5,
+  nodeCount: 6,
+  panelCount: 2,
+  accentCount: 3,
+  pillarRows: 2,
+  fiberTrails: 3,
+  tubeSegments: 8,
+  hubSphereSegs: [8, 6],
+  hubDotSegs: [6, 4],
+  shadowCircleSegs: 8,
+  beamRadialSegs: 5,
+  frameSkip: 1,
+  fpsFloor: 28,
+  minFrameMs: 33,
+  morphDurationScale: 0.55,
+  stageTransitionMs: 480,
+};
+
 function readDeviceMemory(): number | undefined {
   const nav = navigator as Navigator & { deviceMemory?: number };
   return typeof nav.deviceMemory === "number" ? nav.deviceMemory : undefined;
@@ -306,33 +345,34 @@ export function resolveQualitySettings(): QualitySettings {
 
   let settings: QualitySettings;
 
-  // Phones always use MOBILE (sharp, fewer meshes) — never desktop high via RAM/cores.
+  // Phones: MOBILE by default (sharp, near-desktop medium figures).
+  // Old/weak phones get MOBILE_LITE — never blurry renderScale, stable ~30fps.
   if (mobile) {
-    settings = { ...MOBILE };
-    if (gl === "fail") {
-      // Minimal sharp scene; StageScene will no-op if renderer throws.
-      settings = {
-        ...MOBILE,
-        particleCount: 0,
-        orbCount: 4,
-        nodeCount: 5,
-        panelCount: 2,
-        enableEnvMap: false,
-      };
-    } else if (gl === "caveat") {
-      // Software/weak GPU: keep sharpness, cut movers further.
-      settings = {
-        ...MOBILE,
-        orbCount: 8,
-        nodeCount: 8,
-        panelCount: 3,
-        accentCount: 4,
-        particleCount: 28,
-        linkCount: 8,
-        beamParticles: 12,
-        fiberTrails: 4,
-        enableContactShadows: false,
-      };
+    const weakMem = typeof mem === "number" && mem <= 2;
+    // Low RAM + few cores ≈ aging SoC; do not treat all 4-core phones as lite.
+    const weakCombo = typeof mem === "number" && mem <= 4 && cores <= 4;
+    const useLite =
+      gl === "fail" ||
+      gl === "caveat" ||
+      saveData ||
+      reduceMotion ||
+      weakMem ||
+      weakCombo;
+
+    if (useLite) {
+      settings = { ...MOBILE_LITE };
+      if (gl === "fail") {
+        settings = {
+          ...MOBILE_LITE,
+          particleCount: 0,
+          orbCount: 3,
+          nodeCount: 4,
+          panelCount: 1,
+          accentCount: 2,
+        };
+      }
+    } else {
+      settings = { ...MOBILE };
     }
   } else if (gl === "fail" || gl === "caveat" || saveData || reduceMotion) {
     settings = { ...LOW };

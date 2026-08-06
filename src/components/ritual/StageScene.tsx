@@ -1998,6 +1998,8 @@ export default function StageScene({ stage }: Props) {
     let tabVisible = document.visibilityState === "visible";
     let introCovering = document.documentElement.dataset.intro === "wait";
     let stageInView = true;
+    /** CSS stage morph lock — lighten draw rate, never pause RAF (breaks swipe feel). */
+    let stageLocked = document.documentElement.dataset.stageLock === "1";
     let lastTs = performance.now();
     let elapsed = 0;
     let lastStage = liveStageRef.current;
@@ -2031,7 +2033,10 @@ export default function StageScene({ stage }: Props) {
         quality.isMobile && !morphing && idleMs > 12000
           ? 33
           : quality.minFrameMs;
-      if (idleCapMs > 0 && now - lastDrawnAt < idleCapMs) {
+      // During stage swipe morph: keep RAF alive but cap ~30fps so input stays snappy.
+      const swipeCapMs = stageLocked && quality.isMobile ? 33 : 0;
+      const drawCapMs = Math.max(idleCapMs, swipeCapMs);
+      if (drawCapMs > 0 && now - lastDrawnAt < drawCapMs) {
         raf = requestAnimationFrame(frame);
         return;
       }
@@ -2596,7 +2601,8 @@ export default function StageScene({ stage }: Props) {
 
     /** RitualHome stageLock is input-only — keep morphing WebGL during CSS panel transition. */
     const syncStageLock = () => {
-      if (document.documentElement.dataset.stageLock === "1") {
+      stageLocked = document.documentElement.dataset.stageLock === "1";
+      if (stageLocked) {
         noteInteract();
         kick();
       }

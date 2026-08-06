@@ -12,6 +12,13 @@ import RealizationStage from "./stages/RealizationStage";
 import FutureStage from "./stages/FutureStage";
 import { INTRO_SESSION_KEY } from "@/lib/intro-session";
 import { resolveQualitySettings } from "./qualityTier";
+import {
+  decideTouchStageEnd,
+  isChromeTarget,
+  isEditableTarget,
+  lockTouchAxis,
+  panelCanAdvance,
+} from "./stageTouch";
 
 const StageScene = dynamic(() => import("./StageScene"), { ssr: false });
 
@@ -58,18 +65,6 @@ function useStageSceneReady() {
   return ready;
 }
 
-function isEditableTarget(target: EventTarget | null) {
-  if (!(target instanceof HTMLElement)) return false;
-  return Boolean(
-    target.closest("input, textarea, select, [contenteditable='true'], [role='textbox']"),
-  );
-}
-
-function isChromeTarget(target: EventTarget | null) {
-  if (!(target instanceof HTMLElement)) return false;
-  return Boolean(target.closest("header, nav, a, button, label, [role='button']"));
-}
-
 export default function RitualHome() {
   const rootRef = useRef<HTMLDivElement>(null);
   const panelRefs = useRef<(HTMLElement | null)[]>([]);
@@ -89,9 +84,7 @@ export default function RitualHome() {
   const wheelAccRef = useRef(0);
   const touchStartY = useRef<number | null>(null);
   const touchStartX = useRef<number | null>(null);
-  const touchStartScrollTop = useRef(0);
   const touchAxisLocked = useRef<"y" | "x" | null>(null);
-  const touchScrolledPanel = useRef(false);
   const ignoreWheelUntil = useRef(0);
   const unlockTimer = useRef<number | null>(null);
   const isMobileRef = useRef(false);
@@ -101,7 +94,7 @@ export default function RitualHome() {
 
   const lockBriefly = useCallback(() => {
     lockedRef.current = true;
-    // Signal StageScene to pause WebGL RAF during CSS stage morph (critical on phones).
+    // Signal StageScene to lighten draw rate during CSS stage morph (never pause RAF).
     try {
       document.documentElement.dataset.stageLock = "1";
     } catch {
@@ -161,14 +154,7 @@ export default function RitualHome() {
   );
 
   const canAdvanceFromPanel = useCallback((direction: 1 | -1) => {
-    const panel = panelRefs.current[activeIndexRef.current];
-    if (!panel) return true;
-    const overflow = panel.scrollHeight - panel.clientHeight > 2;
-    if (!overflow) return true;
-    if (direction > 0) {
-      return panel.scrollTop + panel.clientHeight >= panel.scrollHeight - 2;
-    }
-    return panel.scrollTop <= 1;
+    return panelCanAdvance(panelRefs.current[activeIndexRef.current], direction);
   }, []);
 
   useEffect(() => {
@@ -193,7 +179,6 @@ export default function RitualHome() {
       touchStartY.current = null;
       touchStartX.current = null;
       touchAxisLocked.current = null;
-      touchScrolledPanel.current = false;
     };
 
     const onWheel = (e: WheelEvent) => {
@@ -234,9 +219,6 @@ export default function RitualHome() {
       touchStartY.current = t.clientY;
       touchStartX.current = t.clientX;
       touchAxisLocked.current = null;
-      touchScrolledPanel.current = false;
-      const panel = panelRefs.current[activeIndexRef.current];
-      touchStartScrollTop.current = panel?.scrollTop ?? 0;
     };
 
     const onTouchMove = (e: TouchEvent) => {
@@ -247,18 +229,12 @@ export default function RitualHome() {
       const dx = t.clientX - touchStartX.current;
       const dy = t.clientY - touchStartY.current;
 
-      // Prefer vertical: only lock X when clearly more horizontal (avoids noisy diagonals).
-      if (!touchAxisLocked.current && (Math.abs(dx) > 12 || Math.abs(dy) > 12)) {
-        touchAxisLocked.current =
-          Math.abs(dx) > Math.abs(dy) * 1.35 ? "x" : "y";
+      if (!touchAxisLocked.current) {
+        touchAxisLocked.current = lockTouchAxis(dx, dy);
       }
 
-      const panel = panelRefs.current[activeIndexRef.current];
-      if (panel && Math.abs(panel.scrollTop - touchStartScrollTop.current) > 6) {
-        touchScrolledPanel.current = true;
-      }
-
-      // At scroll edge, claim the vertical gesture so rubber-band / overflow doesn't eat stage swipes.
+      // At scroll edge (or no overflow), claim the vertical gesture so rubber-band
+      // / overflow pan doesn't eat stage swipes.
       if (
         touchAxisLocked.current === "y" &&
         !lockedRef.current &&
@@ -277,7 +253,7 @@ export default function RitualHome() {
         return;
       }
       if (lockedRef.current) {
-        // Keep coords only while locked; drop this end so we don't double-fire mid-morph.
+        // Drop this end so we don't double-fire mid-morph.
         resetTouch();
         return;
       }
@@ -289,22 +265,20 @@ export default function RitualHome() {
 
       const delta = touchStartY.current - endY;
       const axis = touchAxisLocked.current;
-      const scrolled = touchScrolledPanel.current;
       resetTouch();
 
-      if (axis === "x") return;
-
       const threshold = isMobileRef.current ? TOUCH_THRESHOLD_MOBILE : TOUCH_THRESHOLD;
-      if (Math.abs(delta) < threshold) return;
-
-      const direction: 1 | -1 = delta > 0 ? 1 : -1;
-      // Mid-panel scroll consumes the gesture; edge overscroll / rubber-band must still advance.
-      if (scrolled && !canAdvanceFromPanel(direction)) return;
-      if (!canAdvanceFromPanel(direction)) return;
+      const decision = decideTouchStageEnd({
+        delta,
+        axis,
+        threshold,
+        panel: panelRefs.current[activeIndexRef.current],
+      });
+      if (decision.action !== "stage") return;
 
       ignoreWheelUntil.current = performance.now() + POST_TOUCH_WHEEL_MS;
       wheelAccRef.current = 0;
-      goToIndex(activeIndexRef.current + direction);
+      goToIndex(activeIndexRef.current + decision.direction);
     };
 
     const onTouchCancel = () => {
