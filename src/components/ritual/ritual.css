@@ -694,7 +694,7 @@ html[data-mobile="1"] .ritual-bloom {
 }
 
 html[data-mobile="1"] .ritual-glass-hud {
-  transition-duration: 0.42s;
+  transition-duration: 0.56s;
 }
 
 html[data-mobile="1"] .ritual-stage-panel,
@@ -703,14 +703,14 @@ html[data-mobile="1"] .ritual-stage-panel.is-active {
   /* Opacity-led morph — avoid scale/blur layout thrash on swipe */
   transform: none !important;
   transition:
-    opacity 0.42s var(--ritual-ease),
-    visibility 0s linear 0.42s !important;
+    opacity 0.56s var(--ritual-ease),
+    visibility 0s linear 0.56s !important;
   will-change: opacity;
 }
 
 html[data-mobile="1"] .ritual-stage-panel.is-active {
   transition:
-    opacity 0.42s var(--ritual-ease),
+    opacity 0.56s var(--ritual-ease),
     visibility 0s linear 0s !important;
 }
 

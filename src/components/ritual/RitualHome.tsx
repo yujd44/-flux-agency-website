@@ -17,7 +17,9 @@ const StageScene = dynamic(() => import("./StageScene"), { ssr: false });
 
 const STAGE_IDS: StageId[] = ["intro", "method", "realization", "future"];
 const WHEEL_THRESHOLD = 48;
-const TOUCH_THRESHOLD = 56;
+/** Desktop trackpad / mouse; phones use a slightly lower bar in handlers. */
+const TOUCH_THRESHOLD = 48;
+const TOUCH_THRESHOLD_MOBILE = 36;
 /** Ignore synthetic wheel that follows a touch swipe (Chrome Android / iOS trackpad). */
 const POST_TOUCH_WHEEL_MS = 450;
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
@@ -80,6 +82,7 @@ export default function RitualHome() {
   useLayoutEffect(() => {
     const q = resolveQualitySettings();
     transitionMsRef.current = q.stageTransitionMs;
+    isMobileRef.current = q.isMobile;
     setIsMobile(q.isMobile);
   }, []);
   const lockedRef = useRef(false);
@@ -91,6 +94,7 @@ export default function RitualHome() {
   const touchScrolledPanel = useRef(false);
   const ignoreWheelUntil = useRef(0);
   const unlockTimer = useRef<number | null>(null);
+  const isMobileRef = useRef(false);
 
   const active = STAGE_IDS[activeIndex];
   const panelEase = isMobile ? EASE_MOBILE : EASE;
@@ -221,6 +225,7 @@ export default function RitualHome() {
         resetTouch();
         return;
       }
+      // Still track the gesture while stage-locked so a swipe that ends after unlock works.
       const t = e.touches[0];
       if (!t) {
         resetTouch();
@@ -242,18 +247,37 @@ export default function RitualHome() {
       const dx = t.clientX - touchStartX.current;
       const dy = t.clientY - touchStartY.current;
 
-      if (!touchAxisLocked.current && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) {
-        touchAxisLocked.current = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+      // Prefer vertical: only lock X when clearly more horizontal (avoids noisy diagonals).
+      if (!touchAxisLocked.current && (Math.abs(dx) > 12 || Math.abs(dy) > 12)) {
+        touchAxisLocked.current =
+          Math.abs(dx) > Math.abs(dy) * 1.35 ? "x" : "y";
       }
 
       const panel = panelRefs.current[activeIndexRef.current];
-      if (panel && Math.abs(panel.scrollTop - touchStartScrollTop.current) > 2) {
+      if (panel && Math.abs(panel.scrollTop - touchStartScrollTop.current) > 6) {
         touchScrolledPanel.current = true;
+      }
+
+      // At scroll edge, claim the vertical gesture so rubber-band / overflow doesn't eat stage swipes.
+      if (
+        touchAxisLocked.current === "y" &&
+        !lockedRef.current &&
+        Math.abs(dy) > 14
+      ) {
+        const direction: 1 | -1 = dy < 0 ? 1 : -1;
+        if (canAdvanceFromPanel(direction)) {
+          e.preventDefault();
+        }
       }
     };
 
     const onTouchEnd = (e: TouchEvent) => {
-      if (touchStartY.current == null || lockedRef.current) {
+      if (touchStartY.current == null) {
+        resetTouch();
+        return;
+      }
+      if (lockedRef.current) {
+        // Keep coords only while locked; drop this end so we don't double-fire mid-morph.
         resetTouch();
         return;
       }
@@ -268,11 +292,14 @@ export default function RitualHome() {
       const scrolled = touchScrolledPanel.current;
       resetTouch();
 
-      // Horizontal gesture or internal panel scroll — never fight stage morph.
-      if (axis === "x" || scrolled) return;
-      if (Math.abs(delta) < TOUCH_THRESHOLD) return;
+      if (axis === "x") return;
+
+      const threshold = isMobileRef.current ? TOUCH_THRESHOLD_MOBILE : TOUCH_THRESHOLD;
+      if (Math.abs(delta) < threshold) return;
 
       const direction: 1 | -1 = delta > 0 ? 1 : -1;
+      // Mid-panel scroll consumes the gesture; edge overscroll / rubber-band must still advance.
+      if (scrolled && !canAdvanceFromPanel(direction)) return;
       if (!canAdvanceFromPanel(direction)) return;
 
       ignoreWheelUntil.current = performance.now() + POST_TOUCH_WHEEL_MS;
@@ -308,7 +335,8 @@ export default function RitualHome() {
 
     root.addEventListener("wheel", onWheel, { passive: false });
     root.addEventListener("touchstart", onTouchStart, { passive: true });
-    root.addEventListener("touchmove", onTouchMove, { passive: true });
+    // Non-passive so edge swipes can preventDefault and not lose the stage change to pan.
+    root.addEventListener("touchmove", onTouchMove, { passive: false });
     root.addEventListener("touchend", onTouchEnd, { passive: true });
     root.addEventListener("touchcancel", onTouchCancel, { passive: true });
     window.addEventListener("keydown", onKeyDown);

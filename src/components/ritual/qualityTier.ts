@@ -1,7 +1,7 @@
 /**
  * Adaptive render quality for StageScene / ritual UI.
  * Phones always get a mobile profile (deviceMemory must NOT promote them to desktop high).
- * Mobile = fewer meshes + no physics/hover + pause GL on stage swipe — NOT low-res blur.
+ * Mobile ≈ desktop medium figures (sharp DPR/materials), no collisions/hover/scatter.
  */
 
 export type QualityTier = "high" | "medium" | "low";
@@ -131,13 +131,13 @@ const MEDIUM: QualitySettings = {
 };
 
 /**
- * Phone profile (incl. flagships): sharp pixels + MeshPhysical close to desktop,
- * fewer movers, no collisions/hover/scatter. RAF pauses during stage swipe.
+ * Phone profile (incl. flagships): close to desktop MEDIUM visually,
+ * slightly fewer movers, no collisions/hover/scatter for stable FPS.
  */
 const MOBILE: QualitySettings = {
-  tier: "medium", // figure/geo quality — not "low" mush segments
+  tier: "medium",
   isMobile: true,
-  dprCap: 1.75,
+  dprCap: 1.5,
   renderScale: 1,
   antialias: true,
   powerPreference: "high-performance",
@@ -148,25 +148,25 @@ const MOBILE: QualitySettings = {
   enableCollisions: false,
   enableHover: false,
   enableScatter: false,
-  particleCount: 28,
-  linkCount: 6,
-  beamParticles: 10,
-  orbCount: 9,
-  nodeCount: 9,
-  panelCount: 3,
-  accentCount: 5,
-  pillarRows: 3,
-  fiberTrails: 4,
-  tubeSegments: 14,
+  particleCount: 48,
+  linkCount: 12,
+  beamParticles: 20,
+  orbCount: 11,
+  nodeCount: 11,
+  panelCount: 4,
+  accentCount: 6,
+  pillarRows: 4,
+  fiberTrails: 7,
+  tubeSegments: 16,
   hubSphereSegs: [12, 10],
   hubDotSegs: [8, 6],
   shadowCircleSegs: 12,
   beamRadialSegs: 8,
   frameSkip: 0,
-  fpsFloor: 28,
-  minFrameMs: 0, // interactive uncapped; idle throttle in StageScene
-  morphDurationScale: 0.5,
-  stageTransitionMs: 420,
+  fpsFloor: 26,
+  minFrameMs: 0,
+  morphDurationScale: 0.75,
+  stageTransitionMs: 560,
 };
 
 const LOW: QualitySettings = {
@@ -323,11 +323,14 @@ export function resolveQualitySettings(): QualitySettings {
       // Software/weak GPU: keep sharpness, cut movers further.
       settings = {
         ...MOBILE,
-        orbCount: 6,
-        nodeCount: 7,
-        panelCount: 2,
-        accentCount: 3,
-        particleCount: 16,
+        orbCount: 8,
+        nodeCount: 8,
+        panelCount: 3,
+        accentCount: 4,
+        particleCount: 28,
+        linkCount: 8,
+        beamParticles: 12,
+        fiberTrails: 4,
         enableContactShadows: false,
       };
     }
