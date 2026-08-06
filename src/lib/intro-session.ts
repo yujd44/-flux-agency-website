@@ -2,9 +2,11 @@
 export const INTRO_SESSION_KEY = "methodea-intro-shown";
 
 /**
- * Sync script for <head> — runs before first paint.
- * LocaleLayout always SSR-renders data-intro="wait" + suppressHydrationWarning on <html>;
+ * Sync boot for next/script strategy="beforeInteractive" in app/layout.tsx.
+ * LocaleLayout SSR-renders data-intro="wait" + suppressHydrationWarning on <html>;
  * this script may flip to "done" for return visits so the main site never flashes wait→content.
+ * Must not live in [locale]/layout — client locale navigation re-renders that tree and
+ * React errors on raw <script> tags during client render.
  */
 export const INTRO_BOOT_SCRIPT = `(function(){try{document.documentElement.dataset.intro=sessionStorage.getItem("${INTRO_SESSION_KEY}")?"done":"wait";}catch(e){document.documentElement.dataset.intro="wait";}})();`;
 

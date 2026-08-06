@@ -14,7 +14,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import LogoIntro from "@/components/layout/LogoIntro";
 import PortalTransition from "@/components/home/PortalTransition";
-import { INTRO_BOOT_SCRIPT, INTRO_BOOT_STYLE } from "@/lib/intro-session";
+import { INTRO_BOOT_STYLE } from "@/lib/intro-session";
 import "../globals.css";
 
 export function generateStaticParams() {
@@ -50,8 +50,10 @@ export default async function LocaleLayout({
   const messages = await getMessages();
   const dir = rtlLocales.includes(locale as Locale) ? "rtl" : "ltr";
 
-  // data-intro="wait" is the stable SSR default; INTRO_BOOT_SCRIPT may flip to
-  // "done" before hydrate — suppressHydrationWarning allows that mismatch.
+  // data-intro="wait" is the stable SSR default; root layout's beforeInteractive
+  // boot script may flip to "done" before hydrate — suppressHydrationWarning
+  // allows that mismatch. Boot script lives in app/layout.tsx so locale switches
+  // do not re-render a <script> in the client React tree.
   return (
     <html
       lang={locale}
@@ -61,9 +63,8 @@ export default async function LocaleLayout({
       className={`${fontLatin.variable} ${fontMono.variable} ${fontHeadline.variable} ${fontHebrew.variable} ${fontArabic.variable} h-full antialiased`}
     >
       <head>
-        {/* Inline critical gate: black screen before CSS bundle; boot script may flip to done. */}
+        {/* Inline critical gate: black screen before CSS bundle. */}
         <style dangerouslySetInnerHTML={{ __html: INTRO_BOOT_STYLE }} />
-        <script dangerouslySetInnerHTML={{ __html: INTRO_BOOT_SCRIPT }} />
       </head>
       <body className="flex min-h-full flex-col bg-bg text-text">
         <NextIntlClientProvider messages={messages}>
