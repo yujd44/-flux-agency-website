@@ -31,7 +31,7 @@ export default function LanguageSwitcher({ className }: { className?: string }) 
   useEffect(() => {
     if (!open) return;
 
-    function onPointerDown(e: MouseEvent) {
+    function onPointerDown(e: PointerEvent) {
       if (!rootRef.current?.contains(e.target as Node)) {
         setOpen(false);
       }
@@ -41,10 +41,10 @@ export default function LanguageSwitcher({ className }: { className?: string }) 
       if (e.key === "Escape") setOpen(false);
     }
 
-    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("pointerdown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
     return () => {
-      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [open]);

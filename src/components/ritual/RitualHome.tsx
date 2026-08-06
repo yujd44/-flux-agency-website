@@ -15,6 +15,8 @@ const STAGE_IDS: StageId[] = ["intro", "method", "realization", "future"];
 const TRANSITION_MS = 900;
 const WHEEL_THRESHOLD = 48;
 const TOUCH_THRESHOLD = 56;
+/** Ignore synthetic wheel that follows a touch swipe (Chrome Android / iOS trackpad). */
+const POST_TOUCH_WHEEL_MS = 450;
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 
 function isEditableTarget(target: EventTarget | null) {
@@ -22,6 +24,11 @@ function isEditableTarget(target: EventTarget | null) {
   return Boolean(
     target.closest("input, textarea, select, [contenteditable='true'], [role='textbox']"),
   );
+}
+
+function isChromeTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  return Boolean(target.closest("header, nav, a, button, label, [role='button']"));
 }
 
 export default function RitualHome() {
@@ -32,6 +39,11 @@ export default function RitualHome() {
   const lockedRef = useRef(false);
   const wheelAccRef = useRef(0);
   const touchStartY = useRef<number | null>(null);
+  const touchStartX = useRef<number | null>(null);
+  const touchStartScrollTop = useRef(0);
+  const touchAxisLocked = useRef<"y" | "x" | null>(null);
+  const touchScrolledPanel = useRef(false);
+  const ignoreWheelUntil = useRef(0);
   const unlockTimer = useRef<number | null>(null);
 
   const active = STAGE_IDS[activeIndex];
@@ -110,8 +122,19 @@ export default function RitualHome() {
     const root = rootRef.current;
     if (!root) return;
 
+    const resetTouch = () => {
+      touchStartY.current = null;
+      touchStartX.current = null;
+      touchAxisLocked.current = null;
+      touchScrolledPanel.current = false;
+    };
+
     const onWheel = (e: WheelEvent) => {
       if (isEditableTarget(e.target)) return;
+      if (performance.now() < ignoreWheelUntil.current) {
+        e.preventDefault();
+        return;
+      }
       if (lockedRef.current) {
         e.preventDefault();
         return;
@@ -131,24 +154,71 @@ export default function RitualHome() {
     };
 
     const onTouchStart = (e: TouchEvent) => {
-      if (isEditableTarget(e.target)) {
-        touchStartY.current = null;
+      if (isEditableTarget(e.target) || isChromeTarget(e.target)) {
+        resetTouch();
         return;
       }
-      touchStartY.current = e.touches[0]?.clientY ?? null;
+      const t = e.touches[0];
+      if (!t) {
+        resetTouch();
+        return;
+      }
+      touchStartY.current = t.clientY;
+      touchStartX.current = t.clientX;
+      touchAxisLocked.current = null;
+      touchScrolledPanel.current = false;
+      const panel = panelRefs.current[activeIndexRef.current];
+      touchStartScrollTop.current = panel?.scrollTop ?? 0;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (touchStartY.current == null || touchStartX.current == null) return;
+      const t = e.touches[0];
+      if (!t) return;
+
+      const dx = t.clientX - touchStartX.current;
+      const dy = t.clientY - touchStartY.current;
+
+      if (!touchAxisLocked.current && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) {
+        touchAxisLocked.current = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+      }
+
+      const panel = panelRefs.current[activeIndexRef.current];
+      if (panel && Math.abs(panel.scrollTop - touchStartScrollTop.current) > 2) {
+        touchScrolledPanel.current = true;
+      }
     };
 
     const onTouchEnd = (e: TouchEvent) => {
-      if (touchStartY.current == null || lockedRef.current) return;
+      if (touchStartY.current == null || lockedRef.current) {
+        resetTouch();
+        return;
+      }
       const endY = e.changedTouches[0]?.clientY;
-      if (endY == null) return;
+      if (endY == null) {
+        resetTouch();
+        return;
+      }
+
       const delta = touchStartY.current - endY;
-      touchStartY.current = null;
+      const axis = touchAxisLocked.current;
+      const scrolled = touchScrolledPanel.current;
+      resetTouch();
+
+      // Horizontal gesture or internal panel scroll — never fight stage morph.
+      if (axis === "x" || scrolled) return;
       if (Math.abs(delta) < TOUCH_THRESHOLD) return;
 
       const direction: 1 | -1 = delta > 0 ? 1 : -1;
       if (!canAdvanceFromPanel(direction)) return;
+
+      ignoreWheelUntil.current = performance.now() + POST_TOUCH_WHEEL_MS;
+      wheelAccRef.current = 0;
       goToIndex(activeIndexRef.current + direction);
+    };
+
+    const onTouchCancel = () => {
+      resetTouch();
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
@@ -175,13 +245,17 @@ export default function RitualHome() {
 
     root.addEventListener("wheel", onWheel, { passive: false });
     root.addEventListener("touchstart", onTouchStart, { passive: true });
+    root.addEventListener("touchmove", onTouchMove, { passive: true });
     root.addEventListener("touchend", onTouchEnd, { passive: true });
+    root.addEventListener("touchcancel", onTouchCancel, { passive: true });
     window.addEventListener("keydown", onKeyDown);
 
     return () => {
       root.removeEventListener("wheel", onWheel);
       root.removeEventListener("touchstart", onTouchStart);
+      root.removeEventListener("touchmove", onTouchMove);
       root.removeEventListener("touchend", onTouchEnd);
+      root.removeEventListener("touchcancel", onTouchCancel);
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [canAdvanceFromPanel, goToIndex]);

@@ -72,10 +72,11 @@ export default function StageRail({ active, onSelect }: Props) {
 
       {/* Phone: compact bottom dots — avoids side-rail overlap on narrow screens */}
       <nav
-        className="chrome-ltr pointer-events-none fixed inset-x-0 bottom-3 z-40 flex justify-center pb-[env(safe-area-inset-bottom,0px)] md:hidden"
+        className="chrome-ltr pointer-events-none fixed inset-x-0 z-40 flex justify-center md:hidden"
+        style={{ bottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))" }}
         aria-label={t("aria")}
       >
-        <ol className="pointer-events-auto flex items-center gap-3 rounded-full border border-white/10 bg-[#07080c]/75 px-3.5 py-2 backdrop-blur-md">
+        <ol className="pointer-events-auto flex touch-manipulation items-center gap-2.5 rounded-full border border-white/10 bg-[#07080c]/75 px-3 py-1.5 backdrop-blur-md">
           {STAGES.map(({ id, Icon }) => {
             const isActive = active === id;
             return (
@@ -86,7 +87,7 @@ export default function StageRail({ active, onSelect }: Props) {
                   aria-current={isActive ? "true" : undefined}
                   aria-label={t(id)}
                   className={clsx(
-                    "flex h-8 w-8 items-center justify-center rounded-full border transition-all duration-300",
+                    "flex h-11 w-11 items-center justify-center rounded-full border transition-all duration-300",
                     isActive
                       ? "border-[var(--ritual-cyan,#4df3ff)] bg-[var(--ritual-cyan,#4df3ff)]/20 text-white shadow-[0_0_14px_rgba(77,243,255,0.45)]"
                       : "border-white/20 bg-transparent text-white/45",
