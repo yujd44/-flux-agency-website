@@ -480,17 +480,51 @@ function resolveGroupCollisions(items: Collider[]) {
 }
 
 /**
+ * Keep WebGL alive across brief remounts (locale switches tear down [locale] layout).
+ * Hard-dispose only after a short idle so /ru ↔ /he does not rebuild Three.js.
+ */
+const STAGE_KEEPALIVE_MS = 900;
+const liveStageRef: { current: StageId } = { current: "intro" };
+
+type StageSceneHandle = {
+  attach: (mount: HTMLElement) => void;
+  detach: () => void;
+  dispose: () => void;
+};
+
+let sharedHandle: StageSceneHandle | null = null;
+let keepAliveTimer: ReturnType<typeof setTimeout> | null = null;
+
+/**
  * Single shared WebGL layer for ritual stages.
  * Physical materials, autonomous idle motion, per-mesh hover/scatter — no group parallax.
  */
 export default function StageScene({ stage }: Props) {
   const mountRef = useRef<HTMLDivElement>(null);
-  const stageRef = useRef(stage);
-  stageRef.current = stage;
+  liveStageRef.current = stage;
 
   useEffect(() => {
     const mount = mountRef.current;
     if (!mount) return;
+
+    if (keepAliveTimer) {
+      clearTimeout(keepAliveTimer);
+      keepAliveTimer = null;
+    }
+
+    if (sharedHandle) {
+      sharedHandle.attach(mount);
+      return () => {
+        sharedHandle?.detach();
+        keepAliveTimer = setTimeout(() => {
+          sharedHandle?.dispose();
+          sharedHandle = null;
+          keepAliveTimer = null;
+        }, STAGE_KEEPALIVE_MS);
+      };
+    }
+
+    const mountHolder: { current: HTMLElement | null } = { current: mount };
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -1754,8 +1788,8 @@ export default function StageScene({ stage }: Props) {
     wireArch.add(archWash);
 
     // State for morph
-    let fromStage: StageId = stageRef.current;
-    let toStage: StageId = stageRef.current;
+    let fromStage: StageId = liveStageRef.current;
+    let toStage: StageId = liveStageRef.current;
     let morphT = 1;
     let morphDuration = reduceMotion ? 0.01 : 1.15;
     let currentVisual = { ...VISUALS[toStage] };
@@ -1804,7 +1838,7 @@ export default function StageScene({ stage }: Props) {
     }
 
     function resize() {
-      const el = mountRef.current;
+      const el = mountHolder.current;
       if (!el) return;
       const w = el.clientWidth;
       const h = el.clientHeight;
@@ -1888,7 +1922,7 @@ export default function StageScene({ stage }: Props) {
     let visible = document.visibilityState === "visible";
     let lastTs = performance.now();
     let elapsed = 0;
-    let lastStage = stageRef.current;
+    let lastStage = liveStageRef.current;
 
     function frame(now: number) {
       if (!running) return;
@@ -1902,9 +1936,9 @@ export default function StageScene({ stage }: Props) {
       elapsed += dt;
       const t = elapsed;
 
-      if (stageRef.current !== lastStage) {
-        beginMorph(stageRef.current);
-        lastStage = stageRef.current;
+      if (liveStageRef.current !== lastStage) {
+        beginMorph(liveStageRef.current);
+        lastStage = liveStageRef.current;
       }
 
       if (morphT < 1) {
@@ -2364,7 +2398,9 @@ export default function StageScene({ stage }: Props) {
     const UI_SELECTOR = "a,button,input,textarea,select,label,[role='button']";
 
     const onPointer = (e: PointerEvent) => {
-      const rect = mount.getBoundingClientRect();
+      const host = mountHolder.current;
+      if (!host) return;
+      const rect = host.getBoundingClientRect();
       if (rect.width < 1 || rect.height < 1) return;
       pointer.nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       pointer.ny = -((e.clientY - rect.top) / rect.height) * 2 + 1;
@@ -2392,14 +2428,26 @@ export default function StageScene({ stage }: Props) {
       }
     };
 
-    resize();
-    window.addEventListener("resize", resize, { passive: true });
-    window.addEventListener("pointermove", onPointer, { passive: true });
-    document.documentElement.addEventListener("mouseleave", onPointerLeaveDoc);
-    document.addEventListener("visibilitychange", onVis);
-    kick();
+    const attach = (el: HTMLElement) => {
+      mountHolder.current = el;
+      if (renderer.domElement.parentElement !== el) {
+        el.appendChild(renderer.domElement);
+      }
+      resize();
+      kick();
+    };
 
-    return () => {
+    const detach = () => {
+      const host = mountHolder.current;
+      if (host && renderer.domElement.parentElement === host) {
+        host.removeChild(renderer.domElement);
+      }
+      mountHolder.current = null;
+      pointer.inside = false;
+      setCursor(false);
+    };
+
+    const dispose = () => {
       running = false;
       cancelAnimationFrame(raf);
       setCursor(false);
@@ -2413,9 +2461,29 @@ export default function StageScene({ stage }: Props) {
       glowTex?.dispose();
       envMap.dispose();
       renderer.dispose();
-      if (renderer.domElement.parentElement === mount) {
-        mount.removeChild(renderer.domElement);
+      const host = mountHolder.current;
+      if (host && renderer.domElement.parentElement === host) {
+        host.removeChild(renderer.domElement);
       }
+      mountHolder.current = null;
+    };
+
+    sharedHandle = { attach, detach, dispose };
+
+    resize();
+    window.addEventListener("resize", resize, { passive: true });
+    window.addEventListener("pointermove", onPointer, { passive: true });
+    document.documentElement.addEventListener("mouseleave", onPointerLeaveDoc);
+    document.addEventListener("visibilitychange", onVis);
+    kick();
+
+    return () => {
+      sharedHandle?.detach();
+      keepAliveTimer = setTimeout(() => {
+        sharedHandle?.dispose();
+        sharedHandle = null;
+        keepAliveTimer = null;
+      }, STAGE_KEEPALIVE_MS);
     };
   }, []);
 

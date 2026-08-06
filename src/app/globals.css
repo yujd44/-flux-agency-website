@@ -55,7 +55,8 @@ body {
 body {
   background-color: var(--color-bg);
   color: var(--color-text);
-  font-family: var(--font-latin), system-ui, sans-serif;
+  /* One IBM Plex family across locales; script companions cover he/ar glyphs. */
+  font-family: var(--font-latin), var(--font-he), var(--font-ar), system-ui, sans-serif;
   font-size: 1.25rem;
   line-height: 1.7;
   padding: var(--frame-inset);
@@ -107,12 +108,13 @@ html[data-intro="wait"] #intro-boot-gate {
   background: #05070a;
 }
 
+/* Prefer script-shaped IBM Plex companion first; Latin/Cyrillic still Plex. */
 html[lang="he"] body {
-  font-family: var(--font-he), var(--font-latin), system-ui, sans-serif;
+  font-family: var(--font-he), var(--font-latin), var(--font-ar), system-ui, sans-serif;
 }
 
 html[lang="ar"] body {
-  font-family: var(--font-ar), var(--font-latin), system-ui, sans-serif;
+  font-family: var(--font-ar), var(--font-latin), var(--font-he), system-ui, sans-serif;
 }
 
 * {
@@ -186,21 +188,19 @@ html[lang="ar"] body {
   background: var(--color-accent);
 }
 
-/* Hero headline — geometric grotesk (nav stays mono) */
+/* Hero headline — Unbounded first so Latin brand stays consistent on he/ar */
 .hero-headline {
-  font-family: var(--font-headline), var(--font-latin), system-ui, sans-serif;
+  font-family: var(--font-headline), var(--font-latin), var(--font-he), var(--font-ar), system-ui,
+    sans-serif;
   font-weight: 500;
 }
 
-html[lang="he"] .hero-headline {
-  font-family: var(--font-he), var(--font-headline), system-ui, sans-serif;
-}
-
+html[lang="he"] .hero-headline,
 html[lang="ar"] .hero-headline {
-  font-family: var(--font-ar), var(--font-headline), system-ui, sans-serif;
+  letter-spacing: 0;
 }
 
-/* Headline accent — italic serif with coral→magenta→violet gradient */
+/* Headline accent — coral→magenta→violet gradient (same display stack) */
 .hero-accent {
   background-image: linear-gradient(
     100deg,
@@ -211,20 +211,17 @@ html[lang="ar"] .hero-headline {
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  font-family: var(--font-accent), var(--font-headline), var(--font-latin), system-ui, sans-serif;
+  font-family: var(--font-accent), var(--font-headline), var(--font-latin), var(--font-he),
+    var(--font-ar), system-ui, sans-serif;
   font-weight: 500;
   font-style: normal;
   letter-spacing: 0.01em;
 }
 
-html[lang="he"] .hero-accent {
-  font-family: var(--font-he), var(--font-accent), sans-serif;
-  font-style: normal;
-}
-
+html[lang="he"] .hero-accent,
 html[lang="ar"] .hero-accent {
-  font-family: var(--font-ar), var(--font-accent), sans-serif;
   font-style: normal;
+  letter-spacing: 0;
 }
 
 /* Primary CTA — coral → violet gradient */

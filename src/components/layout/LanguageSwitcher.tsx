@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { startTransition, useEffect, useId, useRef, useState } from "react";
 import clsx from "clsx";
 import { ChevronDown } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -15,6 +15,18 @@ export default function LanguageSwitcher({ className }: { className?: string }) 
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const listId = useId();
+
+  // Warm other locale routes so switching only swaps messages/text.
+  useEffect(() => {
+    for (const code of locales) {
+      if (code === locale) continue;
+      try {
+        router.prefetch(pathname, { locale: code });
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [locale, pathname, router]);
 
   useEffect(() => {
     if (!open) return;
@@ -69,8 +81,17 @@ export default function LanguageSwitcher({ className }: { className?: string }) 
                 type="button"
                 onClick={() => {
                   setOpen(false);
-                  if (code !== locale) {
+                  if (code === locale) return;
+                  startTransition(() => {
                     router.replace(pathname, { locale: code, scroll: false });
+                  });
+                }}
+                onPointerEnter={() => {
+                  if (code === locale) return;
+                  try {
+                    router.prefetch(pathname, { locale: code });
+                  } catch {
+                    /* ignore */
                   }
                 }}
                 className={clsx(

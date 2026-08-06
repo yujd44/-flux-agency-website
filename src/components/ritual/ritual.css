@@ -412,7 +412,8 @@
 }
 
 .ritual-headline {
-  font-family: var(--font-headline), var(--font-latin), system-ui, sans-serif;
+  font-family: var(--font-headline), var(--font-latin), var(--font-he), var(--font-ar), system-ui,
+    sans-serif;
   font-weight: 500;
   letter-spacing: 0.06em;
   text-shadow:
@@ -532,13 +533,9 @@
   );
 }
 
-html[lang="he"] .ritual-headline {
-  font-family: var(--font-he), var(--font-headline), system-ui, sans-serif;
-  letter-spacing: 0;
-}
-
+/* Keep Unbounded for Latin brand; only relax tracking for RTL scripts. */
+html[lang="he"] .ritual-headline,
 html[lang="ar"] .ritual-headline {
-  font-family: var(--font-ar), var(--font-headline), system-ui, sans-serif;
   letter-spacing: 0;
 }
 
